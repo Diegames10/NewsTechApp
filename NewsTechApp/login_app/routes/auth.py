@@ -24,11 +24,10 @@ github_bp = make_github_blueprint(
 )
 
 # Página inicial
+@auth_bp.route("/")
 def home():
-    if "user_id" in session:
-        return redirect(url_for("auth.dashboard"))
     return redirect(url_for("auth.login"))
-
+    
 # Login local
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
