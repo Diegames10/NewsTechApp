@@ -1,0 +1,1 @@
+# Configurações podem ser movidas para cá futuramente
