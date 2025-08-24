@@ -7,7 +7,7 @@ bcrypt = Bcrypt()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object("config.Config")
+    app.config.from_object("config.Config")  # se tiver config.py
 
     db.init_app(app)
     bcrypt.init_app(app)
