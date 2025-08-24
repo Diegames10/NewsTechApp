@@ -1,29 +1,36 @@
-import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from dotenv import load_dotenv
+import os
+
+from login_app import db, bcrypt
+from login_app.models import User
 
 load_dotenv()
 
 auth_bp = Blueprint("auth", __name__)
 
+# Configuração OAuth Google
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     redirect_to="auth.google_login"
 )
 
+# Configuração OAuth GitHub
 github_bp = make_github_blueprint(
     client_id=os.getenv("GITHUB_CLIENT_ID"),
     client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
     redirect_to="auth.github_login"
 )
 
+# Página inicial
 @auth_bp.route("/")
 def home():
     return redirect(url_for("auth.login"))
 
+# Login local
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -39,6 +46,7 @@ def login():
 
     return render_template("login.html")
 
+# Dashboard
 @auth_bp.route("/dashboard")
 def dashboard():
     user = None
@@ -46,6 +54,7 @@ def dashboard():
         user = User.query.get(session["user_id"])
     return render_template("dashboard.html", user=user)
 
+# Logout
 @auth_bp.route("/logout")
 def logout():
     session.clear()
@@ -92,8 +101,7 @@ def github_login():
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
     return redirect(url_for("auth.dashboard"))
 
-
-
+# Registro de usuário local
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -114,7 +122,3 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
-
-
-
-
