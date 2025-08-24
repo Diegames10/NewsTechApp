@@ -5,8 +5,8 @@ from models.user import db, User, bcrypt
 
 auth_bp = Blueprint("auth", __name__)
 google_bp = make_google_blueprint(
-    client_id="786421496484-v3ijhuk2bhkl4g05cdn6461n2q58trgd.apps.googleusercontent.com",
-    client_secret="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",
+    client_id="790573407094-ra7sprhsgerv2k2bfq80b2bc70o1r4ve.apps.googleusercontent.com",
+    client_secret="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",
     redirect_to="auth.google_login"
 )
 github_bp = make_github_blueprint(
