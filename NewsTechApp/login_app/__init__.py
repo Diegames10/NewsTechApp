@@ -16,7 +16,7 @@ def create_app():
     # Registrar blueprints
     from login_app.routes.auth import auth_bp, google_bp, github_bp
     app.register_blueprint(auth_bp)
-    app.register_blueprint(google_bp, url_prefix="/login")
-    app.register_blueprint(github_bp, url_prefix="/login")
+    app.register_blueprint(google_bp, url_prefix="/login/google")
+    app.register_blueprint(github_bp, url_prefix="/login/github")
 
     return app
