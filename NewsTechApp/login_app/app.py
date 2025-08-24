@@ -5,7 +5,9 @@ from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
 from login_app.routes.auth import auth_bp, google_bp, github_bp
 from models.user import db, bcrypt
+from login_app import create_app
 
+app = create_app()
 app = Flask(__name__)
 app.secret_key = "sua_chave_secreta"
 
