@@ -24,6 +24,9 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 
 # Comando para rodar a aplicação
-ENV FLASK_APP=login_app:create_app
-ENV FLASK_ENV=production
-CMD ["flask", "run", "--host=0.0.0.0"]
+#ENV FLASK_APP=login_app:create_app
+#ENV FLASK_ENV=production
+#CMD ["flask", "run", "--host=0.0.0.0"]
+
+# Use Gunicorn para rodar em produção
+CMD ["gunicorn", "login_app.app:app", "--bind", "0.0.0.0:8080", "--workers", "3"]
