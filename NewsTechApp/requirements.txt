@@ -1,0 +1,8 @@
+flask
+flask_sqlalchemy
+flask_bcrypt
+flask_dance
+requests
+waitress
+python-dotenv
+oauthlib
