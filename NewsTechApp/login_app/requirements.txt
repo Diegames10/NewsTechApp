@@ -4,3 +4,4 @@ flask_bcrypt
 flask_dance
 requests
 waitress
+python-dotenv
