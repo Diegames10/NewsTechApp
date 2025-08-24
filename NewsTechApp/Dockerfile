@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copie dependências primeiro (melhor cache)
-COPY NewsTechApp/requirements.txt /tmp/requirements.txt
+COPY login_app/requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
