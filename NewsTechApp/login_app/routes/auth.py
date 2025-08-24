@@ -3,15 +3,19 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from models.user import db, User, bcrypt
 
+load_dotenv()
+
 auth_bp = Blueprint("auth", __name__)
+
 google_bp = make_google_blueprint(
-    client_id="790573407094-ra7sprhsgerv2k2bfq80b2bc70o1r4ve.apps.googleusercontent.com",
-    client_secret="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",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     redirect_to="auth.google_login"
 )
+
 github_bp = make_github_blueprint(
-    client_id="Ov23liS1BWdfxF1TAj0u",
-    client_secret="618b86b7d12dc9c12269a267b51ff44dd63046e7",
+    client_id=os.getenv("GITHUB_CLIENT_ID"),
+    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
     redirect_to="auth.github_login"
 )
 
