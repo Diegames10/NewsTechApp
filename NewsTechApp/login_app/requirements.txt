@@ -4,5 +4,5 @@ flask_bcrypt
 flask_dance
 requests
 waitress
-python-dotenvs
+python-dotenv
 oauthlib
