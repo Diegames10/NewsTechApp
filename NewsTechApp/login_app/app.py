@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
-from routes.auth import auth_bp, google_bp, github_bp
+from login_app.routes.auth import auth_bp, google_bp, github_bp
 from models.user import db, bcrypt
 
 app = Flask(__name__)
