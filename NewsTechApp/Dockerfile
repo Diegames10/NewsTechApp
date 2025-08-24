@@ -10,12 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copie dependências primeiro (melhor cache)
-COPY login_app/requirements.txt /tmp/requirements.txt
+COPY NewsTechApp/requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Copie o restante do código
-COPY login_app /app/login_app
+COPY NewsTechApp /app/login_app
 
 # Defina variável de ambiente para evitar buffering
 ENV PYTHONUNBUFFERED=1
