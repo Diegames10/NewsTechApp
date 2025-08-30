@@ -14,11 +14,11 @@ fi
 if [ ! -f "/data/app.db" ]; then
     echo "Banco de dados não encontrado. Inicializando..."
     cd /app && python3 -c "
-from login_app.app import create_app, db
+from login_app import create_app, db
 app = create_app()
 with app.app_context():
     db.create_all()
-    print('Banco de dados inicializado com sucesso!')
+    print(\'Banco de dados inicializado com sucesso!\')
 "
 else
     echo "Banco de dados já existe em /data/app.db"
