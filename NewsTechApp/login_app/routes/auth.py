@@ -75,7 +75,9 @@ def dashboard():
     if "user_id" not in session:
         flash("Faça login primeiro", "warning")
         return redirect(url_for("auth.login"))
-    return render_template("dashboard.html")
+
+    user = User.query.get(session["user_id"])
+    return render_template("dashboard.html", user=user)
 
 # Logout
 @auth_bp.route("/logout")
