@@ -1,4 +1,4 @@
-from app import db
+from login_app.app import db
 from flask_bcrypt import generate_password_hash
 
 class User(db.Model):

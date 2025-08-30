@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libffi-dev libssl-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Crie diretório da aplicação
+# Crie diretório da aplicação e diretório para dados persistentes
 WORKDIR /app
+RUN mkdir -p /data && chmod 755 /data
 
 # Copie dependências primeiro (melhor cache)
 COPY NewsTechApp/login_app/requirements.txt /tmp/requirements.txt
@@ -23,10 +24,9 @@ ENV PYTHONUNBUFFERED=1
 # Expõe a porta do Flask (ou FastAPI, etc.)
 EXPOSE 8080
 
-# Comando para rodar a aplicação
-#ENV FLASK_APP=login_app:create_app
-#ENV FLASK_ENV=production
-#CMD ["flask", "run", "--host=0.0.0.0"]
+# Script de inicialização que cria o banco se necessário
+COPY NewsTechApp/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
-# Use Gunicorn para rodar em produção
-CMD ["gunicorn", "login_app.app:app", "--bind", "0.0.0.0:8080", "--workers", "3"]
+# Use o script de inicialização
+CMD ["/app/start.sh"]
