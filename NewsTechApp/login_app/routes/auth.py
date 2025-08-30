@@ -65,21 +65,6 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
-    
-# Dashboard
-@auth_bp.route("/dashboard")
-def dashboard():
-    user = None
-    if "user_id" in session:
-        user = User.query.get(session["user_id"])
-    return render_template("dashboard.html", user=user)
-
-# Logout
-@auth_bp.route("/logout")
-def logout():
-    session.clear()
-    flash("Logout realizado com sucesso.", "success")
-    return redirect(url_for("auth.login"))
 
 # Login Google
 @auth_bp.route("/login/google")
@@ -121,4 +106,18 @@ def github_login():
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
     return redirect(url_for("auth.dashboard"))
 
+# Dashboard
+@auth_bp.route("/dashboard")
+def dashboard():
+    user = None
+    if "user_id" in session:
+        user = User.query.get(session["user_id"])
+    return render_template("dashboard.html", user=user)
+
+# Logout
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    flash("Logout realizado com sucesso.", "success")
+    return redirect(url_for("auth.login"))
 
