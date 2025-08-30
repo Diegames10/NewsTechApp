@@ -9,23 +9,20 @@ from login_app.routes.auth import auth_bp, google_bp, github_bp
 from .models.user import db, bcrypt
 from login_app import create_app
 
-#app = create_app()
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+migrate = Migrate()  # <-- adiciona isso
+
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.getenv("SECRET_KEY", "sua_chave_secreta")
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.secret_key = "secreta"
 
-    # Caminho do banco de dados persistente no Render
-    db_path = os.getenv("DATABASE_PATH", "/data/users.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-    # Inicializar extensões
     db.init_app(app)
     bcrypt.init_app(app)
+    migrate.init_app(app, db)  # <-- inicializa o migrate
 
-    # Criar tabelas no primeiro start
-    with app.app_context():
-        db.create_all()
 
     # Registrar rotas e Blueprints
     app.register_blueprint(auth_bp)
