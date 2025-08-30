@@ -1,28 +1,36 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
-from login_app import db, bcrypt
-from login_app.models.user import User
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
+
+from login_app.app import db, bcrypt
+from login_app.models.user import User
 
 auth_bp = Blueprint("auth", __name__)
 
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_to="auth.google_login"
+    redirect_to="auth.google_login",
+    redirect_url="/oauth2/login/google/authorized"
 )
 
 github_bp = make_github_blueprint(
     client_id=os.getenv("GITHUB_CLIENT_ID"),
     client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    redirect_to="auth.github_login"
+    redirect_to="auth.github_login",
+    redirect_url="/oauth2/login/github/authorized"
 )
 
+# Página inicial
 @auth_bp.route("/")
 def home():
     return redirect(url_for("auth.login"))
-
+    
+# Login local
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -38,6 +46,7 @@ def login():
 
     return render_template("login.html")
 
+# Dashboard
 @auth_bp.route("/dashboard")
 def dashboard():
     user = None
@@ -45,20 +54,28 @@ def dashboard():
         user = User.query.get(session["user_id"])
     return render_template("dashboard.html", user=user)
 
+# Logout
 @auth_bp.route("/logout")
 def logout():
     session.clear()
     flash("Logout realizado com sucesso.", "success")
     return redirect(url_for("auth.login"))
 
-@auth_bp.route("/login/google")
-def google_login():
+# Login Google
+@auth_bp.route("/oauth2/login/google/authorized")
+def google_authorized():
     if not google.authorized:
-        return redirect(url_for("google.login"))
+        flash("Autorização Google negada.", "danger")
+        return redirect(url_for("auth.login"))
 
-    resp = google.get("/oauth2/v2/userinfo")
-    info = resp.json()
-    email = info["email"]
+    try:
+        resp = google.get("/oauth2/v2/userinfo")
+        resp.raise_for_status()  # Levanta exceção para erros HTTP
+        info = resp.json()
+        email = info["email"]
+    except Exception as e:
+        flash(f"Erro ao obter informações do Google: {e}", "danger")
+        return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(username=email, provider="google").first()
     if not user:
@@ -70,14 +87,20 @@ def google_login():
     flash(f"✅ Login Google bem-sucedido! Bem-vindo {email}", "success")
     return redirect(url_for("auth.dashboard"))
 
-@auth_bp.route("/login/github")
-def github_login():
+@auth_bp.route("/oauth2/login/github/authorized")
+def github_authorized():
     if not github.authorized:
-        return redirect(url_for("github.login"))
+        flash("Autorização GitHub negada.", "danger")
+        return redirect(url_for("auth.login"))
 
-    resp = github.get("/user")
-    info = resp.json()
-    username = info["login"]
+    try:
+        resp = github.get("/user")
+        resp.raise_for_status()  # Levanta exceção para erros HTTP
+        info = resp.json()
+        username = info["login"]
+    except Exception as e:
+        flash(f"Erro ao obter informações do GitHub: {e}", "danger")
+        return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(username=username, provider="github").first()
     if not user:
@@ -89,6 +112,7 @@ def github_login():
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
     return redirect(url_for("auth.dashboard"))
 
+# Registro de usuário local
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
