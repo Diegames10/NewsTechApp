@@ -13,7 +13,7 @@ fi
 # Verificar se o banco de dados existe, se não, inicializar
 if [ ! -f "/data/app.db" ]; then
     echo "Banco de dados não encontrado. Inicializando..."
-    PYTHONPATH=/app python3 -c "
+    cd /app && python3 -c "
 from login_app.app import create_app, db
 app = create_app()
 with app.app_context():
@@ -26,5 +26,5 @@ fi
 
 # Iniciar a aplicação com Gunicorn
 echo "Iniciando servidor Gunicorn..."
-cd /app && PYTHONPATH=/app exec gunicorn login_app.app:app --bind 0.0.0.0:8080 --workers 3 --timeout 120
+exec gunicorn login_app.app:app --bind 0.0.0.0:8080 --workers 3 --timeout 120
 
