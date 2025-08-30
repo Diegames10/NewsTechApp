@@ -47,27 +47,30 @@ def login():
 
     return render_template("login.html")
     
-# Registro de usuário local
+# Registro de novo usuário
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        existing_user = User.query.filter_by(username=username, provider="local").first()
+        # Verifica se já existe usuário
+        existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
+            flash("Usuário já existe. Tente outro nome.", "warning")
             return redirect(url_for("auth.register"))
 
+        # Cria novo usuário
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-        new_user = User(username=username, password_hash=hashed_password)
+        new_user = User(username=username, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
 
-        flash("Conta criada com sucesso! Faça login para continuar.", "success")
+        flash("Conta criada com sucesso! Faça login.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
 
 # Dashboard
 @auth_bp.route("/dashboard")
