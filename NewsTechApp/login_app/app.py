@@ -10,8 +10,6 @@ from login_app import create_app
 app = create_app()
 app = Flask(__name__)
 
-db.create_all()
-
 app.secret_key = "sua_chave_secreta"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/app.db"
