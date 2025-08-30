@@ -44,6 +44,28 @@ def login():
 
     return render_template("login.html")
 
+# Registro de usuário local
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        existing_user = User.query.filter_by(username=username, provider="local").first()
+        if existing_user:
+            flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
+            return redirect(url_for("auth.register"))
+
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Conta criada com sucesso! Faça login para continuar.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("register.html")
+    
 # Dashboard
 @auth_bp.route("/dashboard")
 def dashboard():
@@ -99,24 +121,4 @@ def github_login():
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
     return redirect(url_for("auth.dashboard"))
 
-# Registro de usuário local
-@auth_bp.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
 
-        existing_user = User.query.filter_by(username=username, provider="local").first()
-        if existing_user:
-            flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
-            return redirect(url_for("auth.register"))
-
-        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-        new_user = User(username=username, password_hash=hashed_password, provider="local")
-        db.session.add(new_user)
-        db.session.commit()
-
-        flash("Conta criada com sucesso! Faça login para continuar.", "success")
-        return redirect(url_for("auth.login"))
-
-    return render_template("register.html")
