@@ -8,24 +8,32 @@ from .models.user import db, bcrypt
 from login_app import create_app
 
 #app = create_app()
-app = Flask(__name__)
-with app.app_context():
-     db.create_all()
-    
-app.secret_key = "sua_chave_secreta"
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = os.getenv("SECRET_KEY", "sua_chave_secreta")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/app.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Caminho do banco de dados persistente no Render
+    db_path = os.getenv("DATABASE_PATH", "/data/users.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db.init_app(app)
-bcrypt.init_app(app)
+    # Inicializar extensões
+    db.init_app(app)
+    bcrypt.init_app(app)
 
-# Registrar Blueprints OAuth
-app.register_blueprint(google_bp, url_prefix="/login")
-app.register_blueprint(github_bp, url_prefix="/login")
+    # Criar tabelas no primeiro start
+    with app.app_context():
+        db.create_all()
 
-# Registrar rotas principais
-app.register_blueprint(auth_bp)
+    # Registrar rotas e Blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(google_bp, url_prefix="/login")
+    app.register_blueprint(github_bp, url_prefix="/login")
+
+    return app
+
+
+app = create_app()
 
 if __name__ == "__main__":
     from waitress import serve
