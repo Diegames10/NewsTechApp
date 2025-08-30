@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 
-from login_app import db, bcrypt
+from login_app.app import db, bcrypt
 from login_app.models.user import User
 
 auth_bp = Blueprint("auth", __name__)
