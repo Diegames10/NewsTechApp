@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
 
-#db = SQLAlchemy()
+db = SQLAlchemy()
 bcrypt = Bcrypt()
 
 def create_app():
