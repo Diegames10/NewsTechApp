@@ -11,13 +11,15 @@ from login_app import create_app
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
-migrate = Migrate()  # <-- adiciona isso
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    db_path = os.path.join("/data", "app.db")  # /data é o disco montado
+    db_uri = f"sqlite:///{db_path}"
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.secret_key = "secreta"
 
     db.init_app(app)
     bcrypt.init_app(app)
