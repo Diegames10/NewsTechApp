@@ -11,9 +11,6 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
 
-# Importar blueprints **depois de criar as extensões**
-from login_app.routes.auth import auth_bp, google_bp, github_bp
-
 def create_app():
     app = Flask(__name__)
 
@@ -33,10 +30,13 @@ def create_app():
     bcrypt.init_app(app)
     migrate.init_app(app, db)
 
+    # Importar blueprints **depois de inicializar as extensões**
+    from login_app.routes.auth import auth_bp, google_bp, github_bp
+
     # Registrar blueprints
     app.register_blueprint(auth_bp)
-    app.register_blueprint(google_bp, url_prefix="/login")
-    app.register_blueprint(github_bp, url_prefix="/login")
+    app.register_blueprint(google_bp, url_prefix="/oauth2/login/google")
+    app.register_blueprint(github_bp, url_prefix="/oauth2/login/github")
 
     # Criar tabelas se não existirem
     with app.app_context():
