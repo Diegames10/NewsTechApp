@@ -41,11 +41,35 @@ def login():
         if user and bcrypt.check_password_hash(user.password, password):
             session["user_id"] = user.id
             flash("Login realizado com sucesso!", "success")
-            return redirect(url_for("auth.dashboard"))  # <- corrigido
+            return redirect(url_for("auth.dashboard"))
         else:
             flash("Usuário ou senha inválidos", "danger")
 
     return render_template("login.html")
+
+# Registro de novo usuário
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        # Verifica se já existe usuário
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Usuário já existe. Tente outro nome.", "warning")
+            return redirect(url_for("auth.register"))
+
+        # Cria novo usuário
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Conta criada com sucesso! Faça login.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("register.html")
 
 # Dashboard protegido
 @auth_bp.route("/dashboard")
