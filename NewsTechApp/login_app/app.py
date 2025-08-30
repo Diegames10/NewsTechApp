@@ -16,11 +16,17 @@ def create_app():
 
     # Configurações do banco de dados
     # No Render, usar o disco persistente montado em /data
-    data_dir = "/data"
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir, exist_ok=True)
+    # Para desenvolvimento local, usar diretório local
+    if os.environ.get("RENDER"):
+        data_dir = "/data"
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir, exist_ok=True)
+        db_path = os.path.join(data_dir, "app.db")
+    else:
+        # Desenvolvimento local
+        db_path = os.path.join(os.path.dirname(__file__), "instance", "app.db")
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
-    db_path = os.path.join(data_dir, "app.db")
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "supersecret")
@@ -32,9 +38,11 @@ def create_app():
 
     # Importar blueprints **depois de inicializar as extensões**
     from login_app.routes.auth import auth_bp, google_bp, github_bp
+    from login_app.routes.oauth_routes import oauth_bp
 
     # Registrar blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(oauth_bp)
     app.register_blueprint(google_bp, url_prefix="/oauth2/login/google")
     app.register_blueprint(github_bp, url_prefix="/oauth2/login/github")
 
