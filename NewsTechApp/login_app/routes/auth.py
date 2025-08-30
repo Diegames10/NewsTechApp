@@ -36,16 +36,17 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        user = User.query.filter_by(username=username, provider="local").first()
 
-        if user and bcrypt.check_password_hash(user.password_hash, password):
+        user = User.query.filter_by(username=username).first()
+        if user and bcrypt.check_password_hash(user.password, password):
             session["user_id"] = user.id
-            return redirect(url_for("auth.dashboard"))
+            flash("Login realizado com sucesso!", "success")
+            return redirect(url_for("auth.dashboard"))  # <- corrigido
         else:
-            flash("Credenciais inválidas.", "danger")
+            flash("Usuário ou senha inválidos", "danger")
 
     return render_template("login.html")
-
+    
 # Registro de usuário local
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -67,6 +68,21 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
+# Dashboard
+@auth_bp.route("/dashboard")
+def dashboard():
+    if "user_id" not in session:
+        flash("Faça login primeiro", "warning")
+        return redirect(url_for("auth.login"))
+    return render_template("dashboard.html")
+
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    flash("Você saiu da conta", "info")
+    return redirect(url_for("auth.login"))
+
 
 # Login Google
 @auth_bp.route("/login/google")
@@ -108,18 +124,4 @@ def github_login():
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
     return redirect(url_for("auth.dashboard"))
 
-# Dashboard
-@auth_bp.route("/dashboard")
-def dashboard():
-    user = None
-    if "user_id" in session:
-        user = User.query.get(session["user_id"])
-    return render_template("dashboard.html", user=user)
-
-# Logout
-@auth_bp.route("/logout")
-def logout():
-    session.clear()
-    flash("Logout realizado com sucesso.", "success")
-    return redirect(url_for("auth.login"))
 
