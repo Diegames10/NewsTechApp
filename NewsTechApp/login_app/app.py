@@ -31,6 +31,9 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "supersecret")
 
+    # forcar o HTTPS nos redirects gerados pelo Flask-dance
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+    
     # Inicializar extensões com a app
     db.init_app(app)
     bcrypt.init_app(app)
