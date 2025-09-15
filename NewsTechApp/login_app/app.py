@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Inicializar extensões **sem redeclarar depois**
 db = SQLAlchemy()
@@ -13,7 +14,10 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-
+    # forcar o HTTPS nos redirects gerados pelo Flask-dance
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+    
     # Configurações do banco de dados
     # No Render, usar o disco persistente montado em /data
     # Para desenvolvimento local, usar diretório local
@@ -30,9 +34,6 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "supersecret")
-
-    # forcar o HTTPS nos redirects gerados pelo Flask-dance
-    app.config['PREFERRED_URL_SCHEME'] = 'https'
     
     # Inicializar extensões com a app
     db.init_app(app)
