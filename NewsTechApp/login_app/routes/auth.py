@@ -14,7 +14,7 @@ auth_bp = Blueprint("auth", __name__)
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_to="/oauth2/login/google/authorized""
+    redirect_to="/oauth2/login/google/authorized"
 )
 
 github_bp = make_github_blueprint(
