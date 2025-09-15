@@ -47,8 +47,8 @@ def create_app():
     # Registrar blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(oauth_bp)
-    app.register_blueprint(google_bp, url_prefix="/oauth2/login/google")
-    app.register_blueprint(github_bp, url_prefix="/oauth2/login/github")
+    app.register_blueprint(google_bp, url_prefix="/oauth2/logingoogle/")
+    app.register_blueprint(github_bp, url_prefix="/oauth2/logingithub/")
 
     # Criar tabelas se não existirem
     with app.app_context():
