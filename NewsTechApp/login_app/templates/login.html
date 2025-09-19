@@ -1,65 +1,27 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      display: flex; align-items: center; justify-content: center;
-      height: 100vh; background: #f8f9fa;
-    }
-    .card {
-      max-width: 400px; width: 100%;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    .btn-google {
-      background-color: #db4437; color: #fff;
-    }
-    .btn-google:hover { background-color: #c23321; color: #fff; }
-    .btn-github {
-      background-color: #24292e; color: #fff;
-    }
-    .btn-github:hover { background-color: #000; color: #fff; }
-    .icon {
-      width: 20px; height: 20px; margin-right: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div class="card p-4">
-    <h3 class="text-center mb-4">Login</h3>
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="card shadow p-4 rounded-3">
+  <h3 class="text-center mb-3">🔐 Acesse sua conta</h3>
+  <form method="POST" action="/login">
+    <div class="mb-3">
+      <label class="form-label">Usuário ou Email</label>
+      <input type="text" class="form-control" name="username" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-control" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+  </form>
 
-    <!-- Login Local -->
-    <form method="POST" action="/login">
-      <div class="mb-3">
-        <input type="text" class="form-control" name="username" placeholder="Usuário" required>
-      </div>
-      <div class="mb-3">
-        <input type="password" class="form-control" name="password" placeholder="Senha" required>
-      </div>
-      <button type="submit" class="btn btn-success w-100 mb-2">Entrar</button>
-    </form>
-
-    <p class="text-center text-muted">ou entre com</p>
-
-    <!-- Botão Google -->
-    <a href="/login/google" class="btn btn-google w-100 mb-2 d-flex align-items-center justify-content-center">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" class="icon" alt="Google">
-      Login com Google
-    </a>
-
-    <!-- Botão GitHub -->
-    <a href="/login/github" class="btn btn-github w-100 mb-3 d-flex align-items-center justify-content-center">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" class="icon" alt="GitHub">
-      Login com GitHub
-    </a>
-
-    <p class="text-center">Ainda não tem conta? <a href="/register">Cadastre-se</a></p>
+  <hr class="my-4">
+  <h6 class="text-center text-muted">Ou entre com</h6>
+  <div class="d-grid gap-2 mt-3">
+    <a href="/oauth2/login/google" class="btn btn-outline-danger">🔑 Google</a>
+    <a href="/oauth2/login/github" class="btn btn-outline-dark">🐙 GitHub</a>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  <p class="text-center mt-3 small">Não tem conta? <a href="{{ url_for("auth.register") }}">Cadastre-se</a></p>
+</div>
+{% endblock %}
