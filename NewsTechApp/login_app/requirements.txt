@@ -8,3 +8,5 @@ python-dotenv
 oauthlib
 gunicorn
 Flask-Migrate
+Flask-Mail
+itsdangerous
