@@ -14,18 +14,18 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    
-    # Redefinição de senha
+    # redefinição de senha
     from flask_mail import Mail
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+
+    app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'seuemail@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'senha_de_app'  # use senha de app, não a real
-    app.config['MAIL_DEFAULT_SENDER'] = 'seuemail@gmail.com'
+    app.config['MAIL_USERNAME'] = 'seu_login_brevo'
+    app.config['MAIL_PASSWORD'] = 'sua_chave_smtp'
+    app.config['MAIL_DEFAULT_SENDER'] = ('NewsTechApp Suporte', 'diegoandrioli.48@gmail.com')
 
     mail = Mail(app)
-    
+
     # forcar o HTTPS nos redirects gerados pelo Flask-dance
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'

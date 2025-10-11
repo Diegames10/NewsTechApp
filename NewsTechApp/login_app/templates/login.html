@@ -15,6 +15,11 @@
     <button type="submit" class="btn btn-primary w-100">Entrar</button>
   </form>
 
+  <!-- 🔹 Link de esqueci minha senha -->
+  <p class="text-center mt-3 small">
+    <a href="{{ url_for('reset_request') }}">Esqueceu sua senha?</a>
+  </p>
+
   <hr class="my-4">
   <h6 class="text-center text-muted">Ou entre com</h6>
   <div class="d-grid gap-2 mt-3">
@@ -22,6 +27,9 @@
     <a href="/oauth2/login/github" class="btn btn-outline-dark">🐙 GitHub</a>
   </div>
 
-  <p class="text-center mt-3 small">Não tem conta? <a href="{{ url_for("auth.register") }}">Cadastre-se</a></p>
+  <p class="text-center mt-3 small">
+    Não tem conta?
+    <a href="{{ url_for('auth.register') }}">Cadastre-se</a>
+  </p>
 </div>
 {% endblock %}

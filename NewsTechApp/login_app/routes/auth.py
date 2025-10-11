@@ -3,6 +3,11 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from dotenv import load_dotenv
 import os
+from flask import render_template, request, redirect, url_for, flash
+from flask_mail import Message
+from app import mail, db, bcrypt
+from utils.token import generate_reset_token, verify_reset_token
+from models.user import User
 
 load_dotenv()
 
@@ -131,3 +136,51 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
+# --- Solicitar redefinição de senha ---
+@auth_bp.route('/reset_request', methods=['GET', 'POST'])
+def reset_request():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = generate_reset_token(user.email)
+            reset_link = url_for('reset_token', token=token, _external=True)
+
+            msg = Message('Redefinição de Senha - NewsTechApp', recipients=[email])
+            msg.body = f'''Olá!
+
+            Para redefinir sua senha, acesse o link abaixo:
+
+            {reset_link}
+
+            O link expira em 1 hora.
+            Se você não solicitou, ignore este e-mail.
+            '''
+            
+            mail.send(msg)
+            flash('Um e-mail foi enviado com instruções para redefinir sua senha.', 'info')
+            return redirect(url_for('login'))
+
+        flash('E-mail não encontrado.', 'danger')
+    return render_template('reset_request.html')
+
+
+# --- Redefinir senha via token ---
+@auth_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_token(token):
+    email = verify_reset_token(token)
+    if not email:
+        flash('Link inválido ou expirado.', 'danger')
+        return redirect(url_for('reset_request'))
+
+    if request.method == 'POST':
+        password = request.form['password']
+        hashed = bcrypt.generate_password_hash(password).decode('utf-8')
+        user = User.query.filter_by(email=email).first()
+        user.password = hashed
+        db.session.commit()
+        flash('Senha atualizada com sucesso! Faça login novamente.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
