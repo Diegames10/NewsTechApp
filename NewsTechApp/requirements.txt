@@ -2,9 +2,11 @@ flask
 flask_sqlalchemy
 flask_bcrypt
 flask_dance
-Flask-Migrate
 requests
 waitress
 python-dotenv
 oauthlib
 gunicorn
+Flask-Migrate
+Flask-Mail
+itsdangerous
