@@ -9,7 +9,7 @@ from flask_dance.contrib.github import make_github_blueprint
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Inicializar extensões **sem redeclarar depois**
-db = SQLAlchemy()
+#db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
 
