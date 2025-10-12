@@ -23,8 +23,8 @@
   <hr class="my-4">
   <h6 class="text-center text-muted">Ou entre com</h6>
   <div class="d-grid gap-2 mt-3">
-    <a href="/oauth2/login/google" class="btn btn-outline-danger">🔑 Google</a>
-    <a href="/oauth2/login/github" class="btn btn-outline-dark">🐙 GitHub</a>
+    <a href="{{ url_for('google.login') }}" class="btn btn-danger">Login com Google</a>
+    <a href="{{ url_for('github.login') }}" class="btn btn-dark">Login com GitHub</a>
   </div>
 
   <p class="text-center mt-3 small">
