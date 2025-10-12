@@ -7,6 +7,7 @@ from flask_dance.contrib.github import make_github_blueprint, github
 from werkzeug.security import generate_password_hash, check_password_hash
 from login_app import db
 from login_app.models.user import User
+from login_app import create_app, db
 
 # =====================================================
 # 🔹 Blueprint principal
@@ -193,3 +194,9 @@ def reset_token(token):
             flash("Usuário não encontrado.", "danger")
 
     return render_template("reset_password.html", token=token)
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+
