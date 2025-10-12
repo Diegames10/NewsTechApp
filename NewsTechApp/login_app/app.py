@@ -46,8 +46,8 @@ def create_app():
     # Importa e registra blueprints (autenticação e OAuth)
     from login_app.routes.auth import auth_bp, google_bp, github_bp
     app.register_blueprint(auth_bp)
-    app.register_blueprint(google_bp, url_prefix="/oauth2/logingoogle")
-    app.register_blueprint(github_bp, url_prefix="/oauth2/logingithub")
+    app.register_blueprint(google_bp, url_prefix="/oauth2/login/google")
+    app.register_blueprint(github_bp, url_prefix="/oauth2/login/github")
 
     # Criação automática do banco
     with app.app_context():
