@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="card shadow p-4 rounded-3">
+  <h3 class="text-center mb-3">🔐 Acesse sua conta</h3>
+  <form method="POST" action="/login">
+    <div class="mb-3">
+      <label class="form-label">Usuário ou Email</label>
+      <input type="text" class="form-control" name="username" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-control" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+  </form>
+
+  <!-- 🔹 Link de esqueci minha senha -->
+  <p class="text-center mt-3 small">
+    <a href="{{ url_for('reset_request') }}">Esqueceu sua senha?</a>
+  </p>
+
+  <hr class="my-4">
+  <h6 class="text-center text-muted">Ou entre com</h6>
+  <div class="d-grid gap-2 mt-3">
+    <a href="/oauth2/login/google" class="btn btn-outline-danger">🔑 Google</a>
+    <a href="/oauth2/login/github" class="btn btn-outline-dark">🐙 GitHub</a>
+  </div>
+
+  <p class="text-center mt-3 small">
+    Não tem conta?
+    <a href="{{ url_for('auth.register') }}">Cadastre-se</a>
+  </p>
+</div>
+{% endblock %}
