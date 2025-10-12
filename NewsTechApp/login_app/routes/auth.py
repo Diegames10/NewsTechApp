@@ -6,7 +6,7 @@ import os
 from flask_mail import Message
 
 # Imports internos corretos
-from login_app.app import mail, db, bcrypt
+from login_app.extensions import mail, db, bcrypt
 from login_app.utils.token import generate_reset_token, verify_reset_token
 from login_app.models.user import User
 
@@ -161,7 +161,7 @@ def reset_request():
             
             mail.send(msg)
             flash('Um e-mail foi enviado com instruções para redefinir sua senha.', 'info')
-            return redirect(url_for('login'))
+            return redirect(url_for('auth.login'))
 
         flash('E-mail não encontrado.', 'danger')
     return render_template('reset_request.html')
@@ -173,7 +173,7 @@ def reset_token(token):
     email = verify_reset_token(token)
     if not email:
         flash('Link inválido ou expirado.', 'danger')
-        return redirect(url_for('reset_request'))
+        return redirect(url_for('auth.reset_request'))
 
     if request.method == 'POST':
         password = request.form['password']
@@ -182,6 +182,6 @@ def reset_token(token):
         user.password = hashed
         db.session.commit()
         flash('Senha atualizada com sucesso! Faça login novamente.', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('reset_password.html')

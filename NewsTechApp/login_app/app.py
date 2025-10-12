@@ -1,8 +1,9 @@
 import os
+from login_app.extensions import db, bcrypt, mail
 from flask import Flask
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
+# removido: import duplicado
+# removido: import duplicado
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -15,7 +16,7 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     # redefinição de senha
-    from flask_mail import Mail
+    # removido: import duplicado
 
     app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
     app.config['MAIL_PORT'] = 587
