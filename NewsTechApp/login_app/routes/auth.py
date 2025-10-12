@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
-from app import mail, db, bcrypt
+from login_app.app import mail, db, bcrypt
 from utils.token import generate_reset_token, verify_reset_token
 from models.user import User
 
