@@ -5,7 +5,7 @@ from flask import (
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from login_app import db
 from login_app.models.user import User
 
 # =====================================================
