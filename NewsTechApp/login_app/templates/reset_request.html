@@ -1,23 +1,31 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-5">
-    <h2>Redefinir Senha</h2>
-    <p>Digite seu e-mail para receber o link de redefinição:</p>
-    <form method="POST" action="{{ url_for('auth.reset_request') }}">
-        <div class="form-group">
-            <label for="email">E-mail:</label>
-            <input 
-                type="email" 
-                class="form-control" 
-                id="email" 
-                name="email" 
-                placeholder="Seu e-mail"
-                required
-            >
+<div class="container mt-5" style="max-width: 450px;">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h4 class="text-center mb-4">🔑 Redefinição de Senha</h4>
+
+      <p class="text-muted text-center">
+        Informe seu e-mail cadastrado. Você receberá um link para redefinir sua senha.
+      </p>
+
+      <form method="POST" action="{{ url_for('auth.reset_request') }}">
+        <div class="form-group mb-3">
+          <label for="email" class="form-label">E-mail</label>
+          <input type="email" class="form-control" name="email" id="email"
+                 placeholder="Digite seu e-mail" required>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Enviar link</button>
-    </form>
-    <a href="{{ url_for('auth.login') }}" class="d-block mt-3">Voltar para login</a>
+        <button type="submit" class="btn btn-primary w-100">
+          Enviar instruções
+        </button>
+      </form>
+
+      <div class="text-center mt-3">
+        <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
+          Voltar ao login
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
