@@ -11,8 +11,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Inicializar extensões **sem redeclarar depois**
 #db = SQLAlchemy()
-bcrypt = Bcrypt()
-migrate = Migrate()
+#bcrypt = Bcrypt()
+#migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
