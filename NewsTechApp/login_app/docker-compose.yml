@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Somente para testes locais sem HTTPS (OAuth do Google/GitHub exige HTTPS em produção)
+      - OAUTHLIB_INSECURE_TRANSPORT=1
+    command: gunicorn --chdir login_app -w 2 -b 0.0.0.0:8000 app:app
+    # Descomente os volumes abaixo se quiser desenvolvimento com hot-reload ou persistir dados
+    # volumes:
+    #   - ./login_app:/app/login_app
+    #   - ./data:/data

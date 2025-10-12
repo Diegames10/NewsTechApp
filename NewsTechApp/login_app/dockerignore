@@ -1,0 +1,22 @@
+# Ignorar artefatos locais
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite*
+.env
+venv/
+.venv/
+.git
+.gitignore
+
+# Pastas de build temporárias
+dist/
+build/
+
+# Caches
+*.log
+login_app/__pycache__/
+login_app/models/__pycache__/
+login_app/routes/__pycache__/

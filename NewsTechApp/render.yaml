@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: newstech-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    disk:
+      name: newstech-data
+      mountPath: /data
+      sizeGB: 1
+
