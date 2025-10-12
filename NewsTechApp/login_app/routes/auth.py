@@ -3,11 +3,12 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from dotenv import load_dotenv
 import os
-from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
-from app import mail, db, bcrypt
-from utils.token import generate_reset_token, verify_reset_token
-from models.user import User
+
+# Imports internos corretos
+from login_app.app import mail, db, bcrypt
+from login_app.utils.token import generate_reset_token, verify_reset_token
+from login_app.models.user import User
 
 load_dotenv()
 
