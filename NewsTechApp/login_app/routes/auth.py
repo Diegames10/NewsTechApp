@@ -9,7 +9,7 @@ from flask_mail import Message
 from flask import current_app
 from flask_mail import Message
 
-from utils.token import generate_reset_token, verify_reset_token
+from login_app.utils.token import generate_reset_token, verify_reset_token
 from models.user import User
 
 load_dotenv()
