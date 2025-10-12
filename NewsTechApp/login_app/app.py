@@ -1,78 +1,67 @@
 import os
-from login_app.extensions import db, bcrypt, migrate, mail
 from flask import Flask
-from flask_migrate import Migrate
-# removido: import duplicado
-# removido: import duplicado
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
+from flask_migrate import upgrade
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+# Importa as extensões centralizadas
+from login_app.extensions import db, bcrypt, migrate, mail
+from login_app.models import User
 
-# Inicializar extensões **sem redeclarar depois**
-#db = SQLAlchemy()
-#bcrypt = Bcrypt()
-#migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    # redefinição de senha
-    # removido: import duplicado
 
-    app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'seu_login_brevo'
-    app.config['MAIL_PASSWORD'] = 'sua_chave_smtp'
-    app.config['MAIL_DEFAULT_SENDER'] = ('NewsTechApp Suporte', 'diegoandrioli.48@gmail.com')
-
-    mail = Mail(app)
-
-    # forcar o HTTPS nos redirects gerados pelo Flask-dance
+    # Forçar HTTPS no Render
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
-    
-    # Configurações do banco de dados
-    # No Render, usar o disco persistente montado em /data
-    # Para desenvolvimento local, usar diretório local
+
+    # Configurações básicas
+    app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "dev_secret_key")
+
+    # Banco de dados persistente
     if os.environ.get("RENDER"):
         data_dir = "/data"
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir, exist_ok=True)
-        db_path = os.path.join(data_dir, "app.db")
     else:
-        # Desenvolvimento local
-        db_path = os.path.join(os.path.dirname(__file__), "instance", "app.db")
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+        data_dir = os.path.abspath(os.path.dirname(__file__))
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(data_dir, 'app.db')}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "supersecret")
-    
-    # Inicializar extensões com a app
+
+    # Configurações de e-mail
+    app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER", "smtp-relay.brevo.com")
+    app.config['MAIL_PORT'] = int(os.environ.get("MAIL_PORT", 587))
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+    app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_DEFAULT_SENDER", "no-reply@newstechapp.com")
+
+    # Inicializa extensões
     db.init_app(app)
     bcrypt.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
-    # Importar blueprints **depois de inicializar as extensões**
+    # Importa e registra blueprints (autenticação e OAuth)
     from login_app.routes.auth import auth_bp, google_bp, github_bp
-    from login_app.routes.oauth_routes import oauth_bp
-
-    # Registrar blueprints
     app.register_blueprint(auth_bp)
-    app.register_blueprint(oauth_bp)
-    app.register_blueprint(google_bp, url_prefix="/oauth2/logingoogle/")
-    app.register_blueprint(github_bp, url_prefix="/oauth2/logingithub/")
+    app.register_blueprint(google_bp, url_prefix="/login")
+    app.register_blueprint(github_bp, url_prefix="/login")
 
-    # Criar tabelas se não existirem
+    # Criação automática do banco
     with app.app_context():
         db.create_all()
+        print("Banco de dados inicializado em:", app.config['SQLALCHEMY_DATABASE_URI'])
 
     return app
 
-# Instância da app para WSGI/Gunicorn
+
+# Instância global do app para o Gunicorn
 app = create_app()
 
+
+# Execução local (Render ignora)
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
