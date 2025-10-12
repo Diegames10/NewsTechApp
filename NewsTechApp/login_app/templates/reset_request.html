@@ -1,19 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Redefinir Senha{% endblock %}
-{% block content %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Redefinir senha</title>
-</head>
-<body>
-    <h2>Esqueceu sua senha?</h2>
-    <form method="POST">
-        <label for="email">Digite seu e-mail:</label><br>
-        <input type="email" name="email" required><br><br>
-        <button type="submit">Enviar link de redefinição</button>
-    </form>
-</body>
-</html>
 
+{% block content %}
+<div class="container mt-5">
+    <h2>Redefinir Senha</h2>
+    <p>Digite seu e-mail para receber o link de redefinição:</p>
+    <form method="POST" action="{{ url_for('auth.reset_request') }}">
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                name="email" 
+                placeholder="Seu e-mail"
+                required
+            >
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Enviar link</button>
+    </form>
+    <a href="{{ url_for('auth.login') }}" class="d-block mt-3">Voltar para login</a>
+</div>
+{% endblock %}
