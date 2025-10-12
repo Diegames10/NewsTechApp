@@ -5,15 +5,13 @@ from dotenv import load_dotenv
 import os
 from flask_mail import Message
 
-# Imports internos corretos
-from login_app.extensions import mail, db, bcrypt
-from login_app.utils.token import generate_reset_token, verify_reset_token
+# Extensões globais importadas de __init__.py
+from login_app import db, bcrypt
 from login_app.models.user import User
+from login_app.utils.token import generate_reset_token, verify_reset_token
+from login_app.extensions import mail
 
 load_dotenv()
-
-from login_app.app import db, bcrypt
-from login_app.models.user import User
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -28,6 +26,7 @@ github_bp = make_github_blueprint(
     client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
     redirect_to="auth.github_authorized"
 )
+
 
 # Página inicial
 @auth_bp.route("/")
