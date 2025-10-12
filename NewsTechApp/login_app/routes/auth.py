@@ -136,20 +136,28 @@ def github_authorized():
 def register():
     if request.method == "POST":
         username = request.form["username"]
+        email = request.form["email"]
         password = request.form["password"]
-        email = request.form.get("email")
 
+        # Verificar se o e-mail já está cadastrado
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            flash("E-mail já registrado. Faça login ou use outro endereço.", "danger")
+            return redirect(url_for("auth.register"))
+
+        # Verificar se o nome de usuário já existe
         existing_user = User.query.filter_by(username=username, provider="local").first()
         if existing_user:
             flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
             return redirect(url_for("auth.register"))
 
+        # Criar novo usuário
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
         new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
         db.session.add(new_user)
         db.session.commit()
 
-        flash("Conta criada com sucesso! Faça login para continuar.", "success")
+        flash("✅ Conta criada com sucesso! Faça login para continuar.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
