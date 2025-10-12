@@ -42,17 +42,20 @@ def home():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
+        email = request.form["email"]
         password = request.form["password"]
-        user = User.query.filter_by(username=username, provider="local").first()
+
+        user = User.query.filter_by(email=email, provider="local").first()
 
         if user and bcrypt.check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
+            flash(f"✅ Bem-vindo de volta, {email}!", "success")
             return redirect(url_for("auth.dashboard"))
         else:
-            flash("Credenciais inválidas.", "danger")
+            flash("E-mail ou senha inválidos.", "danger")
 
     return render_template("login.html")
+
 
 # ===============================
 # 📊 Dashboard
