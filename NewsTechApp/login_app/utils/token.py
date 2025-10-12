@@ -1,16 +1,15 @@
 import os
 from itsdangerous import URLSafeTimedSerializer
+from flask import current_app
 
-# Gera um token seguro com base no SECRET_KEY do app
 def generate_reset_token(email):
-    from flask import current_app
-    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    """Gera um token seguro baseado no e-mail do usuário."""
+    s = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     return s.dumps(email, salt="password-reset-salt")
 
-# Verifica o token e retorna o e-mail se válido
 def verify_reset_token(token, expiration=3600):
-    from flask import current_app
-    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    """Verifica se o token é válido e retorna o e-mail."""
+    s = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
         email = s.loads(token, salt="password-reset-salt", max_age=expiration)
     except Exception:
