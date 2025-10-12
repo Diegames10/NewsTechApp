@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
-# Inicializações globais
+# Extensões globais
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
@@ -13,10 +13,9 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
 
-    # Corrige redirecionamentos HTTPS no Render
+    # Corrige HTTPS no Render
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-    # Configurações básicas
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/app.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "changeme")
@@ -26,7 +25,7 @@ def create_app():
     bcrypt.init_app(app)
     migrate.init_app(app, db)
 
-    # Registra Blueprints
+    # Importa e registra Blueprints
     from login_app.routes.auth import auth_bp, google_bp, github_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(google_bp, url_prefix="/oauth2/login/google")
