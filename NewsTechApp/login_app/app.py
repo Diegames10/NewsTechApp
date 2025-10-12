@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.contrib.github import make_github_blueprint
 from werkzeug.middleware.proxy_fix import ProxyFix
+from login_app.extensions import db, bcrypt, migrate, mail
 
 # Inicializar extensões **sem redeclarar depois**
 #db = SQLAlchemy()
