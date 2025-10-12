@@ -1,31 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-5" style="max-width: 450px;">
-  <div class="card shadow-lg border-0 rounded-4">
-    <div class="card-body p-4">
-      <h4 class="text-center mb-4">🔑 Redefinição de Senha</h4>
+<div class="container mt-5" style="max-width: 480px;">
+  <h3 class="text-center mb-4">Redefinir Senha</h3>
 
-      <p class="text-muted text-center">
-        Informe seu e-mail cadastrado. Você receberá um link para redefinir sua senha.
-      </p>
-
-      <form method="POST" action="{{ url_for('auth.reset_request') }}">
-        <div class="form-group mb-3">
-          <label for="email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" name="email" id="email"
-                 placeholder="Digite seu e-mail" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">
-          Enviar instruções
-        </button>
-      </form>
-
-      <div class="text-center mt-3">
-        <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
-          Voltar ao login
-        </a>
-      </div>
-    </div>
+  <div class="alert alert-info">
+    🔐 Digite o e-mail cadastrado para receber um link de redefinição.
+    <br><br>
+    <strong>⚠️ Importante:</strong>  
+    Se você faz login com <b>Google</b> ou <b>GitHub</b>, sua senha é gerenciada por esses provedores.
+    <br>Para redefinir, acesse:
+    <ul class="mt-2">
+      <li><a href="https://myaccount.google.com/security" target="_blank">Google - Configurações de Segurança</a></li>
+      <li><a href="https://github.com/settings/security" target="_blank">GitHub - Configurações de Segurança</a></li>
+    </ul>
   </div>
+
+  <form method="POST" action="{{ url_for('auth.reset_request') }}">
+    <div class="mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu e-mail cadastrado" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Enviar Link de Redefinição</button>
+  </form>
+
+  <p class="text-center mt-3">
+    <a href="{{ url_for('auth.login') }}">Voltar ao Login</a>
+  </p>
 </div>
 {% endblock %}
