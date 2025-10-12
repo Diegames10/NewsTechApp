@@ -1,3 +1,4 @@
+from login_app.utils.token import generate_reset_token, verify_reset_token
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
