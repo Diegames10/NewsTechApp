@@ -10,13 +10,13 @@ from flask import current_app
 from flask_mail import Message
 
 from login_app.utils.token import generate_reset_token, verify_reset_token
-from models.user import User
+from login_app.models.user import User
 
 load_dotenv()
 
 from login_app.app import db, bcrypt
-from login_app.models.user import User
 
+from models.user import User
 
 auth_bp = Blueprint("auth", __name__)
 
