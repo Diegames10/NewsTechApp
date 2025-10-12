@@ -138,6 +138,12 @@ def register():
         username = request.form["username"]
         email = request.form["email"]
         password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+
+        # Verifica se as senhas coincidem
+        if password != confirm_password:
+            flash("As senhas não coincidem. Tente novamente.", "danger")
+            return redirect(url_for("auth.register"))
 
         # Verificar se o e-mail já está cadastrado
         existing_email = User.query.filter_by(email=email).first()
@@ -151,7 +157,7 @@ def register():
             flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
             return redirect(url_for("auth.register"))
 
-        # Criar novo usuário
+        # Criação do usuário
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
         new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
         db.session.add(new_user)
