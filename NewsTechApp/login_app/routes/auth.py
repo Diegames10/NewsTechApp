@@ -204,18 +204,40 @@ Se você não solicitou esta redefinição, ignore este e-mail.
 # ===============================
 # 🔁 Solicitar redefinição
 # ===============================
-@auth_bp.route("/reset_request", methods=["GET", "POST"])
+@auth_bp.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
-    if request.method == "POST":
-        email = request.form["email"]
+    if request.method == 'POST':
+        email = request.form['email']
         user = User.query.filter_by(email=email).first()
-        if user:
-            send_reset_email(user)
-            flash("Um e-mail foi enviado com instruções para redefinir sua senha.", "info")
-            return redirect(url_for("auth.login"))
-        else:
-            flash("E-mail não encontrado.", "danger")
-    return render_template("reset_request.html")
+
+        if not user:
+            flash('E-mail não encontrado.', 'danger')
+            return redirect(url_for('auth.reset_request'))
+
+        if user.provider != "local":
+            flash('Esta conta usa login via Google ou GitHub. Redefina a senha diretamente no provedor.', 'warning')
+            return redirect(url_for('auth.login'))
+
+        # Geração e envio de token
+        token = generate_reset_token(user.email)
+        reset_link = url_for('auth.reset_token', token=token, _external=True)
+
+        msg = Message('Redefinição de Senha - NewsTechApp', recipients=[email])
+        msg.body = f'''Olá!
+
+Para redefinir sua senha, acesse o link abaixo:
+
+{reset_link}
+
+O link expira em 1 hora.
+Se você não solicitou, ignore este e-mail.
+'''
+        mail.send(msg)
+        flash('Um e-mail foi enviado com instruções para redefinir sua senha.', 'info')
+        return redirect(url_for('auth.login'))
+
+    return render_template('reset_request.html')
+
 
 # ===============================
 # 🔐 Redefinir senha via token
