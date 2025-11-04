@@ -13,7 +13,7 @@ migrate = Migrate()
 mail = Mail()  # ← Adicionando o suporte ao envio de e-mails
 
 def create_app():
-    #app = Flask(__name__)
+    app = Flask(__name__)
     
     # 🔒 Corrigir redirecionamento HTTPS no Render
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
