@@ -12,6 +12,7 @@ from functools import wraps
 from login_app import db, bcrypt, mail
 from login_app.models.user import User
 
+from flask import make_response
 from login_app.utils.jwt_auth import (
     create_access_token, create_refresh_token,
     set_jwt_cookies, set_csrf_cookie,
