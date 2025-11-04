@@ -14,8 +14,8 @@ from login_app.models.user import User
 
 from login_app.utils.jwt_auth import (
     create_access_token, create_refresh_token,
-    set_jwt_cookies, set_csrf_cookie, clear_jwt_cookies,
-    decode_token, get_access_from_request, get_refresh_from_request
+    set_jwt_cookies, set_csrf_cookie,
+    get_access_from_request, decode_token, clear_jwt_cookies
 )
 
 load_dotenv()
