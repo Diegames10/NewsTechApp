@@ -6,6 +6,7 @@ from flask_mail import Message
 from dotenv import load_dotenv
 import os
 from itsdangerous import URLSafeTimedSerializer
+from functools import wraps
 
 # Extensões globais
 from login_app import db, bcrypt, mail
@@ -31,10 +32,23 @@ github_bp = make_github_blueprint(
 )
 
 # ===============================
-# 🏠 Página inicial
+# 🔒 Decorator para proteger views
+# (redireciona para /login se não tiver sessão)
+# ===============================
+def login_required_view(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get("user_id"):
+            flash("Faça login para continuar.", "warning")
+            return redirect(url_for("auth.login"))
+        return fn(*args, **kwargs)
+    return wrapper
+
+# ===============================
+# 🏠 Raiz → login
 # ===============================
 @auth_bp.route("/")
-def home():
+def root():
     return redirect(url_for("auth.login"))
 
 # ===============================
@@ -43,29 +57,41 @@ def home():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form["email"]
+        email = request.form["email"].strip()
         password = request.form["password"]
 
         user = User.query.filter_by(email=email, provider="local").first()
 
         if user and bcrypt.check_password_hash(user.password_hash, password):
+            # 🔒 Sessão do usuário
             session["user_id"] = user.id
-            flash(f"✅ Bem-vindo de volta, {email}!", "success")
-            return redirect(url_for("auth.dashboard"))
+            # garanta que username exista (fallback para email)
+            session["username"] = user.username or user.email
+
+            flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
+            # ✅ após login, vá para a home que renderiza templates/index.html
+            return redirect(url_for("auth.home"))
         else:
             flash("E-mail ou senha inválidos.", "danger")
 
     return render_template("login.html")
 
+# ===============================
+# 🏡 Home (renderiza templates/index.html)
+# protegida por sessão
+# ===============================
+@auth_bp.route("/home")
+@login_required_view
+def home():
+    return render_template("index.html")
 
 # ===============================
-# 📊 Dashboard
+# 📊 Dashboard (opcional)
 # ===============================
 @auth_bp.route("/dashboard")
+@login_required_view
 def dashboard():
-    user = None
-    if "user_id" in session:
-        user = User.query.get(session["user_id"])
+    user = User.query.get(session["user_id"])
     return render_template("dashboard.html", user=user)
 
 # ===============================
@@ -91,19 +117,22 @@ def google_authorized():
         resp.raise_for_status()
         info = resp.json()
         email = info["email"]
+        # você pode pegar nome exibível, se existir
+        display_name = info.get("name") or email
     except Exception as e:
         flash(f"Erro ao obter informações do Google: {e}", "danger")
         return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(username=email, provider="google").first()
     if not user:
-        user = User(username=email, provider="google", password_hash="oauth")
+        user = User(username=email, email=email, provider="google", password_hash="oauth")
         db.session.add(user)
         db.session.commit()
 
     session["user_id"] = user.id
-    flash(f"✅ Login Google bem-sucedido! Bem-vindo {email}", "success")
-    return redirect(url_for("auth.dashboard"))
+    session["username"] = user.username or display_name
+    flash(f"✅ Login Google bem-sucedido! Bem-vindo {session['username']}", "success")
+    return redirect(url_for("auth.home"))
 
 # ===============================
 # 🐙 GitHub OAuth
@@ -119,19 +148,21 @@ def github_authorized():
         resp.raise_for_status()
         info = resp.json()
         username = info["login"]
+        email = info.get("email")  # pode vir None
     except Exception as e:
         flash(f"Erro ao obter informações do GitHub: {e}", "danger")
         return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(username=username, provider="github").first()
     if not user:
-        user = User(username=username, provider="github", password_hash="oauth")
+        user = User(username=username, email=email, provider="github", password_hash="oauth")
         db.session.add(user)
         db.session.commit()
 
     session["user_id"] = user.id
-    flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {username}", "success")
-    return redirect(url_for("auth.dashboard"))
+    session["username"] = user.username or (email or username)
+    flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
+    return redirect(url_for("auth.home"))
 
 # ===============================
 # 🆕 Registro local
@@ -139,29 +170,25 @@ def github_authorized():
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
-        email = request.form["email"]
+        username = request.form["username"].strip()
+        email = request.form["email"].strip()
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        # Verifica se as senhas coincidem
         if password != confirm_password:
             flash("As senhas não coincidem. Tente novamente.", "danger")
             return redirect(url_for("auth.register"))
 
-        # Verificar se o e-mail já está cadastrado
         existing_email = User.query.filter_by(email=email).first()
         if existing_email:
             flash("E-mail já registrado. Faça login ou use outro endereço.", "danger")
             return redirect(url_for("auth.register"))
 
-        # Verificar se o nome de usuário já existe
         existing_user = User.query.filter_by(username=username, provider="local").first()
         if existing_user:
             flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
             return redirect(url_for("auth.register"))
 
-        # Criação do usuário
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
         new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
         db.session.add(new_user)
@@ -173,7 +200,7 @@ def register():
     return render_template("register.html")
 
 # ===============================
-# ✉️ Função para enviar o e-mail de redefinição
+# ✉️ Enviar e-mail de redefinição
 # ===============================
 def send_reset_email(user):
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
@@ -183,7 +210,7 @@ def send_reset_email(user):
 
     msg = Message(
         subject="🔑 Redefinição de Senha - NewsTechApp",
-        sender=current_app.config["MAIL_DEFAULT_SENDER"],
+        sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
         recipients=[user.email],
     )
     msg.body = f"""Olá {user.username},
@@ -208,7 +235,7 @@ Se você não solicitou esta redefinição, ignore este e-mail.
 @auth_bp.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].strip()
         user = User.query.filter_by(email=email).first()
 
         if not user:
@@ -219,7 +246,6 @@ def reset_request():
             flash('Esta conta usa login via Google ou GitHub. Redefina a senha diretamente no provedor.', 'warning')
             return redirect(url_for('auth.login'))
 
-        # Geração e envio de token
         token = generate_reset_token(user.email)
         reset_link = url_for('auth.reset_token', token=token, _external=True)
 
@@ -239,7 +265,6 @@ Se você não solicitou, ignore este e-mail.
 
     return render_template('reset_request.html')
 
-
 # ===============================
 # 🔐 Redefinir senha via token
 # ===============================
@@ -256,8 +281,9 @@ def reset_token(token):
     if request.method == "POST":
         password = request.form["password"]
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-        user.password_hash = hashed_password  # ← Corrigido: campo correto
+        user.password_hash = hashed_password
         db.session.commit()
         flash("Senha redefinida com sucesso!", "success")
         return redirect(url_for("auth.login"))
+
     return render_template("reset_password.html")
