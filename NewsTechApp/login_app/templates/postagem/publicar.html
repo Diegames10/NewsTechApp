@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publicar Notícia</title>
+  
+  <link rel="stylesheet" href="./static/Portal.noticias.css" />
+  <!-- SQLite em WASM e camada de banco -->
+  <script type="module" src="/static/js/publicar.init.js"></script>
+
+</head>
+<body>
+  <header>
+    <h1>Publicar Nova Notícia</h1>
+    <nav>
+      <a href="index.html" class="nav-link">⬅ Voltar ao Portal</a>
+      <div class="perfil-container">
+        <button id="perfil-btn" type="button">
+          <img id="avatar" src="imagens/avatar-default.png" alt="Perfil">
+          <span id="perfil-nome">Entrar</span> ▾
+        </button>
+        <div class="perfil-menu" id="perfil-menu">
+          <div class="perfil-info">
+            <img id="menu-avatar" src="imagens/avatar-default.png" alt="Foto de perfil">
+            <strong id="menu-nome">Visitante</strong>
+          </div>
+          <hr>
+          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
+          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="escritor-container">
+    <form id="form-noticia" class="form-noticia">
+      <h2>📰 Criar Notícia</h2>
+
+      <div class="campo">
+        <label for="titulo">Título da notícia</label>
+        <input type="text" id="titulo" placeholder="Digite o título..." required>
+      </div>
+
+      <div class="campo">
+        <label for="autor">Autor</label>
+        <input type="text" id="autor" placeholder="Seu nome..." required>
+      </div>
+
+      <div class="campo">
+        <label for="conteudo">Conteúdo</label>
+        <textarea id="conteudo" rows="6" placeholder="Escreva a notícia aqui..." required></textarea>
+      </div>
+
+      <div class="campo">
+        <label for="imagem">Imagem da Notícia</label>
+        <input type="file" id="imagem" accept="image/*">
+      </div>
+
+      <button type="submit" class="btn-publicar">📢 Publicar notícia</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
+  </footer>
+  <script src="./static/js/script.js"></script>
+  
+</body>
+</html>
