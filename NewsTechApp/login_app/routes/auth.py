@@ -64,51 +64,59 @@ def root():
 # ===============================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # --- SE JÁ ESTIVER LOGADO POR SESSÃO, REDIRECIONA ---
+    # Imports locais para evitar ciclos e garantir assinatura consistente
+    from login_app.utils.jwt_auth import get_access_from_request, decode_token
+    from flask import make_response
+
+    # 1) Se já há sessão ativa -> home
     if session.get("user_id"):
         return redirect(url_for("auth.home"))
 
-    # --- TENTA VALIDAR JWT DE COOKIE (LOGIN PERSISTENTE) ---
-    token = get_access_from_request(request)
+    # 2) Tenta SSO silencioso via cookie (JWT)
+    token = get_access_from_request(request)  # <<< use SEMPRE passando 'request'
     if token:
         try:
             payload = decode_token(token, expected_type="access")
-            if payload and payload.get("type") == "access":
-                # opcional: restaurar sessão aqui (ou confiar no before_app_request)
-                session["user_id"] = int(payload["sub"])
-                # se quiser também preencher username:
-                u = User.query.get(session["user_id"])
-                if u:
-                    session["username"] = u.username or u.email
-                return redirect(url_for("auth.home"))
-        except Exception:
-            pass  # token inválido/expirado → segue para tela de login
-
-            # --- LOGIN VIA FORM ---
-        if request.method == "POST":
-            email = request.form["email"].strip()
-            password = request.form["password"]
-    
-            user = User.query.filter_by(email=email, provider="local").first()
-            if user and bcrypt.check_password_hash(user.password_hash, password):
-                # mantém sessão para compatibilidade
+            # se deu bom, restaura sessão e vai pra home
+            uid = int(payload.get("sub"))
+            user = User.query.get(uid)
+            if user:
                 session["user_id"] = user.id
                 session["username"] = user.username or user.email
-    
-                # emite cookies JWT + CSRF
-                access = create_access_token(user.id)
-                refresh = create_refresh_token(user.id)
-                csrf_token = os.urandom(16).hex()
-    
-                flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
-                resp = make_response(redirect(url_for("auth.home")))
-                set_jwt_cookies(resp, access, refresh)
-                set_csrf_cookie(resp, csrf_token)
-                return resp
-            else:
-                flash("E-mail ou senha inválidos.", "danger")
-    
-        return render_template("login.html")
+                return redirect(url_for("auth.home"))
+        except Exception:
+            # token inválido/expirado → segue para tela de login
+            pass
+
+    # 3) Se for POST, valida credenciais
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        user = User.query.filter_by(email=email, provider="local").first()
+        if user and bcrypt.check_password_hash(user.password_hash, password):
+            # mantém sessão para compatibilidade
+            session["user_id"] = user.id
+            session["username"] = user.username or user.email
+
+            # emite JWTs e seta cookies
+            access = create_access_token(user.id)
+            refresh = create_refresh_token(user.id)
+            csrf_token = os.urandom(16).hex()
+
+            resp = make_response(redirect(url_for("auth.home")))
+            set_jwt_cookies(resp, access, refresh)
+            set_csrf_cookie(resp, csrf_token)
+            flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
+            return resp
+
+        # credenciais inválidas → volta pro form
+        flash("E-mail ou senha inválidos.", "danger")
+        return render_template("login.html"), 401
+
+    # 4) GET sem sessão/JWT → renderiza form
+    return render_template("login.html")
+
 
 # ===============================
 # 🏡 Home (renderiza templates/index.html)
