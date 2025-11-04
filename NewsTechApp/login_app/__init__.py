@@ -14,13 +14,7 @@ mail = Mail()  # ← Adicionando o suporte ao envio de e-mails
 
 def create_app():
     #app = Flask(__name__)
-    app = Flask(
-    __name__,
-    template_folder="../templates",
-    static_folder="../static",
-    static_url_path="/static"
-    )
-
+    
     # 🔒 Corrigir redirecionamento HTTPS no Render
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
