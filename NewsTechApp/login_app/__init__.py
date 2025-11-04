@@ -37,10 +37,22 @@ def create_app():
     migrate.init_app(app, db)
     mail.init_app(app)  # ← Inicializa o envio de e-mails
 
+    # === IMPORTAR MODELS (garante que as tabelas/binds sejam conhecidos) ===
+    with app.app_context():
+        from login_app.models import user     # noqa: F401
+        from login_app.models import post     # noqa: F401  <-- Post usa __bind_key__ = "posts"
+        # Se quiser criar tabelas no primeiro boot SEM migrations, descomente:
+        # db.create_all()              # cria no banco principal (app.db)
+        # db.create_all(bind="posts")  # cria no banco de postagens (posts.db)
+    
     # Blueprints (rotas)
     from login_app.routes.auth import auth_bp, google_bp, github_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(google_bp, url_prefix="/oauth2/login")
     app.register_blueprint(github_bp, url_prefix="/oauth2/login")
+
+    # === Blueprint da API de postagens (novo) ===
+    from login_app.routes.posts_api import posts_api
+    app.register_blueprint(posts_api)  # expõe /api/posts
 
     return app
