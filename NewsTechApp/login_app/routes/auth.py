@@ -85,6 +85,12 @@ def login():
 def home():
     return render_template("postagem/index.html")
 
+@auth_bp.route("/publicar")
+@login_required_view
+def publicar():
+    # templates/postagem/publicar.html
+    return render_template("postagem/publicar.html")
+
 # ===============================
 # 📊 Dashboard (opcional)
 # ===============================
