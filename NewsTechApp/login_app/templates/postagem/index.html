@@ -94,11 +94,6 @@
 
     <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia salva localmente.</div>
   </main>
-
-  <footer>
-    <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
-  </footer>
-
   <!-- Modal de edição -->
   <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal">
@@ -136,8 +131,13 @@
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <!-- Inicialização da listagem (CRUD) -->
   <script type="module" src="{{ url_for('static', filename='js/index.api.js') }}"></script>
+  <footer>
+    <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
+  </footer>
+
 </body>
 </html>
+
 
 
 
