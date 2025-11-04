@@ -6,17 +6,19 @@ from login_app.models.post import Post
 # ======================================================
 # 🔗 Blueprint da API de Postagens
 # ======================================================
-posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
+#posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
+posts_api = Blueprint("posts_api", __name__)
 
 # ======================================================
 # 🔒 Decorator: exige login ativo
 # ======================================================
 def login_required_api(fn):
+    from functools import wraps
     @wraps(fn)
-    def wrapper(*args, **kwargs):
+    def wrapper(*a, **kw):
         if not session.get("user_id"):
-            abort(401)  # 401 Unauthorized
-        return fn(*args, **kwargs)
+            return jsonify({"error": "unauthorized"}), 401
+        return fn(*a, **kw)
     return wrapper
 
 # ======================================================
@@ -70,29 +72,48 @@ def list_posts():
 
 
 # 🔹 Criar nova postagem (autor = usuário logado)
-@posts_api.route("", methods=["POST"])
+@posts_api.route("/api/posts", methods=["POST"])
 @login_required_api
 def create_post():
-    uid, uname = current_user()
-    data = request.get_json() or {}
+    data = request.get_json(force=True) or {}
+    titulo = (data.get("titulo") or "").strip()
+    conteudo = (data.get("conteudo") or "").strip()
+    imagem = data.get("imagemDataURL")  # opcional (base64/dataURL)
 
-    titulo = data.get("titulo", "").strip()
-    conteudo = data.get("conteudo", "").strip()
     if not titulo or not conteudo:
-        abort(400, "Campos obrigatórios: título e conteúdo.")
+        return jsonify({"error": "titulo e conteudo são obrigatórios"}), 400
 
-    # 🔸 Define automaticamente o autor
+    # pega usuário logado
+    user = User.query.get(session["user_id"])
+    autor_nome = (user.username or user.email or "Usuário").strip()
+
+    # cria o Post somente com campos que existem
     post = Post(
         titulo=titulo,
         conteudo=conteudo,
-        autor=uname,   # <— nome do usuário logado
-        user_id=uid    # <— ID do usuário logado
+        imagem=imagem if hasattr(Post, "imagem") else None,
+        autor=autor_nome if hasattr(Post, "autor") else None,
     )
+
+    # se seu modelo tiver um campo de relacionamento numérico, seta com segurança:
+    if hasattr(Post, "autor_id"):
+        post.autor_id = user.id
+    elif hasattr(Post, "user_id"):
+        post.user_id = user.id
+    elif hasattr(Post, "author_id"):
+        post.author_id = user.id
 
     db.session.add(post)
     db.session.commit()
-    return jsonify(to_dict(post)), 201
 
+    # responda algo útil pro front
+    return jsonify({
+        "id": post.id,
+        "titulo": post.titulo,
+        "conteudo": post.conteudo,
+        "autor": autor_nome,
+        "created_at": getattr(post, "created_at", None),
+    }), 201
 
 # 🔹 Atualizar postagem (apenas o dono pode)
 @posts_api.route("/<int:pid>", methods=["PUT"])
