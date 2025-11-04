@@ -6,8 +6,7 @@ from login_app.models.post import Post
 # ======================================================
 # 🔗 Blueprint da API de Postagens
 # ======================================================
-#posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
-posts_api = Blueprint("posts_api", __name__)
+posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
 
 # ======================================================
 # 🔒 Decorator: exige login ativo
