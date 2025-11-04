@@ -287,6 +287,35 @@ function renderCards(items) {
     // actions.appendChild(btnDel);
     // card.appendChild(actions);
 
+    // ações (editar/apagar)
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+    
+    // Botão excluir
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn danger";
+    btnDel.textContent = "Excluir";
+    btnDel.onclick = async () => {
+      if (!confirm("Excluir esta postagem?")) return;
+      await apiDeletePost(n.id);
+      atualizarLista();
+    };
+    actions.appendChild(btnDel);
+    
+    // Botão editar
+    const btnEdit = document.createElement("button");
+    btnEdit.className = "btn secondary";
+    btnEdit.textContent = "Editar";
+    btnEdit.onclick = async () => {
+      const novoTitulo = prompt("Novo título:", n.titulo);
+      const novoConteudo = prompt("Novo conteúdo:", n.conteudo);
+      if (!novoTitulo || !novoConteudo) return;
+      await apiUpdatePost(n.id, { titulo: novoTitulo, conteudo: novoConteudo });
+      atualizarLista();
+    };
+    actions.appendChild(btnEdit);
+    
+    card.appendChild(actions);
     elLista.appendChild(card);
   });
 }
@@ -348,3 +377,4 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .catch((err) => console.error("Falha ao buscar /api/me:", err));
 });
+
