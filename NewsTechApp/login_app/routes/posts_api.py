@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort, session
 from functools import wraps
+from sqlalchemy import or_
 from login_app import db
 from login_app.models.post import Post
 from login_app.models.user import User
