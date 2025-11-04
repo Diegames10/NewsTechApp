@@ -410,22 +410,25 @@ def reset_token(token):
 @auth_bp.before_app_request
 def restore_session_from_jwt():
     if session.get("user_id"):
+        return  # já autenticado
+
+    from login_app.utils.jwt_auth import get_access_from_request, decode_token
+
+    token = get_access_from_request(request)  # <<< padronize assim
+    if not token:
         return
-    try:
-        token = get_access_from_request(request)  # ← passa request
-        if not token:
-            return
-        data = decode_token(token, expected_type="access")
-        if not data:
-            return
-        user = User.query.get(int(data["sub"]))
-        if not user:
-            return
-        session["user_id"] = user.id
-        session["username"] = user.username or user.email
-    except Exception:
-        # token inválido/expirado → segue fluxo normal (usuário não autenticado)
+
+    data = decode_token(token, expected_type="access")
+    if not data:
         return
+
+    user = User.query.get(int(data["sub"]))
+    if not user:
+        return
+
+    session["user_id"] = user.id
+    session["username"] = user.username or user.email
+
 
 # ===============================
 # 🔐 Endpoint de refresh
