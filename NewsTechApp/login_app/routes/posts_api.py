@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, abort, session
 from functools import wraps
 from login_app import db
 from login_app.models.post import Post
+from login_app.models.user import User
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
