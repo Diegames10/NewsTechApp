@@ -34,6 +34,42 @@ function aplicarTemaInicial() {
 }
 aplicarTemaInicial();
 
+document.addEventListener("DOMContentLoaded", () => {
+  const perfilNome = document.getElementById("perfil-nome");
+  const menuNome = document.getElementById("menu-nome");
+  const btnSair = document.getElementById("btn-sair");
+  const avatar = document.getElementById("avatar");
+  const menuAvatar = document.getElementById("menu-avatar");
+
+  fetch("/api/me", { credentials: "same-origin" })
+    .then((r) => r.json())
+    .then((me) => {
+      if (me.logged) {
+        const nome = me.username || "Usuário";
+        if (perfilNome) perfilNome.textContent = nome;
+        if (menuNome) menuNome.textContent = nome;
+
+        // Mostra botão sair
+        if (btnSair) {
+          btnSair.style.display = "block";
+          btnSair.onclick = () => { window.location.href = "/logout"; };
+        }
+
+        // (Opcional) manter avatar default por enquanto; quando tiver URL, troque aqui
+        // if (avatar) avatar.src = me.avatar_url || avatar.src;
+        // if (menuAvatar) menuAvatar.src = me.avatar_url || menuAvatar.src;
+      } else {
+        if (perfilNome) perfilNome.textContent = "Entrar";
+        if (menuNome) menuNome.textContent = "Visitante";
+        if (btnSair) btnSair.style.display = "none";
+      }
+    })
+    .catch((err) => {
+      console.error("Falha ao buscar /api/me:", err);
+    });
+});
+
+
 if (toggleTema) {
   toggleTema.addEventListener("click", () => {
     const isDark = body.classList.toggle("dark");
@@ -356,3 +392,4 @@ if (elOrdem) elOrdem.addEventListener("change", () => atualizarLista({ resetPage
 document.addEventListener("DOMContentLoaded", () => {
   if (elLista) atualizarLista();
 });
+
