@@ -1,101 +1,115 @@
-import time, jwt
-from flask import current_app, request, g, jsonify
-from functools import wraps
+# login_app/utils/jwt_auth.py
+from datetime import datetime, timedelta, timezone
+from flask import current_app, request
+import jwt
+
+# --- helpers internos ---
+def _cfg(key, default=None):
+    return current_app.config.get(key, default)
 
 def _now():
-    return int(time.time())
+    return datetime.now(timezone.utc)
 
-def create_access_token(sub: str | int):
+# --- criação de tokens ---
+def create_access_token(user_id: int) -> str:
+    secret = _cfg("JWT_SECRET")
+    alg = _cfg("JWT_ALGORITHM", "HS256")
+    minutes = int(_cfg("JWT_ACCESS_MINUTES", 30))  # 30 min padrão
     payload = {
-        "sub": str(sub),
+        "sub": str(user_id),
         "type": "access",
-        "iat": _now(),
-        "exp": _now() + current_app.config["JWT_ACCESS_EXPIRES"],
+        "iat": int(_now().timestamp()),
+        "exp": int((_now() + timedelta(minutes=minutes)).timestamp()),
     }
-    return jwt.encode(payload, current_app.config["JWT_SECRET"], algorithm=current_app.config["JWT_ALG"])
+    return jwt.encode(payload, secret, algorithm=alg)
 
-def create_refresh_token(sub: str | int):
+def create_refresh_token(user_id: int) -> str:
+    secret = _cfg("JWT_SECRET")
+    alg = _cfg("JWT_ALGORITHM", "HS256")
+    days = int(_cfg("JWT_REFRESH_DAYS", 7))  # 7 dias padrão
     payload = {
-        "sub": str(sub),
+        "sub": str(user_id),
         "type": "refresh",
-        "iat": _now(),
-        "exp": _now() + current_app.config["JWT_REFRESH_EXPIRES"],
+        "iat": int(_now().timestamp()),
+        "exp": int((_now() + timedelta(days=days)).timestamp()),
     }
-    return jwt.encode(payload, current_app.config["JWT_SECRET"], algorithm=current_app.config["JWT_ALG"])
+    return jwt.encode(payload, secret, algorithm=alg)
 
+# --- leitura/validação ---
 def decode_token(token: str):
-    return jwt.decode(token,
-                      current_app.config["JWT_SECRET"],
-                      algorithms=[current_app.config["JWT_ALG"]])
+    secret = _cfg("JWT_SECRET")
+    alg = _cfg("JWT_ALGORITHM", "HS256")
+    return jwt.decode(token, secret, algorithms=[alg])
 
-def set_jwt_cookies(resp, access_token: str, refresh_token: str | None = None):
-    # ACCESS
+def get_access_from_request(req=None) -> str | None:
+    """
+    Busca o access token nos cookies ('access_token')
+    ou no header Authorization: Bearer <token>.
+    """
+    req = req or request
+
+    # 1) Cookie
+    tok = req.cookies.get("access_token")
+    if tok:
+        return tok
+
+    # 2) Header Authorization
+    auth = req.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        return auth.split(" ", 1)[1].strip() or None
+
+    return None
+
+# --- cookies ---
+def set_jwt_cookies(resp, access_token: str, refresh_token: str):
+    """
+    Seta cookies HTTPOnly para access e refresh.
+    Ajuste SameSite/secure conforme seu domínio.
+    """
+    # Em prod com HTTPS, deixe secure=True
+    secure = bool(_cfg("SESSION_COOKIE_SECURE", True))
+    samesite = _cfg("SESSION_COOKIE_SAMESITE", "Lax")
+
+    # Access (curto)
+    access_minutes = int(_cfg("JWT_ACCESS_MINUTES", 30))
     resp.set_cookie(
         "access_token",
         access_token,
-        max_age=current_app.config["JWT_ACCESS_EXPIRES"],
+        max_age=access_minutes * 60,
         httponly=True,
-        secure=current_app.config["COOKIE_SECURE"],
-        samesite=current_app.config["COOKIE_SAMESITE"],
-        path="/",  # acessível no site todo
+        secure=secure,
+        samesite=samesite,
+        path="/",
     )
-    # REFRESH
-    if refresh_token:
-        resp.set_cookie(
-            "refresh_token",
-            refresh_token,
-            max_age=current_app.config["JWT_REFRESH_EXPIRES"],
-            httponly=True,
-            secure=current_app.config["COOKIE_SECURE"],
-            samesite=current_app.config["COOKIE_SAMESITE"],
-            path="/auth/refresh",  # escopo reduzido
-        )
-    return resp
+
+    # Refresh (longo)
+    refresh_days = int(_cfg("JWT_REFRESH_DAYS", 7))
+    resp.set_cookie(
+        "refresh_token",
+        refresh_token,
+        max_age=refresh_days * 24 * 3600,
+        httponly=True,
+        secure=secure,
+        samesite=samesite,
+        path="/",
+    )
 
 def clear_jwt_cookies(resp):
     resp.delete_cookie("access_token", path="/")
-    resp.delete_cookie("refresh_token", path="/auth/refresh")
-    return resp
+    resp.delete_cookie("refresh_token", path="/")
 
-# ----- CSRF (double-submit): cookie não-HttpOnly + header -----
-def set_csrf_cookie(resp, token: str):
+def set_csrf_cookie(resp, csrf_token: str):
+    """
+    CSRF não é HttpOnly — precisa ser lido pelo JS e enviado em header.
+    """
+    secure = bool(_cfg("SESSION_COOKIE_SECURE", True))
+    samesite = _cfg("SESSION_COOKIE_SAMESITE", "Lax")
     resp.set_cookie(
         "csrf_token",
-        token,
-        max_age=current_app.config["JWT_REFRESH_EXPIRES"],
-        httponly=False,  # cliente precisa ler e mandar no header
-        secure=current_app.config["COOKIE_SECURE"],
-        samesite=current_app.config["COOKIE_SAMESITE"],
+        csrf_token,
+        max_age=12 * 3600,  # 12h
+        httponly=False,
+        secure=secure,
+        samesite=samesite,
         path="/",
     )
-    return resp
-
-def csrf_protect(fn):
-    @wraps(fn)
-    def wrapper(*a, **kw):
-        if request.method in ("POST", "PUT", "PATCH", "DELETE"):
-            cookie = request.cookies.get("csrf_token")
-            header = request.headers.get("X-CSRF-Token")
-            if not cookie or not header or cookie != header:
-                return jsonify({"error": "CSRF token inválido"}), 403
-        return fn(*a, **kw)
-    return wrapper
-
-# ----- Guard: exige JWT de access no cookie -----
-def jwt_required(fn):
-    @wraps(fn)
-    def wrapper(*a, **kw):
-        token = request.cookies.get("access_token")
-        if not token:
-            return jsonify({"error": "missing access token"}), 401
-        try:
-            payload = decode_token(token)
-            if payload.get("type") != "access":
-                return jsonify({"error": "invalid token type"}), 401
-            g.current_user_id = payload["sub"]
-        except jwt.ExpiredSignatureError:
-            return jsonify({"error": "access token expired"}), 401
-        except Exception:
-            return jsonify({"error": "invalid token"}), 401
-        return fn(*a, **kw)
-    return wrapper
