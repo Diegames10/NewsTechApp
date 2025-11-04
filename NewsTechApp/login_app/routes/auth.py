@@ -15,8 +15,9 @@ from login_app.models.user import User
 from flask import make_response
 from login_app.utils.jwt_auth import (
     create_access_token, create_refresh_token,
-    set_jwt_cookies, set_csrf_cookie,
-    get_access_from_request, decode_token, clear_jwt_cookies
+    set_jwt_cookies, set_csrf_cookie, clear_jwt_cookies,
+    get_access_from_request, get_refresh_from_request,  # ← garantir que existam no jwt_auth.py
+    decode_token
 )
 
 load_dotenv()
@@ -63,46 +64,72 @@ def root():
 # ===============================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        email = request.form["email"].strip()
-        password = request.form["password"]
+    # --- SE JÁ ESTIVER LOGADO POR SESSÃO, REDIRECIONA ---
+    if session.get("user_id"):
+        return redirect(url_for("auth.home"))
 
-        user = User.query.filter_by(email=email, provider="local").first()
+    # --- TENTA VALIDAR JWT DE COOKIE (LOGIN PERSISTENTE) ---
+    token = get_access_from_request(request)
+    if token:
+        try:
+            payload = decode_token(token, expected_type="access")
+            if payload and payload.get("type") == "access":
+                # opcional: restaurar sessão aqui (ou confiar no before_app_request)
+                session["user_id"] = int(payload["sub"])
+                # se quiser também preencher username:
+                u = User.query.get(session["user_id"])
+                if u:
+                    session["username"] = u.username or u.email
+                return redirect(url_for("auth.home"))
+        except Exception:
+            pass  # token inválido/expirado → segue para tela de login
 
-        if user and bcrypt.check_password_hash(user.password_hash, password):
-            # mantém sessão para compatibilidade com seus decorators/base atual
-            session["user_id"] = user.id
-            session["username"] = user.username or user.email
-        
-            access = create_access_token(user.id)
-            refresh = create_refresh_token(user.id)
-            csrf_token = os.urandom(16).hex()
-        
-            flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
-            resp = make_response(redirect(url_for("auth.home")))
-            set_jwt_cookies(resp, access, refresh)
-            set_csrf_cookie(resp, csrf_token)
-            return resp
-            return redirect(url_for("auth.home"))
-        else:
-            flash("E-mail ou senha inválidos.", "danger")
-
-    return render_template("login.html")
+            # --- LOGIN VIA FORM ---
+        if request.method == "POST":
+            email = request.form["email"].strip()
+            password = request.form["password"]
+    
+            user = User.query.filter_by(email=email, provider="local").first()
+            if user and bcrypt.check_password_hash(user.password_hash, password):
+                # mantém sessão para compatibilidade
+                session["user_id"] = user.id
+                session["username"] = user.username or user.email
+    
+                # emite cookies JWT + CSRF
+                access = create_access_token(user.id)
+                refresh = create_refresh_token(user.id)
+                csrf_token = os.urandom(16).hex()
+    
+                flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
+                resp = make_response(redirect(url_for("auth.home")))
+                set_jwt_cookies(resp, access, refresh)
+                set_csrf_cookie(resp, csrf_token)
+                return resp
+            else:
+                flash("E-mail ou senha inválidos.", "danger")
+    
+        return render_template("login.html")
 
 # ===============================
 # 🏡 Home (renderiza templates/index.html)
 # protegida por sessão
 # ===============================
 @auth_bp.route("/home")
-@login_required_view
 def home():
-    return render_template("postagem/index.html")
+    if not session.get("user_id"):
+        token = get_access_from_request(request)
+        if not token:
+            return redirect(url_for("auth.login"))
+        try:
+            payload = decode_token(token, expected_type="access")
+            session["user_id"] = int(payload["sub"])
+            u = User.query.get(session["user_id"])
+            if u:
+                session["username"] = u.username or u.email
+        except Exception:
+            return redirect(url_for("auth.login"))
 
-@auth_bp.route("/publicar")
-@login_required_view
-def publicar():
-    # templates/postagem/publicar.html
-    return render_template("postagem/publicar.html")
+    return render_template("postagem/index.html")
 
 # ===============================
 # 📊 Dashboard (opcional)
@@ -139,7 +166,7 @@ def logout():
     resp = make_response(redirect(url_for("auth.login")))
     clear_jwt_cookies(resp)
     return resp
-    return redirect(url_for("auth.login"))
+    #return redirect(url_for("auth.login"))
 
 # ===============================
 # 🌐 Google OAuth
@@ -352,42 +379,49 @@ def reset_token(token):
 def restore_session_from_jwt():
     if session.get("user_id"):
         return
-    token = get_access_from_request()
-    if not token:
+    try:
+        token = get_access_from_request(request)  # ← passa request
+        if not token:
+            return
+        data = decode_token(token, expected_type="access")
+        if not data:
+            return
+        user = User.query.get(int(data["sub"]))
+        if not user:
+            return
+        session["user_id"] = user.id
+        session["username"] = user.username or user.email
+    except Exception:
+        # token inválido/expirado → segue fluxo normal (usuário não autenticado)
         return
-    data = decode_token(token, expected_type="access")
-    if not data:
-        return
-    from login_app.models.user import User  # import local para evitar ciclos
-    user = User.query.get(int(data["sub"]))
-    if not user:
-        return
-    session["user_id"] = user.id
-    session["username"] = user.username or user.email
 
 # ===============================
 # 🔐 Endpoint de refresh
 # ===============================
 @auth_bp.route("/refresh", methods=["POST"])
 def refresh():
-    refresh_token = get_refresh_from_request()
-    if not refresh_token:
-        return jsonify({"error": "missing refresh"}), 401
+    try:
+        refresh_token = get_refresh_from_request(request)
+        if not refresh_token:
+            return jsonify({"error": "missing refresh"}), 401
 
-    data = decode_token(refresh_token, expected_type="refresh")
-    if not data:
-        return jsonify({"error": "invalid refresh"}), 401
+        data = decode_token(refresh_token, expected_type="refresh")
+        if not data:
+            return jsonify({"error": "invalid refresh"}), 401
 
-    from login_app.models.user import User
-    user = User.query.get(int(data["sub"]))
-    if not user:
-        return jsonify({"error": "user not found"}), 404
+        user = User.query.get(int(data["sub"]))
+        if not user:
+            return jsonify({"error": "user not found"}), 404
 
-    new_access = create_access_token(user.id)
-    csrf_token = os.urandom(16).hex()
-    resp = jsonify({"message": "refreshed"})
-    set_jwt_cookies(resp, new_access, refresh_token)  # mantém o mesmo refresh
-    set_csrf_cookie(resp, csrf_token)
-    return resp, 200
+        new_access = create_access_token(user.id)
+        csrf_token = os.urandom(16).hex()
+
+        resp = jsonify({"message": "refreshed"})
+        # mantém o mesmo refresh, apenas renova o access
+        set_jwt_cookies(resp, new_access, refresh_token)
+        set_csrf_cookie(resp, csrf_token)
+        return resp, 200
+    except Exception:
+        return jsonify({"error": "refresh failed"}), 400
 
 
