@@ -1,115 +1,148 @@
 # login_app/utils/jwt_auth.py
-from datetime import datetime, timedelta, timezone
-from flask import current_app, request
+import time
 import jwt
+from typing import Optional, Dict, Any
+from flask import current_app, Request
 
-# --- helpers internos ---
-def _cfg(key, default=None):
-    return current_app.config.get(key, default)
+# ---------- helpers internos ----------
+def _now() -> int:
+    return int(time.time())
 
-def _now():
-    return datetime.now(timezone.utc)
+def _cfg(name: str, default=None):
+    return current_app.config.get(name, default)
 
-# --- criação de tokens ---
+# ---------- criação de tokens ----------
 def create_access_token(user_id: int) -> str:
-    secret = _cfg("JWT_SECRET")
-    alg = _cfg("JWT_ALGORITHM", "HS256")
-    minutes = int(_cfg("JWT_ACCESS_MINUTES", 30))  # 30 min padrão
+    """
+    Gera um JWT de acesso curto.
+    """
+    iat = _now()
+    exp = iat + int(_cfg("JWT_ACCESS_EXPIRES", 900))  # 15 min default
     payload = {
         "sub": str(user_id),
         "type": "access",
-        "iat": int(_now().timestamp()),
-        "exp": int((_now() + timedelta(minutes=minutes)).timestamp()),
+        "iat": iat,
+        "exp": exp,
+        "iss": _cfg("JWT_ISSUER", "newstechapp"),
+        "aud": _cfg("JWT_AUDIENCE", "newstechapp-users"),
     }
-    return jwt.encode(payload, secret, algorithm=alg)
+    return jwt.encode(payload, _cfg("JWT_SECRET"), algorithm=_cfg("JWT_ALG", "HS256"))
 
 def create_refresh_token(user_id: int) -> str:
-    secret = _cfg("JWT_SECRET")
-    alg = _cfg("JWT_ALGORITHM", "HS256")
-    days = int(_cfg("JWT_REFRESH_DAYS", 7))  # 7 dias padrão
+    """
+    Gera um JWT de refresh mais longo.
+    """
+    iat = _now()
+    exp = iat + int(_cfg("JWT_REFRESH_EXPIRES", 60 * 60 * 24 * 7))  # 7 dias default
     payload = {
         "sub": str(user_id),
         "type": "refresh",
-        "iat": int(_now().timestamp()),
-        "exp": int((_now() + timedelta(days=days)).timestamp()),
+        "iat": iat,
+        "exp": exp,
+        "iss": _cfg("JWT_ISSUER", "newstechapp"),
+        "aud": _cfg("JWT_AUDIENCE", "newstechapp-users"),
     }
-    return jwt.encode(payload, secret, algorithm=alg)
+    return jwt.encode(payload, _cfg("JWT_SECRET"), algorithm=_cfg("JWT_ALG", "HS256"))
 
-# --- leitura/validação ---
-def decode_token(token: str):
-    secret = _cfg("JWT_SECRET")
-    alg = _cfg("JWT_ALGORITHM", "HS256")
-    return jwt.decode(token, secret, algorithms=[alg])
-
-def get_access_from_request(req=None) -> str | None:
+# ---------- decodificação ----------
+def decode_token(token: str, expected_type: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
-    Busca o access token nos cookies ('access_token')
-    ou no header Authorization: Bearer <token>.
+    Decodifica e valida tipo (access/refresh) se esperado.
+    Retorna payload dict ou None se inválido.
     """
-    req = req or request
+    try:
+        payload = jwt.decode(
+            token,
+            _cfg("JWT_SECRET"),
+            algorithms=[_cfg("JWT_ALG", "HS256")],
+            issuer=_cfg("JWT_ISSUER", "newstechapp"),
+            audience=_cfg("JWT_AUDIENCE", "newstechapp-users"),
+            options={"require": ["exp", "iat", "iss", "aud"]},
+        )
+        if expected_type and payload.get("type") != expected_type:
+            return None
+        return payload
+    except Exception:
+        return None
 
-    # 1) Cookie
-    tok = req.cookies.get("access_token")
-    if tok:
-        return tok
-
-    # 2) Header Authorization
-    auth = req.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        return auth.split(" ", 1)[1].strip() or None
-
-    return None
-
-# --- cookies ---
-def set_jwt_cookies(resp, access_token: str, refresh_token: str):
+# ---------- cookies ----------
+def set_jwt_cookies(resp, access_token: str, refresh_token: Optional[str] = None):
     """
-    Seta cookies HTTPOnly para access e refresh.
-    Ajuste SameSite/secure conforme seu domínio.
+    Grava cookies de access e refresh conforme flags do config.
     """
-    # Em prod com HTTPS, deixe secure=True
-    secure = bool(_cfg("SESSION_COOKIE_SECURE", True))
-    samesite = _cfg("SESSION_COOKIE_SAMESITE", "Lax")
+    access_name  = _cfg("JWT_ACCESS_COOKIE_NAME",  "access_token")
+    refresh_name = _cfg("JWT_REFRESH_COOKIE_NAME", "refresh_token")
+    samesite     = _cfg("JWT_COOKIE_SAMESITE", "Lax")
+    secure       = bool(_cfg("JWT_COOKIE_SECURE", True))
+    domain       = _cfg("JWT_COOKIE_DOMAIN")  # pode ser None
+    path         = "/"
 
-    # Access (curto)
-    access_minutes = int(_cfg("JWT_ACCESS_MINUTES", 30))
+    # access (curto)
     resp.set_cookie(
-        "access_token",
-        access_token,
-        max_age=access_minutes * 60,
+        access_name, access_token,
         httponly=True,
         secure=secure,
         samesite=samesite,
-        path="/",
+        domain=domain,
+        path=path,
+        max_age=int(_cfg("JWT_ACCESS_EXPIRES", 900)),
     )
 
-    # Refresh (longo)
-    refresh_days = int(_cfg("JWT_REFRESH_DAYS", 7))
-    resp.set_cookie(
-        "refresh_token",
-        refresh_token,
-        max_age=refresh_days * 24 * 3600,
-        httponly=True,
-        secure=secure,
-        samesite=samesite,
-        path="/",
-    )
+    # refresh (longo) — só se enviado
+    if refresh_token:
+        resp.set_cookie(
+            refresh_name, refresh_token,
+            httponly=True,
+            secure=secure,
+            samesite=samesite,
+            domain=domain,
+            path=path,
+            max_age=int(_cfg("JWT_REFRESH_EXPIRES", 60 * 60 * 24 * 7)),
+        )
 
 def clear_jwt_cookies(resp):
-    resp.delete_cookie("access_token", path="/")
-    resp.delete_cookie("refresh_token", path="/")
+    """
+    Apaga cookies de access e refresh.
+    """
+    access_name  = _cfg("JWT_ACCESS_COOKIE_NAME",  "access_token")
+    refresh_name = _cfg("JWT_REFRESH_COOKIE_NAME", "refresh_token")
+    domain       = _cfg("JWT_COOKIE_DOMAIN")
+    path         = "/"
+
+    resp.delete_cookie(access_name,  path=path, domain=domain, samesite=_cfg("JWT_COOKIE_SAMESITE", "Lax"))
+    resp.delete_cookie(refresh_name, path=path, domain=domain, samesite=_cfg("JWT_COOKIE_SAMESITE", "Lax"))
 
 def set_csrf_cookie(resp, csrf_token: str):
     """
-    CSRF não é HttpOnly — precisa ser lido pelo JS e enviado em header.
+    Define um cookie CSRF não-HttpOnly (para pegar no front e mandar em cabeçalho).
     """
-    secure = bool(_cfg("SESSION_COOKIE_SECURE", True))
-    samesite = _cfg("SESSION_COOKIE_SAMESITE", "Lax")
+    name    = _cfg("CSRF_COOKIE_NAME", "csrf_token")
+    samesite = _cfg("JWT_COOKIE_SAMESITE", "Lax")
+    secure   = bool(_cfg("JWT_COOKIE_SECURE", True))
+    domain   = _cfg("JWT_COOKIE_DOMAIN")
+    path     = "/"
+
     resp.set_cookie(
-        "csrf_token",
-        csrf_token,
-        max_age=12 * 3600,  # 12h
-        httponly=False,
+        name, csrf_token,
+        httponly=False,  # necessário pro front ler
         secure=secure,
         samesite=samesite,
-        path="/",
+        domain=domain,
+        path=path,
+        max_age=int(_cfg("JWT_ACCESS_EXPIRES", 900)),
     )
+
+# ---------- leitura dos cookies no request ----------
+def get_access_from_request(req: Request) -> Optional[str]:
+    """
+    Lê o access_token dos cookies do request.
+    """
+    name = _cfg("JWT_ACCESS_COOKIE_NAME", "access_token")
+    return req.cookies.get(name)
+
+def get_refresh_from_request(req: Request) -> Optional[str]:
+    """
+    Lê o refresh_token dos cookies do request.
+    """
+    name = _cfg("JWT_REFRESH_COOKIE_NAME", "refresh_token")
+    return req.cookies.get(name)
