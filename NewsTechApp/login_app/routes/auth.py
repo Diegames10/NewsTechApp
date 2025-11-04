@@ -12,6 +12,12 @@ from functools import wraps
 from login_app import db, bcrypt, mail
 from login_app.models.user import User
 
+from login_app.utils.jwt_auth import (
+    create_access_token, create_refresh_token,
+    set_jwt_cookies, set_csrf_cookie, clear_jwt_cookies,
+    decode_token, get_access_from_request, get_refresh_from_request
+)
+
 load_dotenv()
 
 auth_bp = Blueprint("auth", __name__)
@@ -63,13 +69,19 @@ def login():
         user = User.query.filter_by(email=email, provider="local").first()
 
         if user and bcrypt.check_password_hash(user.password_hash, password):
-            # 🔒 Sessão do usuário
+            # mantém sessão para compatibilidade com seus decorators/base atual
             session["user_id"] = user.id
-            # garanta que username exista (fallback para email)
             session["username"] = user.username or user.email
-
+        
+            access = create_access_token(user.id)
+            refresh = create_refresh_token(user.id)
+            csrf_token = os.urandom(16).hex()
+        
             flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
-            # ✅ após login, vá para a home que renderiza templates/index.html
+            resp = make_response(redirect(url_for("auth.home")))
+            set_jwt_cookies(resp, access, refresh)
+            set_csrf_cookie(resp, csrf_token)
+            return resp
             return redirect(url_for("auth.home"))
         else:
             flash("E-mail ou senha inválidos.", "danger")
@@ -123,6 +135,9 @@ def api_me():
 def logout():
     session.clear()
     flash("Logout realizado com sucesso.", "success")
+    resp = make_response(redirect(url_for("auth.login")))
+    clear_jwt_cookies(resp)
+    return resp
     return redirect(url_for("auth.login"))
 
 # ===============================
@@ -154,6 +169,15 @@ def google_authorized():
     session["user_id"] = user.id
     session["username"] = user.username or display_name
     flash(f"✅ Login Google bem-sucedido! Bem-vindo {session['username']}", "success")
+    
+    access = create_access_token(user.id)
+    refresh = create_refresh_token(user.id)
+    csrf_token = os.urandom(16).hex()
+    resp = make_response(redirect(url_for("auth.home")))
+    set_jwt_cookies(resp, access, refresh)
+    set_csrf_cookie(resp, csrf_token)
+    return resp
+
     return redirect(url_for("auth.home"))
 
 # ===============================
@@ -184,6 +208,15 @@ def github_authorized():
     session["user_id"] = user.id
     session["username"] = user.username or (email or username)
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
+
+    access = create_access_token(user.id)
+    refresh = create_refresh_token(user.id)
+    csrf_token = os.urandom(16).hex()
+    resp = make_response(redirect(url_for("auth.home")))
+    set_jwt_cookies(resp, access, refresh)
+    set_csrf_cookie(resp, csrf_token)
+    return resp
+    
     return redirect(url_for("auth.home"))
 
 # ===============================
@@ -309,3 +342,51 @@ def reset_token(token):
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html")
+
+# ===============================
+# 🔐 Restaurar sessão automaticamente a partir do access_token
+# ===============================
+
+@auth_bp.before_app_request
+def restore_session_from_jwt():
+    if session.get("user_id"):
+        return
+    token = get_access_from_request()
+    if not token:
+        return
+    data = decode_token(token, expected_type="access")
+    if not data:
+        return
+    from login_app.models.user import User  # import local para evitar ciclos
+    user = User.query.get(int(data["sub"]))
+    if not user:
+        return
+    session["user_id"] = user.id
+    session["username"] = user.username or user.email
+
+# ===============================
+# 🔐 Endpoint de refresh
+# ===============================
+@auth_bp.route("/refresh", methods=["POST"])
+def refresh():
+    refresh_token = get_refresh_from_request()
+    if not refresh_token:
+        return jsonify({"error": "missing refresh"}), 401
+
+    data = decode_token(refresh_token, expected_type="refresh")
+    if not data:
+        return jsonify({"error": "invalid refresh"}), 401
+
+    from login_app.models.user import User
+    user = User.query.get(int(data["sub"]))
+    if not user:
+        return jsonify({"error": "user not found"}), 404
+
+    new_access = create_access_token(user.id)
+    csrf_token = os.urandom(16).hex()
+    resp = jsonify({"message": "refreshed"})
+    set_jwt_cookies(resp, new_access, refresh_token)  # mantém o mesmo refresh
+    set_csrf_cookie(resp, csrf_token)
+    return resp, 200
+
+
