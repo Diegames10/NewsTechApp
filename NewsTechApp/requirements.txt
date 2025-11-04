@@ -6,5 +6,6 @@ Flask-Migrate
 requests
 waitress
 python-dotenv
+PyJWT
 oauthlib
 gunicorn
