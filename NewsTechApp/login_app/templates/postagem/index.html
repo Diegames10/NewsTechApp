@@ -48,10 +48,10 @@
 </head>
 <body>
   <header>
-    <h1>📰 NewTech</h1>
+    <h1>📰 NewsTech</h1>
     <nav>
       <!-- ideal: a âncora aqui deveria apontar para uma ROTA Flask que renderiza publicar.html -->
-      <a href="publicar.html" class="nav-link">➕ Nova postagem</a>
+      <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
 
       <div class="perfil-container">
         <button id="perfil-btn" type="button">
@@ -84,7 +84,7 @@
       </select>
       <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
 
-      <a href="publicar.html" class="btn" style="text-decoration:none;">➕ Publicar</a>
+      <a href="{{ url_for('auth.publicar') }}" class="btn" style="text-decoration:none;">➕ Publicar</a>
     </div>
 
     <div id="lista-noticias"></div>
@@ -138,5 +138,6 @@
   <script type="module" src="{{ url_for('static', filename='js/index.api.js') }}"></script>
 </body>
 </html>
+
 
 
