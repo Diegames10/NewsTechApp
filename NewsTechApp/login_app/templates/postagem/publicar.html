@@ -18,12 +18,12 @@
       <a href="{{ url_for('auth.home') }}" class="nav-link">⬅ Voltar ao Portal</a>
       <div class="perfil-container">
         <button id="perfil-btn" type="button">
-          <img id="avatar" src="imagens/avatar-default.png" alt="Perfil">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.png') }}" alt="Perfil">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
         <div class="perfil-menu" id="perfil-menu">
           <div class="perfil-info">
-            <img id="menu-avatar" src="imagens/avatar-default.png" alt="Foto de perfil">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.png') }}" alt="Foto de perfil">
             <strong id="menu-nome">Visitante</strong>
           </div>
           <hr>
@@ -65,10 +65,12 @@
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/publicar.api.js') }}"></script>
   
 </body>
 </html>
+
 
 
 
