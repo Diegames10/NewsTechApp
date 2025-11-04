@@ -78,43 +78,37 @@ def create_post():
     data = request.get_json(force=True) or {}
     titulo = (data.get("titulo") or "").strip()
     conteudo = (data.get("conteudo") or "").strip()
-    imagem = data.get("imagemDataURL")  # opcional (base64/dataURL)
+    imagem = data.get("imagemDataURL")  # opcional (dataURL)
 
     if not titulo or not conteudo:
-        return jsonify({"error": "titulo e conteudo são obrigatórios"}), 400
+        return jsonify({"error": "Título e conteúdo são obrigatórios"}), 400
 
-    # pega usuário logado
+    # busca usuário logado
     user = User.query.get(session["user_id"])
-    autor_nome = (user.username or user.email or "Usuário").strip()
+    autor_nome = user.username or user.email or "Usuário"
 
-    # cria o Post somente com campos que existem
+    # cria o post conforme seu modelo
     post = Post(
         titulo=titulo,
         conteudo=conteudo,
-        imagem=imagem if hasattr(Post, "imagem") else None,
-        autor=autor_nome if hasattr(Post, "autor") else None,
+        autor=autor_nome
     )
 
-    # se seu modelo tiver um campo de relacionamento numérico, seta com segurança:
-    if hasattr(Post, "autor_id"):
-        post.autor_id = user.id
-    elif hasattr(Post, "user_id"):
-        post.user_id = user.id
-    elif hasattr(Post, "author_id"):
-        post.author_id = user.id
+    # se quiser armazenar imagem no campo 'conteudo' ou criar coluna depois:
+    if hasattr(Post, "imagem"):
+        post.imagem = imagem
 
     db.session.add(post)
     db.session.commit()
 
-    # responda algo útil pro front
     return jsonify({
         "id": post.id,
         "titulo": post.titulo,
         "conteudo": post.conteudo,
-        "autor": autor_nome,
-        "created_at": getattr(post, "created_at", None),
+        "autor": post.autor,
+        "criado_em": post.criado_em.isoformat()
     }), 201
-
+    
 # 🔹 Atualizar postagem (apenas o dono pode)
 @posts_api.route("/<int:pid>", methods=["PUT"])
 @login_required_api
