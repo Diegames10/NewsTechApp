@@ -5,6 +5,7 @@ flask_dance
 requests
 waitress
 python-dotenv
+PyJWT
 oauthlib
 gunicorn
 Flask-Migrate
