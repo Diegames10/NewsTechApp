@@ -83,7 +83,7 @@ def login():
 @auth_bp.route("/home")
 @login_required_view
 def home():
-    return render_template("index.html")
+    return render_template("postagem/index.html")
 
 # ===============================
 # 📊 Dashboard (opcional)
