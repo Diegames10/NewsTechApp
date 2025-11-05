@@ -164,14 +164,6 @@ def publicar():
     # Renderiza o formulário
     return render_template("postagem/publicar.html")
 
-# ===============================
-# 🏡 Rota para upar imagem
-# ===============================
-
-@app.route("/uploads/<path:filename>")
-def uploads(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
-
 
 # ===============================
 # 📊 Dashboard (opcional)
