@@ -84,9 +84,14 @@ def create_app():
     app.register_blueprint(posts_api)  # expõe /api/posts
 
     # === Fazer upload de imagens das postagens ===
+    # Use uma pasta persistente no Render (disco em /data)
     app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "/data/uploads")
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
-
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+     # Rota pública para servir as imagens enviadas
+    @app.route("/uploads/<path:filename>")
+    def uploads(filename):
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
 
     return app
