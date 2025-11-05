@@ -14,8 +14,34 @@ mail = Mail()  # ← Adicionando o suporte ao envio de e-mails
 
 def create_app():
     app = Flask(__name__)
+
+    # ==============================
+    # ✉️ Configuração de upar e mostrar imagem
+    # ==============================
+    # Configurações básicas
+    BASE_DIR = Path(__file__).resolve().parent
+    app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER") or str(BASE_DIR / "static" / "uploads")
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    # Rota para servir arquivos enviados (imagens)
+    from flask import send_from_directory
+
+    @app.route("/uploads/<path:filename>")
+    def uploads(filename):
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+    # Importar e registrar Blueprints
+    from login_app.routes.auth import auth_bp
+    app.register_blueprint(auth_bp)
+
+    # Exemplo: registrar blueprint de posts se existir
+    from login_app.routes.api_posts import api_bp
+    app.register_blueprint(api_bp)
     
+    # ==============================
     # 🔒 Corrigir redirecionamento HTTPS no Render
+    # ==============================
+    
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
     app.config.from_object("login_app.config.Config")
