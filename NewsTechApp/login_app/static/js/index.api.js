@@ -44,7 +44,7 @@ function cardHtml(p) {
       </p>
       <p style="white-space:pre-wrap;margin:.4rem 0 0 0">${escapeHtml(p.conteudo || "")}</p>
       <div class="card-actions" style="display:flex;gap:.5rem;margin-top:.75rem;">
-        <a class="btn" href="${publicarUrl}?id=${encodeURIComponent(p.id)}">Editar</a>
+        <a class="btn" href="${publicarUrl}?id=${p.id}">Editar</a>
         <button class="btn danger" data-del="${p.id}">Excluir</button>
       </div>
     </article>
