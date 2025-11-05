@@ -19,6 +19,7 @@ from login_app.utils.jwt_auth import (
     get_access_from_request, get_refresh_from_request,  # ← garantir que existam no jwt_auth.py
     decode_token
 )
+from flask import send_from_directory
 
 load_dotenv()
 
@@ -167,10 +168,9 @@ def publicar():
 # 🏡 Rota para upar imagem
 # ===============================
 
-@auth_bp.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    from flask import send_from_directory, current_app
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+@app.route("/uploads/<path:filename>")
+def uploads(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
 
 
 # ===============================
