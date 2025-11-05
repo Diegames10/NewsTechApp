@@ -20,7 +20,7 @@ def create_app():
     # ✉️ Configuração de upar e mostrar imagem
     # ==============================
     # Configurações básicas
-    BASE_DIR = Path(__file__).resolve().parent
+     BASE_DIR = Path(__file__).resolve().parent
     app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER") or str(BASE_DIR / "static" / "uploads")
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
