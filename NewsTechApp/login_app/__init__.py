@@ -65,12 +65,14 @@ def create_app():
     bcrypt.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-
+    
+    Path("/data").mkdir(parents=True, exist_ok=True)  # garante /data
     # Models (para o Migrate enxergar)
     with app.app_context():
         from login_app.models import user  # noqa: F401
         from login_app.models import post  # noqa: F401
-
+        db.create_all()  # cria para o default e para todos os binds
+        
     # ==============================
     # Blueprints
     # ==============================
