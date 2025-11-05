@@ -115,7 +115,7 @@ def login():
         return render_template("login.html"), 401
 
     # 4) GET sem sessão/JWT → renderiza form
-    return render_template("login.html")
+    #return render_template("login.html")
 
 
 # ===============================
@@ -238,7 +238,7 @@ def google_authorized():
     set_csrf_cookie(resp, csrf_token)
     return resp
 
-    return redirect(url_for("auth.home"))
+    #return redirect(url_for("auth.home"))
 
 # ===============================
 # 🐙 GitHub OAuth
@@ -277,7 +277,7 @@ def github_authorized():
     set_csrf_cookie(resp, csrf_token)
     return resp
     
-    return redirect(url_for("auth.home"))
+    #return redirect(url_for("auth.home"))
 
 # ===============================
 # 🆕 Registro local
