@@ -148,24 +148,24 @@ def home():
 # protegida por sessão
 # ===============================
 
-#@auth_bp.route("/publicar", endpoint="publicar")
-#def publicar():
+@auth_bp.route("/publicar", endpoint="publicar")
+def publicar():
     # Mesmo guard do /home: tenta restaurar sessão via JWT se não houver session["user_id"]
-    #if not session.get("user_id"):
-        #token = get_access_from_request(request)
-        #if not token:
-            #return redirect(url_for("auth.login"))
-        #try:
-            #payload = decode_token(token, expected_type="access")
-            #session["user_id"] = int(payload["sub"])
-            #u = User.query.get(session["user_id"])
-            #if u:
-                #session["username"] = u.username or u.email
-        #except Exception:
-            #return redirect(url_for("auth.login"))
+    if not session.get("user_id"):
+        token = get_access_from_request(request)
+        if not token:
+            return redirect(url_for("auth.login"))
+        try:
+            payload = decode_token(token, expected_type="access")
+            session["user_id"] = int(payload["sub"])
+            u = User.query.get(session["user_id"])
+            if u:
+                session["username"] = u.username or u.email
+        except Exception:
+            return redirect(url_for("auth.login"))
 
     # Renderiza o formulário
-    #return render_template("postagem/publicar.html")
+    return render_template("postagem/publicar.html")
 
 
 # ===============================
@@ -179,12 +179,19 @@ def dashboard():
 
 @auth_bp.route("/api/me")
 def api_me():
-    user = {
-        "loggedIn": bool(session.get("user_id")),
-        "name": session.get("user_name"),
-        "email": session.get("user_email"),
-    }
-    return jsonify(user)
+    uid = session.get("user_id")
+    if not uid:
+        return {"logged": False}, 200
+
+    user = User.query.get(uid)
+    # fallback pro email se username estiver vazio
+    username = (user.username or user.email or "Usuário").strip()
+    return {
+        "logged": True,
+        "id": user.id,
+        "username": username,
+        "email": user.email
+    }, 200
 
 # ===============================
 # 🚪 Logout

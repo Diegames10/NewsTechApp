@@ -378,37 +378,3 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch((err) => console.error("Falha ao buscar /api/me:", err));
 });
 
-async function fetchMe() {
-  try {
-    const r = await fetch('/api/me', { headers: { 'Accept': 'application/json' } });
-    if (!r.ok) throw 0;
-    return await r.json();
-  } catch {
-    return { loggedIn: false };
-  }
-}
-
-(async () => {
-  const me = await fetchMe();
-
-  const nomeSpan = document.getElementById('perfil-nome');
-  const menuNome = document.getElementById('menu-nome');
-  const avatar = document.getElementById('avatar');
-  const menuAvatar = document.getElementById('menu-avatar');
-  const btnSair = document.getElementById('btn-sair');
-
-  if (me.loggedIn) {
-    const nome = me.name || 'Usuário';
-    nomeSpan && (nomeSpan.textContent = nome);
-    menuNome && (menuNome.textContent = nome);
-    if (me.avatar) {
-      avatar && (avatar.src = me.avatar);
-      menuAvatar && (menuAvatar.src = me.avatar);
-    }
-    btnSair && (btnSair.style.display = 'block');
-  } else {
-    nomeSpan && (nomeSpan.textContent = 'Entrar');
-    btnSair && (btnSair.style.display = 'none');
-  }
-})();
-

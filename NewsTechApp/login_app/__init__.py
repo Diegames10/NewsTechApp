@@ -2,13 +2,12 @@
 import os
 from pathlib import Path
 
-from flask import Flask, send_from_directory, current_app
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-from login_app.routes.news import news_bp
 
 # Extensões globais
 db = SQLAlchemy()
@@ -30,23 +29,15 @@ def create_app():
 
     # ==============================
     # Uploads (Render usa /data persistente)
-    # ==============================    
+    # ==============================
     app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "/data/uploads")
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
-        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
-    
-    @app.context_processor
-    def inject_current_user():
-        from flask import session
-        return {
-            "current_user_id": session.get("user_id"),
-            "current_user_name": session.get("user_name"),  # <-- padroniza aqui
-            "is_authenticated": bool(session.get("user_id")),
-        }
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+
     # ==============================
     # SMTP (Brevo)
     # ==============================
@@ -64,15 +55,12 @@ def create_app():
     bcrypt.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    app.register_blueprint(news_bp)
-    
-    Path("/data").mkdir(parents=True, exist_ok=True)  # garante /data
+
     # Models (para o Migrate enxergar)
     with app.app_context():
         from login_app.models import user  # noqa: F401
         from login_app.models import post  # noqa: F401
-        db.create_all()  # cria para o default e para todos os binds
-        
+
     # ==============================
     # Blueprints
     # ==============================

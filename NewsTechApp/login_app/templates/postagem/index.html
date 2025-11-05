@@ -19,8 +19,6 @@
       background:#333; color:#f5f5f5; border:1px solid #555;
     }
     .btn { background: var(--primary); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-
-onde coloco um container aqui? 
     .btn.secondary { background:#6b7280; }
     .btn.danger { background:#dc2626; }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
@@ -48,7 +46,7 @@ onde coloco um container aqui?
     .modal .close-x { background:transparent; border:none; font-size:1.4rem; cursor:pointer; color:inherit; }
   </style>
 </head>
-<body data-publicar-url="{{ url_for('auth.publicar') }}">
+<body>
   <header>
     <h1>📰 NewsTech</h1>
     <nav>
@@ -85,7 +83,8 @@ onde coloco um container aqui?
         <option value="titulo-za">Título Z → A</option>
       </select>
       <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
-        <a href="{{ url_for('auth.publicar') }}" class="btn" style="text-decoration:none;">➕ Publicar</a>
+
+      <a href="{{ url_for('auth.publicar') }}" class="btn" style="text-decoration:none;">➕ Publicar</a>
     </div>
 
     <div id="lista-noticias"></div>
@@ -138,8 +137,6 @@ onde coloco um container aqui?
 
 </body>
 </html>
-
-
 
 
 

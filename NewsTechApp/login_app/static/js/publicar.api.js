@@ -1,66 +1,109 @@
-// === Seletores compatíveis com publicar.html atual ===
-const $form      = document.getElementById("form-post");   // era form-publicar
-const $titulo    = document.getElementById("titulo");
-const $conteudo  = document.getElementById("conteudo");
-const $image     = document.getElementById("image");       // era imagem
-const $preview   = document.getElementById("preview");     // se existir no HTML
-const $status    = document.getElementById("status");      // opcional
+const form       = document.getElementById("form-post");
+const idEl       = document.getElementById("id");
+const tituloEl   = document.getElementById("titulo");
+const autorEl    = document.getElementById("autor");
+const conteudoEl = document.getElementById("conteudo");
+const imageEl    = document.getElementById("image");
 
-function msg(txt, ok=false){
-  if (!$status) return;
-  $status.textContent = txt;
-  $status.style.color = ok ? "var(--ok, #16a34a)" : "var(--err, #dc2626)";
+// Use URL literal ou injete window.ROUTES.home no template
+const HOME_URL = "/home";
+const LOGIN_URL = "/login";
+
+function qsId() {
+  const id = new URL(location.href).searchParams.get("id");
+  return id ? Number(id) : null;
 }
 
-// Prévia opcional
-$image?.addEventListener("change", () => {
-  if (!$preview || !$image.files?.length) return;
-  const file = $image.files[0];
-  const reader = new FileReader();
-  reader.onload = e => {
-    $preview.src = e.target.result;
-    $preview.style.display = "block";
-  };
-  reader.readAsDataURL(file);
-});
+async function apiGet(id) {
+  const r = await fetch(`/api/posts/${id}`, {
+    headers: { "Accept": "application/json" },
+    credentials: "include",
+  });
+  if (r.status === 401) { location.href = LOGIN_URL; return; }
+  if (!r.ok) throw new Error("Falha ao carregar");
+  return r.json();
+}
 
-async function salvar(ev){
-  ev.preventDefault();
+async function apiCreateFD(fd) {
+  const r = await fetch(`/api/posts`, {
+    method: "POST",
+    body: fd,
+    credentials: "include",
+  });
+  if (r.status === 401) { location.href = LOGIN_URL; return; }
+  if (!r.ok) throw new Error("Falha ao criar");
+  return r.json();
+}
 
-  const titulo   = ($titulo?.value || "").trim();
-  const conteudo = ($conteudo?.value || "").trim();
-  const file     = $image?.files?.[0] || null;
+async function apiUpdateFD(id, fd) {
+  const r = await fetch(`/api/posts/${id}`, {
+    method: "PUT",
+    body: fd,
+    credentials: "include",
+  });
+  if (r.status === 401) { location.href = LOGIN_URL; return; }
+  if (!r.ok) throw new Error("Falha ao atualizar");
+  return r.json();
+}
 
-  if (!titulo || !conteudo){
-    msg("Preencha título e conteúdo.");
+async function preencherAutor() {
+  try {
+    const me = await fetch("/api/me", { credentials: "include" }).then(r => r.json());
+    if (me?.logged) {
+      autorEl.value = me.username || me.email || "Usuário";
+      autorEl.readOnly = true; // evita edição manual
+    } else {
+      location.href = LOGIN_URL;
+    }
+  } catch {
+    location.href = LOGIN_URL;
+  }
+}
+
+async function boot() {
+  await preencherAutor();
+
+  const id = qsId();
+  if (!id) return;
+
+  try {
+    const p = await apiGet(id);
+    if (!p) return; // já redirecionou
+    idEl.value       = p.id;
+    tituloEl.value   = p.titulo || "";
+    autorEl.value    = p.autor || autorEl.value || "";
+    conteudoEl.value = p.conteudo || "";
+    document.title   = `Editar: ${p.titulo} • Portal`;
+  } catch (e) {
+    alert(e.message || "Erro ao carregar a postagem");
+  }
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = idEl.value ? Number(idEl.value) : null;
+
+  const fd = new FormData();
+  fd.append("titulo",   tituloEl.value.trim());
+  fd.append("autor",    autorEl.value.trim());
+  fd.append("conteudo", conteudoEl.value.trim());
+  if (imageEl.files && imageEl.files[0]) {
+    fd.append("image", imageEl.files[0]);
+  }
+
+  if (!fd.get("titulo") || !fd.get("autor") || !fd.get("conteudo")) {
+    alert("Preencha todos os campos.");
     return;
   }
 
   try {
-    const fd = new FormData();
-    fd.set("titulo", titulo);
-    fd.set("conteudo", conteudo);
-    if (file) fd.set("image", file);      // name="image" no HTML
-
-    const r = await fetch("/api/posts/", {
-      method: "POST",
-      body: fd
-      // cookies de sessão seguem automaticamente (mesmo domínio)
-    });
-
-    if (!r.ok){
-      const j = await r.json().catch(()=>({}));
-      throw new Error(j?.error || `Falha ao salvar (${r.status})`);
-    }
-
-    msg("Post publicado com sucesso!", true);
-    // redireciona ao portal
-    setTimeout(()=> { location.href = "/"; }, 600);
-
-  } catch(e){
-    console.error(e);
-    msg(e.message || "Erro ao salvar.");
+    if (id) await apiUpdateFD(id, fd);
+    else    await apiCreateFD(fd);
+    location.href = HOME_URL; // nada de Jinja aqui
+  } catch (e) {
+    alert(e.message || "Erro ao salvar a postagem");
   }
-}
+});
 
-$form?.addEventListener("submit", salvar);
+boot();
