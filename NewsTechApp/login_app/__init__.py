@@ -36,7 +36,7 @@ def create_app():
     app.register_blueprint(auth_bp)
 
     # Exemplo: registrar blueprint de posts se existir
-    from login_app.routes.api_posts import api_bp
+    from login_app.routes.pots_api import api_bp
     app.register_blueprint(api_bp)
     
     # ==============================
