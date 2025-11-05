@@ -42,11 +42,19 @@ def current_user():
 def _save_image(file):
     if not file or not getattr(file, "filename", ""):
         return None, None
+
     ext = file.filename.rsplit(".", 1)[-1].lower()
     if ext not in {"png", "jpg", "jpeg", "gif", "webp"}:
         return None, "Formato de imagem não permitido"
+
+    upload_dir = current_app.config.get("UPLOAD_FOLDER", "/data/uploads")
+    os.makedirs(upload_dir, exist_ok=True)  # garante /data/uploads
+
+    from uuid import uuid4
+    from werkzeug.utils import secure_filename
+
     filename = f"{uuid4().hex}_{secure_filename(file.filename)}"
-    file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
+    file.save(os.path.join(upload_dir, filename))
     return filename, None
 
 # ======================================================
