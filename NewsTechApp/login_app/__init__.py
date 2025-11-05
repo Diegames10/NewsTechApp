@@ -2,12 +2,14 @@
 import os
 from pathlib import Path
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+
 
 # Extensões globais
 db = SQLAlchemy()
