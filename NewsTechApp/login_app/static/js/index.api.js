@@ -31,9 +31,11 @@ function postCard(p){
   const div = document.createElement("div");
   div.className = "card";
 
-  // mostra a imagem se vier no JSON
+  // log para ver o que está chegando
+  console.log("POST:", p);
+
   const imgHtml = p.image_url
-    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy">`
+    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy" onerror="this.dataset.err=1;console.warn('Falha ao carregar imagem:', this.src)"/>`
     : "";
 
   div.innerHTML = `
@@ -50,6 +52,7 @@ function postCard(p){
   `;
   return div;
 }
+
 
 async function render(q=""){
   const items = await apiList(q);
