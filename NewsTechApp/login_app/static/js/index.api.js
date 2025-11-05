@@ -1,5 +1,5 @@
 // tenta pegar pelos ids "novos" e, se não existir, pelos "antigos"
-const listEl   = document.getElementById("lista-noticias") || document.getElementById("list");
+const listEl = document.querySelector("#lista-noticias, #list") || document.getElementById("list");
 const emptyEl  = document.getElementById("vazio")          || document.getElementById("empty");
 const countEl  = document.getElementById("contador")       || document.getElementById("count");
 const searchEl = document.getElementById("q")              || document.getElementById("search");
