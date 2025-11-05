@@ -2,16 +2,15 @@
 import os
 
 class Config:
-   SECRET_KEY = os.getenv("SECRET_KEY", "troque-este-segredo-em-producao")
+    # Flask
+    SECRET_KEY = os.getenv("SECRET_KEY", "troque-este-segredo-em-producao")
+    PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", "https")
 
-    # Banco principal (usuários etc.)
+    # SQLAlchemy
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:////data/app.db")
-
-    # Banco de postagens (bind)
     SQLALCHEMY_BINDS = {
-        "posts": os.getenv("POSTS_DATABASE_URL", "sqlite:////data/posts.db")
+        "posts": os.getenv("POSTS_DB_URL", "sqlite:////data/posts.db"),
     }
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Uploads no disco persistente do Render
