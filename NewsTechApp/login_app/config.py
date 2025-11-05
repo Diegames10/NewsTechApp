@@ -47,9 +47,9 @@ class Config:
     # Cookies seguros (Render é HTTPS)
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SAMESITE = "None"
 
     # Para os cookies de JWT
     COOKIE_SECURE = True
-    COOKIE_SAMESITE = "Lax"
+    COOKIE_SAMESITE = "None"
     COOKIE_DOMAIN = None  # deixe None; Render define domínio. Ajuste se usar subdomínios.
