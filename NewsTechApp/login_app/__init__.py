@@ -8,8 +8,7 @@ from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-
-
+from login_app.routes.news import news_bp
 
 # Extensões globais
 db = SQLAlchemy()
@@ -65,6 +64,7 @@ def create_app():
     bcrypt.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    app.register_blueprint(news_bp)
     
     Path("/data").mkdir(parents=True, exist_ok=True)  # garante /data
     # Models (para o Migrate enxergar)
