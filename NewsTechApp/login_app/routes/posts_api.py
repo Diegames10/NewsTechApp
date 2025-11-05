@@ -4,6 +4,9 @@ from sqlalchemy import or_
 from login_app import db
 from login_app.models.post import Post
 from login_app.models.user import User
+from uuid import uuid4
+import os
+from werkzeug.utils import secure_filename
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
@@ -102,7 +105,46 @@ def create_post():
         "autor": post.autor,
         "criado_em": post.criado_em.isoformat()
     }), 201
-    
+
+
+def _save_image(file):
+    if not file or not file.filename:
+        return None, None
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in {"png","jpg","jpeg","gif","webp"}:
+        return None, "Formato de imagem não permitido"
+    filename = f"{uuid4().hex}_{secure_filename(file.filename)}"
+    file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
+    return filename, None
+
+@api_bp.route("/api/posts", methods=["POST"])
+def create_post():
+    titulo = request.form.get("titulo")
+    autor = request.form.get("autor")
+    conteudo = request.form.get("conteudo")
+    imagem = request.files.get("image")
+
+    if not (titulo and autor and conteudo):
+        return jsonify({"error": "Campos obrigatórios"}), 400
+
+    image_filename, err = _save_image(imagem)
+    if err:
+        return jsonify({"error": err}), 400
+
+    post = Post(titulo=titulo, autor=autor, conteudo=conteudo, image_filename=image_filename)
+    db.session.add(post)
+    db.session.commit()
+
+    return jsonify({
+        "id": post.id,
+        "titulo": post.titulo,
+        "autor": post.autor,
+        "conteudo": post.conteudo,
+        "image_url": url_for("uploads", filename=image_filename, _external=True)
+    }), 201
+
+
+
 # 🔹 Atualizar postagem (apenas o dono pode)
 @posts_api.route("/<int:pid>", methods=["PUT"])
 @login_required_api
