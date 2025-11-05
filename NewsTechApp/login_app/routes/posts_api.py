@@ -79,10 +79,15 @@ def to_dict(post: Post):
 # ======================================================
 
 # 🔹 Listar (com busca opcional ?q=)
+# 🔹 Listar (com busca opcional ?q=) + paginação (?page=1&per_page=10)
 @posts_api.route("", methods=["GET"])
 @login_required_api
 def list_posts():
     q = (request.args.get("q") or "").strip()
+    page = max(int(request.args.get("page", 1)), 1)
+    per_page = int(request.args.get("per_page", 10))
+    per_page = 1 if per_page < 1 else (100 if per_page > 100 else per_page)  # limites seguros
+
     query = Post.query
     if q:
         like = f"%{q}%"
@@ -91,8 +96,23 @@ def list_posts():
             Post.conteudo.ilike(like),
             Post.autor.ilike(like),
         ))
-    posts = query.order_by(Post.id.desc()).all()
-    return jsonify([to_dict(p) for p in posts]), 200
+
+    query = query.order_by(Post.id.desc())
+    page_obj = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        "items": [to_dict(p) for p in page_obj.items],
+        "meta": {
+            "page": page_obj.page,
+            "per_page": page_obj.per_page,
+            "total": page_obj.total,
+            "pages": page_obj.pages,
+            "has_next": page_obj.has_next,
+            "has_prev": page_obj.has_prev,
+            "next_page": page_obj.next_num if page_obj.has_next else None,
+            "prev_page": page_obj.prev_num if page_obj.has_prev else None,
+        }
+    }), 200
 
 # 🔹 Criar (suporta multipart OU JSON)
 @posts_api.route("", methods=["POST"])
