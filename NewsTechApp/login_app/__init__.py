@@ -8,7 +8,7 @@ from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-from login_app.models import post
+
 
 # Extensões globais
 db = SQLAlchemy()
