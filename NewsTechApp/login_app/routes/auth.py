@@ -148,24 +148,24 @@ def home():
 # protegida por sessão
 # ===============================
 
-@auth_bp.route("/publicar", endpoint="publicar")
-def publicar():
+#@auth_bp.route("/publicar", endpoint="publicar")
+#def publicar():
     # Mesmo guard do /home: tenta restaurar sessão via JWT se não houver session["user_id"]
-    if not session.get("user_id"):
-        token = get_access_from_request(request)
-        if not token:
-            return redirect(url_for("auth.login"))
-        try:
-            payload = decode_token(token, expected_type="access")
-            session["user_id"] = int(payload["sub"])
-            u = User.query.get(session["user_id"])
-            if u:
-                session["username"] = u.username or u.email
-        except Exception:
-            return redirect(url_for("auth.login"))
+    #if not session.get("user_id"):
+        #token = get_access_from_request(request)
+        #if not token:
+            #return redirect(url_for("auth.login"))
+        #try:
+            #payload = decode_token(token, expected_type="access")
+            #session["user_id"] = int(payload["sub"])
+            #u = User.query.get(session["user_id"])
+            #if u:
+                #session["username"] = u.username or u.email
+        #except Exception:
+            #return redirect(url_for("auth.login"))
 
     # Renderiza o formulário
-    return render_template("postagem/publicar.html")
+    #return render_template("postagem/publicar.html")
 
 
 # ===============================
