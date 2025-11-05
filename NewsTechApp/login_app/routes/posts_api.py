@@ -106,6 +106,31 @@ def create_post():
         "criado_em": post.criado_em.isoformat()
     }), 201
 
+@api_bp.route("/api/posts/<int:pid>", methods=["PUT"])
+def api_posts_update(pid):
+    post = Post.query.get_or_404(pid)
+    titulo   = request.form.get("titulo","").strip()
+    autor    = request.form.get("autor","").strip()
+    conteudo = request.form.get("conteudo","").strip()
+    image    = request.files.get("image")
+
+    if titulo:   post.titulo   = titulo
+    if autor:    post.autor    = autor
+    if conteudo: post.conteudo = conteudo
+
+    if image and image.filename:
+        fname, err = _save_image(image)
+        if err: return jsonify({"error": err}), 400
+        post.image_filename = fname
+
+    db.session.commit()
+    return jsonify({
+        "id": post.id,
+        "titulo": post.titulo,
+        "autor": post.autor,
+        "conteudo": post.conteudo,
+        "image_url": (url_for("uploads", filename=post.image_filename) if post.image_filename else None)
+    }), 200
 
 def _save_image(file):
     if not file or not file.filename:
