@@ -8,6 +8,8 @@ from login_app.models.user import User
 from uuid import uuid4
 import os
 from werkzeug.utils import secure_filename
+from login_app.utils.jwt_auth import login_required_api
+
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
@@ -128,14 +130,17 @@ def create_post():
 @posts_api.route("/<int:pid>", methods=["PUT"])
 @login_required_api
 def update_post(pid):
+    # quem está logado (para validar autoria)
     user, display = current_user()
+
     post = Post.query.get_or_404(pid)
 
-    # regra simples: só o autor com o mesmo display pode editar
+    # regra simples: só o autor (mesmo nome exibido) pode editar
     if (post.autor or "").strip().lower() != (display or "").strip().lower():
         abort(403, "Você não tem permissão para editar esta postagem.")
 
-    if request.content_type and "multipart/form-data" in request.content_type:
+    # ler dados (multipart ou JSON)
+    if request.mimetype and "multipart/form-data" in request.mimetype:
         titulo   = (request.form.get("titulo") or "").strip()
         autor    = (request.form.get("autor") or "").strip()
         conteudo = (request.form.get("conteudo") or "").strip()
@@ -147,11 +152,13 @@ def update_post(pid):
         conteudo = (data.get("conteudo") or "").strip()
         image    = None
 
+    # aplicar alterações se vieram
     if titulo:   post.titulo   = titulo
     if autor:    post.autor    = autor
     if conteudo: post.conteudo = conteudo
 
-    if image and image.filename:
+    # tratar upload de imagem (opcional)
+    if image and getattr(image, "filename", ""):
         fname, err = _save_image(image)
         if err:
             return jsonify({"error": err}), 400
