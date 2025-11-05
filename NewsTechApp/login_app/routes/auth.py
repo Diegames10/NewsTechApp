@@ -1,25 +1,27 @@
-from login_app.utils.token import generate_reset_token, verify_reset_token
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import (
+    Blueprint, render_template, request, redirect, url_for, flash,
+    session, current_app, jsonify, make_response, send_from_directory
+)
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask_mail import Message
+from itsdangerous import URLSafeTimedSerializer
 from dotenv import load_dotenv
 import os
-from itsdangerous import URLSafeTimedSerializer
 from functools import wraps
 
 # Extensões globais
 from login_app import db, bcrypt, mail
 from login_app.models.user import User
-from flask import jsonify
-from flask import make_response
+
+# Tokens / JWT helpers
+from login_app.utils.token import generate_reset_token, verify_reset_token
 from login_app.utils.jwt_auth import (
     create_access_token, create_refresh_token,
     set_jwt_cookies, set_csrf_cookie, clear_jwt_cookies,
-    get_access_from_request, get_refresh_from_request,  # ← garantir que existam no jwt_auth.py
-    decode_token
+    get_access_from_request, get_refresh_from_request,
+    decode_token,
 )
-from flask import send_from_directory
 
 load_dotenv()
 
