@@ -36,8 +36,9 @@ def create_app():
     app.register_blueprint(auth_bp)
 
     # Exemplo: registrar blueprint de posts se existir
-    from login_app.routes.posts_api import api_bp
-    app.register_blueprint(api_bp)
+    from login_app.routes.posts_api import posts_api
+    app.register_blueprint(posts_api)  # sem url_prefix aqui
+
     
     # ==============================
     # 🔒 Corrigir redirecionamento HTTPS no Render
