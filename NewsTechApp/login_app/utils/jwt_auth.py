@@ -2,7 +2,9 @@
 import time
 import jwt
 from typing import Optional, Dict, Any
-from flask import current_app, Request
+from flask import current_app
+from functools import wraps
+from flask import request, session, jsonify, g
 
 # ---------- helpers internos ----------
 def _now() -> int:
@@ -146,3 +148,48 @@ def get_refresh_from_request(req: Request) -> Optional[str]:
     """
     name = _cfg("JWT_REFRESH_COOKIE_NAME", "refresh_token")
     return req.cookies.get(name)
+
+def login_required_api(fn):
+    """
+    Protege endpoints de API. Aceita sessão ativa OU JWT de acesso válido.
+    - Se ok, preenche g.current_user e segue.
+    - Se não, responde JSON 401.
+    """
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        # 1) Sessão já autenticada?
+        if session.get("user_id"):
+            # opcional: preencher g.current_user
+            try:
+                from login_app.models.user import User
+                user = User.query.get(session["user_id"])
+                if user:
+                    g.current_user = user
+            except Exception:
+                pass
+            return fn(*args, **kwargs)
+
+        # 2) Tentar via JWT de acesso
+        token = get_access_from_request(request)
+        if not token:
+            return jsonify({"error": "unauthorized"}), 401
+
+        try:
+            data = decode_token(token, expected_type="access")
+            uid = int(data["sub"])
+        except Exception:
+            return jsonify({"error": "invalid token"}), 401
+
+        # opcional: carregar usuário (lazy import para evitar ciclo)
+        try:
+            from login_app.models.user import User
+            user = User.query.get(uid)
+            if not user:
+                return jsonify({"error": "user not found"}), 404
+            g.current_user = user
+        except Exception:
+            # Se der problema para carregar, ainda assim deixa passar com uid
+            g.current_user = None
+
+        return fn(*args, **kwargs)
+    return wrapper
