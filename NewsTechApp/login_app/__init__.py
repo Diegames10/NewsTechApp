@@ -40,6 +40,15 @@ def create_app():
     def uploads(filename):
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
+    @app.context_processor
+    def inject_current_user():
+        return {
+            "current_user_name": session.get("user_name"),
+            "current_user_email": session.get("user_email"),
+            "current_user_avatar": session.get("user_avatar"),
+            "current_user_logged": bool(session.get("user_id")),
+        }
+
     # ==============================
     # SMTP (Brevo)
     # ==============================
