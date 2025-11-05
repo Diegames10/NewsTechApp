@@ -4,12 +4,6 @@ const emptyEl  = document.getElementById("vazio")          || document.getElemen
 const countEl  = document.getElementById("contador")       || document.getElementById("count");
 const searchEl = document.getElementById("q")              || document.getElementById("search");
 
-let state = {
-  q: "",
-  page: 1,
-  perPage: 10
-};
-
 function escapeHtml(s=""){
   return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
