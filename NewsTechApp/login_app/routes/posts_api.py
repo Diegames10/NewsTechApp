@@ -14,7 +14,8 @@ from login_app.utils.jwt_auth import login_required_api
 # ======================================================
 # 🔗 Blueprint da API de Postagens
 # ======================================================
-posts_api = Blueprint("posts_api", __name__, url_prefix="/")  # <-- COM barra
+posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
+posts_api.strict_slashes = False  # aceita /api/posts e /api/posts/
 
 @posts_api.post("/api/posts")
 def create_post():
