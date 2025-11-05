@@ -36,7 +36,7 @@ def create_app():
 
    @app.route("/uploads/<path:filename>")
     def uploads(filename):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
     # ==============================
     # SMTP (Brevo)
