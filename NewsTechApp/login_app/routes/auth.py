@@ -169,7 +169,6 @@ def publicar():
 
     return render_template("postagem/publicar.html")
 
-    return redirect(url_for("auth.home"))
     
 # ===============================
 # 📊 Dashboard (opcional)
