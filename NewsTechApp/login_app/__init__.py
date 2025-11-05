@@ -29,12 +29,12 @@ def create_app():
 
     # ==============================
     # Uploads (Render usa /data persistente)
-    # ==============================
+    # ==============================    
     app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "/data/uploads")
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-   @app.route("/uploads/<path:filename>")
+    @app.route("/uploads/<path:filename>")
     def uploads(filename):
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
