@@ -164,6 +164,16 @@ def publicar():
     return render_template("postagem/publicar.html")
 
 # ===============================
+# 🏡 Rota para upar imagem
+# ===============================
+
+@auth_bp.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    from flask import send_from_directory, current_app
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+
+# ===============================
 # 📊 Dashboard (opcional)
 # ===============================
 @auth_bp.route("/dashboard")
