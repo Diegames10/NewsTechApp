@@ -52,19 +52,22 @@ def _save_image(file):
 # ======================================================
 # 🧱 Serializer
 # ======================================================
-def to_dict(post: Post):
+from flask import url_for
+
+def to_dict(p):
     return {
-        "id": post.id,
-        "titulo": post.titulo,
-        "conteudo": post.conteudo,
-        "autor": post.autor,
-        "criado_em": post.criado_em.isoformat() if getattr(post, "criado_em", None) else None,
-        "atualizado_em": post.atualizado_em.isoformat() if getattr(post, "atualizado_em", None) else None,
+        "id": p.id,
+        "titulo": p.titulo,
+        "conteudo": p.conteudo,
+        "autor": p.autor,
         "image_url": (
-            url_for("uploads", filename=post.image_filename, _external=True)
-            if getattr(post, "image_filename", None) else None
+            url_for("uploads", filename=p.image_filename, _external=True)
+            if p.image_filename else None
         ),
+        "criado_em": p.criado_em.isoformat() if p.criado_em else None,
+        "atualizado_em": p.atualizado_em.isoformat() if p.atualizado_em else None,
     }
+
 
 # ======================================================
 # 📜 Rotas
@@ -74,16 +77,7 @@ def to_dict(post: Post):
 @posts_api.route("", methods=["GET"])
 @login_required_api
 def list_posts():
-    q = (request.args.get("q") or "").strip()
-    query = Post.query
-    if q:
-        like = f"%{q}%"
-        query = query.filter(or_(
-            Post.titulo.ilike(like),
-            Post.conteudo.ilike(like),
-            Post.autor.ilike(like),
-        ))
-    posts = query.order_by(Post.id.desc()).all()
+    posts = Post.query.order_by(Post.criado_em.desc()).all()
     return jsonify([to_dict(p) for p in posts]), 200
 
 # 🔹 Criar (suporta multipart OU JSON)
