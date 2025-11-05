@@ -21,8 +21,8 @@ def create_app():
     # ==============================
     # Configurações básicas
      BASE_DIR = Path(__file__).resolve().parent
-    app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER") or str(BASE_DIR / "static" / "uploads")
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+     app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER") or str(BASE_DIR / "static" / "uploads")
+     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # Rota para servir arquivos enviados (imagens)
     from flask import send_from_directory
