@@ -45,7 +45,7 @@ def create_app():
         from flask import session
         return {
             "current_user_id": session.get("user_id"),
-            "current_user_name": session.get("username"),  # <-- padroniza aqui
+            "current_user_name": session.get("user_name"),  # <-- padroniza aqui
             "is_authenticated": bool(session.get("user_id")),
         }
     # ==============================
