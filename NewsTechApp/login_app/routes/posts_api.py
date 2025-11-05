@@ -1,15 +1,14 @@
 # login_app/routes/posts_api.py
 from flask import Blueprint, request, jsonify, abort, session, current_app, url_for
 from functools import wraps
-from sqlalchemy import or_
 from login_app import db
-from login_app.models.post import Post, db
+from login_app.models.post import Post
 from login_app.models.user import User
 from uuid import uuid4
 import os
 from werkzeug.utils import secure_filename
-from login_app.utils.jwt_auth import login_required_api
-
+# use o decorator centralizado (se você já tem em utils, use só um deles)
+# from login_app.utils.jwt_auth import login_required_api
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
@@ -17,41 +16,10 @@ from login_app.utils.jwt_auth import login_required_api
 posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
 posts_api.strict_slashes = False  # aceita /api/posts e /api/posts/
 
-@posts_api.post("/api/posts")
-def create_post():
-    data = request.form if request.form else request.get_json(silent=True) or {}
-    titulo = (data.get("titulo") or "").strip()
-    conteudo = (data.get("conteudo") or "").strip()
-
-    if not session.get("user_id"):
-        abort(401)
-
-    autor = session.get("user_name") or "Anônimo"
-
-    p = Post(titulo=titulo, conteudo=conteudo, autor=autor)
-    # tratar upload de imagem se vier via multipart...
-    db.session.add(p)
-    db.session.commit()
-    return jsonify(p.to_dict()), 201
-
-@posts_api.put("/api/posts/<int:post_id>")
-def update_post(post_id):
-    if not session.get("user_id"):
-        abort(401)
-
-    p = Post.query.get_or_404(post_id)
-    data = request.form if request.form else request.get_json(silent=True) or {}
-
-    p.titulo = (data.get("titulo") or p.titulo).strip()
-    p.conteudo = (data.get("conteudo") or p.conteudo).strip()
-    # reforça o autor do usuário logado
-    p.autor = session.get("user_name") or p.autor
-
-    db.session.commit()
-    return jsonify(p.to_dict())
-
 # ======================================================
-# 🔒 Decorator: exige login ativo
+# 🔒 Decorator: exige login ativo (se não tiver um centralizado)
+#   -> Se você já tem em login_app.utils.jwt_auth, APAGUE este bloco
+#      e importe de lá para evitar duplicidade.
 # ======================================================
 def login_required_api(fn):
     @wraps(fn)
@@ -86,9 +54,7 @@ def _save_image(file):
 # ======================================================
 # 🧱 Serializer
 # ======================================================
-from flask import url_for
-
-def to_dict(p):
+def to_dict(p: Post):
     return {
         "id": p.id,
         "titulo": p.titulo,
@@ -96,26 +62,35 @@ def to_dict(p):
         "autor": p.autor,
         "image_url": (
             url_for("uploads", filename=p.image_filename, _external=True)
-            if p.image_filename else None
+            if getattr(p, "image_filename", None) else None
         ),
-        "criado_em": p.criado_em.isoformat() if p.criado_em else None,
-        "atualizado_em": p.atualizado_em.isoformat() if p.atualizado_em else None,
+        "criado_em": p.criado_em.isoformat() if getattr(p, "criado_em", None) else None,
+        "atualizado_em": p.atualizado_em.isoformat() if getattr(p, "atualizado_em", None) else None,
     }
-
 
 # ======================================================
 # 📜 Rotas
 # ======================================================
 
-# 🔹 Listar (com busca opcional ?q=)
-@posts_api.route("", methods=["GET"])
+# 🔹 Listar (com busca opcional ?q=) — USE "/" e não string vazia
+@posts_api.route("/", methods=["GET"])
 @login_required_api
 def list_posts():
-    posts = Post.query.order_by(Post.criado_em.desc()).all()
+    q = (request.args.get("q") or "").strip()
+    query = Post.query
+    if q:
+        # busca simples por título/autor/conteúdo
+        like = f"%{q}%"
+        query = query.filter(
+            (Post.titulo.ilike(like)) |
+            (Post.autor.ilike(like)) |
+            (Post.conteudo.ilike(like))
+        )
+    posts = query.order_by(Post.criado_em.desc()).all()
     return jsonify([to_dict(p) for p in posts]), 200
 
-# 🔹 Criar (suporta multipart OU JSON)
-@posts_api.route("", methods=["POST"])
+# 🔹 Criar (suporta multipart OU JSON) — APENAS UM create_post
+@posts_api.route("/", methods=["POST"])
 @login_required_api
 def create_post():
     # multipart (form + arquivo) ou JSON puro
@@ -152,13 +127,12 @@ def create_post():
     db.session.commit()
     return jsonify(to_dict(post)), 201
 
-# 🔹 Atualizar (PUT; aceita trocar texto e opcionalmente a imagem)
+# 🔹 Atualizar (PUT; aceita trocar texto e opcionalmente a imagem) — APENAS UM update_post
 @posts_api.route("/<int:pid>", methods=["PUT"])
 @login_required_api
 def update_post(pid):
     # quem está logado (para validar autoria)
     user, display = current_user()
-
     post = Post.query.get_or_404(pid)
 
     # regra simples: só o autor (mesmo nome exibido) pode editar
