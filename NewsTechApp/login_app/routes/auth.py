@@ -11,7 +11,7 @@ from functools import wraps
 # Extensões globais
 from login_app import db, bcrypt, mail
 from login_app.models.user import User
-
+from flask import jsonify
 from flask import make_response
 from login_app.utils.jwt_auth import (
     create_access_token, create_refresh_token,
