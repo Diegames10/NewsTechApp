@@ -35,7 +35,7 @@ def create_app():
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
    @app.route("/uploads/<path:filename>")
-def uploads(filename):
+    def uploads(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
     # ==============================
