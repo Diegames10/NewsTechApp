@@ -36,10 +36,9 @@
   <main class="escritor-container">
     <form id="form-post"
       class="form-noticia"
-      enctype="multipart/form-data"
       method="post"
-      action="{{ url_for('auth.publicar') }}"
-      autocomplete="off">
+      enctype="multipart/form-data"
+      action="{{ url_for('posts_api.create_post') }}">
       
       <input type="hidden" id="id" name="id">
 
@@ -76,6 +75,7 @@
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
+
 
 
 
