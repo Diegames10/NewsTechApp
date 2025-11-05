@@ -4,7 +4,12 @@ import jwt
 from typing import Optional, Dict, Any
 from flask import current_app
 from functools import wraps
-from flask import request, session, jsonify, g
+from flask import session, jsonify, g
+# imports de tipos
+from typing import Optional
+
+# Request para type hints (Flask >= 2.x)
+from flask import Request
 
 # ---------- helpers internos ----------
 def _now() -> int:
