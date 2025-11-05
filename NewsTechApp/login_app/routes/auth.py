@@ -65,20 +65,15 @@ def root():
 # ===============================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # Imports locais para evitar ciclos e garantir assinatura consistente
-    from login_app.utils.jwt_auth import get_access_from_request, decode_token
-    from flask import make_response
-
     # 1) Se já há sessão ativa -> home
     if session.get("user_id"):
         return redirect(url_for("auth.home"))
 
     # 2) Tenta SSO silencioso via cookie (JWT)
-    token = get_access_from_request(request)  # <<< use SEMPRE passando 'request'
+    token = get_access_from_request(request)  # sempre passe 'request'
     if token:
         try:
             payload = decode_token(token, expected_type="access")
-            # se deu bom, restaura sessão e vai pra home
             uid = int(payload.get("sub"))
             user = User.query.get(uid)
             if user:
@@ -89,14 +84,19 @@ def login():
             # token inválido/expirado → segue para tela de login
             pass
 
-    # 3) Se for POST, valida credenciais
+    # 3) POST: valida credenciais
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
 
-        user = User.query.filter_by(email=email, provider="local").first()
+        # Se sua tabela tem coluna 'provider', mantenha o filtro; senão, remova 'provider="local"'
+        try:
+            user = User.query.filter_by(email=email, provider="local").first()
+        except Exception:
+            user = User.query.filter_by(email=email).first()
+
         if user and bcrypt.check_password_hash(user.password_hash, password):
-            # mantém sessão para compatibilidade
+            # mantém sessão
             session["user_id"] = user.id
             session["username"] = user.username or user.email
 
@@ -108,15 +108,16 @@ def login():
             resp = make_response(redirect(url_for("auth.home")))
             set_jwt_cookies(resp, access, refresh)
             set_csrf_cookie(resp, csrf_token)
+
             flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
             return resp
 
-        # credenciais inválidas → volta pro form
+        # credenciais inválidas → volta pro form com 401
         flash("E-mail ou senha inválidos.", "danger")
         return render_template("login.html"), 401
 
-    # 4) GET sem sessão/JWT → renderiza form
-    #return render_template("login.html")
+    # 4) GET sem sessão/JWT → renderiza form (AQUI ESTAVA O PROBLEMA: faltava return)
+    return render_template("login.html")
 
 
 # ===============================
