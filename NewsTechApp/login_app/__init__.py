@@ -34,9 +34,9 @@ def create_app():
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    @app.route("/uploads/<path:filename>")
-    def uploads(filename):
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+   @app.route("/uploads/<path:filename>")
+def uploads(filename):
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
     # ==============================
     # SMTP (Brevo)
