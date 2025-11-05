@@ -23,6 +23,11 @@ from login_app.utils.jwt_auth import (
     decode_token,
 )
 
+from uuid import uuid4
+from werkzeug.utils import secure_filename
+import sqlite3
+
+
 load_dotenv()
 
 auth_bp = Blueprint("auth", __name__)
@@ -146,9 +151,7 @@ def home():
 # ===============================
 # 🏡 Publicar
 # protegida por sessão
-# ===============================
-
-@auth_bp.route("/publicar", endpoint="publicar")
+# ===============================@auth_bp.route("/publicar", methods=["GET", "POST"], endpoint="publicar")
 def publicar():
     # Mesmo guard do /home: tenta restaurar sessão via JWT se não houver session["user_id"]
     if not session.get("user_id"):
@@ -164,10 +167,67 @@ def publicar():
         except Exception:
             return redirect(url_for("auth.login"))
 
-    # Renderiza o formulário
-    return render_template("postagem/publicar.html")
+    if request.method == "GET":
+        # Renderiza o formulário
+        return render_template("postagem/publicar.html")
 
+    # ---------- POST: salvar imagem e gravar no banco ----------
+    titulo   = (request.form.get("titulo") or "").strip()
+    autor    = (request.form.get("autor") or "").strip()
+    conteudo = (request.form.get("conteudo") or "").strip()
 
+    # validação simples
+    if not titulo or not autor or not conteudo:
+        flash("Preencha título, autor e conteúdo.", "warning")
+        return redirect(url_for("auth.publicar"))
+
+    # arquivo de imagem (opcional)
+    image = request.files.get("image")
+    image_url = None
+
+    ALLOWED_EXTS = {"png", "jpg", "jpeg", "gif", "webp"}
+    def allowed_image(filename: str) -> bool:
+        return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTS
+
+    if image and image.filename:
+        if not allowed_image(image.filename):
+            flash("Formato inválido. Use PNG, JPG, JPEG, WEBP ou GIF.", "danger")
+            return redirect(url_for("auth.publicar"))
+
+        # salva no disco persistente (/data/uploads), já configurado em __init__.py
+        upload_dir = current_app.config.get("UPLOAD_FOLDER", "/data/uploads")
+        os.makedirs(upload_dir, exist_ok=True)
+
+        fname = f"{uuid4().hex}_{secure_filename(image.filename)}"
+        image.save(os.path.join(upload_dir, fname))
+
+        # URL pública usando sua rota /uploads/<arquivo>
+        image_url = url_for("uploads", filename=fname)
+
+    # grava no banco (postagens.db em /data; ajuste se o seu caminho for outro)
+    db_path = os.path.join("/data", "postagens.db")
+    try:
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        # A tabela deve ter a coluna image_url (TEXT). Ajuste o INSERT se seu schema for diferente.
+        cur.execute("""
+            INSERT INTO posts (titulo, autor, conteudo, image_url, criado_em)
+            VALUES (?, ?, ?, ?, datetime('now'))
+        """, (titulo, autor, conteudo, image_url))
+        conn.commit()
+    except Exception as e:
+        flash(f"Erro ao salvar a postagem: {e}", "danger")
+        return redirect(url_for("auth.publicar"))
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    flash("Notícia publicada com sucesso!", "success")
+    # redirecione para a sua página de listagem (ajuste o endpoint, se necessário)
+    return redirect(url_for("auth.home"))
+    
 # ===============================
 # 📊 Dashboard (opcional)
 # ===============================
