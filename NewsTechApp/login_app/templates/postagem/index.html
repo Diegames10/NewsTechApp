@@ -128,12 +128,14 @@
   </div>
 
   <!-- JS base (tema/menu) -->
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <!-- Inicialização da listagem (CRUD) -->
-  <script type="module" src="{{ url_for('static', filename='js/index.api.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css') }}">
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
 
 </body>
 </html>
+
