@@ -7,8 +7,6 @@ from login_app.models.user import User
 from uuid import uuid4
 import os
 from werkzeug.utils import secure_filename
-# use o decorator centralizado (se você já tem em utils, use só um deles)
-# from login_app.utils.jwt_auth import login_required_api
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
@@ -17,9 +15,8 @@ posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
 posts_api.strict_slashes = False  # aceita /api/posts e /api/posts/
 
 # ======================================================
-# 🔒 Decorator: exige login ativo (se não tiver um centralizado)
-#   -> Se você já tem em login_app.utils.jwt_auth, APAGUE este bloco
-#      e importe de lá para evitar duplicidade.
+# 🔒 Decorator: exige login ativo
+#   -> Se você já tem um igual em login_app.utils.jwt_auth, remova este e importe de lá.
 # ======================================================
 def login_required_api(fn):
     @wraps(fn)
@@ -72,14 +69,13 @@ def to_dict(p: Post):
 # 📜 Rotas
 # ======================================================
 
-# 🔹 Listar (com busca opcional ?q=) — USE "/" e não string vazia
+# 🔹 Listar (com busca opcional ?q=) — use "/" (não string vazia)
 @posts_api.route("/", methods=["GET"])
 @login_required_api
 def list_posts():
     q = (request.args.get("q") or "").strip()
     query = Post.query
     if q:
-        # busca simples por título/autor/conteúdo
         like = f"%{q}%"
         query = query.filter(
             (Post.titulo.ilike(like)) |
@@ -89,69 +85,66 @@ def list_posts():
     posts = query.order_by(Post.criado_em.desc()).all()
     return jsonify([to_dict(p) for p in posts]), 200
 
-# 🔹 Criar (suporta multipart OU JSON) — APENAS UM create_post
+# 🔹 Criar (suporta multipart OU JSON) — autor SEMPRE da sessão
 @posts_api.route("/", methods=["POST"])
 @login_required_api
 def create_post():
     # multipart (form + arquivo) ou JSON puro
     if request.content_type and "multipart/form-data" in request.content_type:
-    titulo   = (request.form.get("titulo") or "").strip()
-    conteudo = (request.form.get("conteudo") or "").strip()
-    image    = request.files.get("image")
-else:
-    data     = request.get_json(silent=True) or {}
-    titulo   = (data.get("titulo") or "").strip()
-    conteudo = (data.get("conteudo") or "").strip()
-    image    = None
+        titulo   = (request.form.get("titulo") or "").strip()
+        conteudo = (request.form.get("conteudo") or "").strip()
+        image    = request.files.get("image")
+    else:
+        data     = request.get_json(silent=True) or {}
+        titulo   = (data.get("titulo") or "").strip()
+        conteudo = (data.get("conteudo") or "").strip()
+        image    = None  # JSON não traz arquivo
 
-if not titulo or not conteudo:
-    return jsonify({"error": "Título e conteúdo são obrigatórios"}), 400
+    if not titulo or not conteudo:
+        return jsonify({"error": "Título e conteúdo são obrigatórios"}), 400
 
-# autor SEMPRE da sessão
-_, autor_display = current_user()
-post = Post(titulo=titulo, conteudo=conteudo, autor=autor_display)
+    # autor SEMPRE da sessão
+    _, autor_display = current_user()
+    post = Post(titulo=titulo, conteudo=conteudo, autor=autor_display)
 
     # trata imagem se houver
     if image and image.filename:
         fname, err = _save_image(image)
         if err:
             return jsonify({"error": err}), 400
-        # exige que o modelo Post tenha a coluna image_filename
         post.image_filename = fname
 
     db.session.add(post)
     db.session.commit()
     return jsonify(to_dict(post)), 201
 
-# 🔹 Atualizar (PUT; aceita trocar texto e opcionalmente a imagem) — APENAS UM update_post
+# 🔹 Atualizar (PUT; troca texto e opcionalmente a imagem) — NÃO alterar autor
 @posts_api.route("/<int:pid>", methods=["PUT"])
 @login_required_api
 def update_post(pid):
-    # quem está logado (para validar autoria)
+    # valida autoria pela sessão
     user, display = current_user()
     post = Post.query.get_or_404(pid)
 
-    # regra simples: só o autor (mesmo nome exibido) pode editar
     if (post.autor or "").strip().lower() != (display or "").strip().lower():
         abort(403, "Você não tem permissão para editar esta postagem.")
 
-    # ler dados (multipart ou JSON)
+    # ler dados (multipart ou JSON) — sem campo 'autor'
     if request.mimetype and "multipart/form-data" in request.mimetype:
         titulo   = (request.form.get("titulo") or "").strip()
-        autor    = (request.form.get("autor") or "").strip()
         conteudo = (request.form.get("conteudo") or "").strip()
         image    = request.files.get("image")
     else:
         data     = request.get_json(silent=True) or {}
         titulo   = (data.get("titulo") or "").strip()
-        autor    = (data.get("autor") or "").strip()
         conteudo = (data.get("conteudo") or "").strip()
         image    = None
 
     # aplicar alterações se vieram
-    if titulo:   post.titulo   = titulo
-    if autor:    post.autor    = autor
-    if conteudo: post.conteudo = conteudo
+    if titulo:
+        post.titulo = titulo
+    if conteudo:
+        post.conteudo = conteudo
 
     # tratar upload de imagem (opcional)
     if image and getattr(image, "filename", ""):
