@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Publicar Notícia</title>
 
-  <!-- SQLite em WASM e camada de banco -->
+  <!-- CSS do portal -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css') }}">
-  
-
 </head>
 <body>
   <header>
     <h1>Publicar Nova Notícia</h1>
     <nav>
+      <!-- Se quiser voltar pra outra rota, troque 'auth.home' por 'auth.root' ou 'auth.publicar' -->
       <a href="{{ url_for('auth.home') }}" class="nav-link">⬅ Voltar ao Portal</a>
+
       <div class="perfil-container">
         <button id="perfil-btn" type="button">
           <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.png') }}" alt="Perfil">
@@ -34,49 +34,38 @@
   </header>
 
   <main class="escritor-container">
-   <form id="form-post" class="form-noticia" enctype="multipart/form-data">
+    <form id="form-post" class="form-noticia" enctype="multipart/form-data" method="post" autocomplete="off">
       <input type="hidden" id="id" name="id">
-    
+
       <div class="campo">
         <label for="titulo">Título da notícia</label>
         <input type="text" id="titulo" name="titulo" required>
       </div>
-    
+
       <div class="campo">
         <label for="autor">Autor</label>
         <input type="text" id="autor" name="autor" required>
       </div>
-    
+
       <div class="campo">
         <label for="conteudo">Conteúdo</label>
         <textarea id="conteudo" name="conteudo" rows="6" required></textarea>
       </div>
-    
+
       <div class="campo">
         <label for="image">Imagem da Notícia</label>
         <input type="file" id="image" name="image" accept="image/*">
       </div>
-    
+
       <button type="submit" class="btn-publicar">📢 Publicar notícia</button>
     </form>
-
   </main>
 
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
+
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/publicar.api.js') }}"></script>
-  
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
