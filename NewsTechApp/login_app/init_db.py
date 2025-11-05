@@ -5,6 +5,7 @@ Este script deve ser executado uma vez para criar as tabelas necessárias.
 """
 import os
 from app import create_app, db
+from login_app import create_app, db  # <-- corrigido
 
 def init_database():
     """Inicializa o banco de dados criando todas as tabelas."""
