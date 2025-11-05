@@ -7,6 +7,7 @@ from login_app.models.user import User
 from uuid import uuid4
 import os
 from werkzeug.utils import secure_filename
+from login_app.utils.jwt_auth import get_access_from_request, decode_token
 
 # ======================================================
 # 🔗 Blueprint da API de Postagens
@@ -21,7 +22,15 @@ posts_api.strict_slashes = False  # aceita /api/posts e /api/posts/
 def login_required_api(fn):
     @wraps(fn)
     def wrapper(*a, **kw):
-        if not session.get("user_id"):
+        uid = session.get("user_id")
+        if not uid:
+            token = get_access_from_request()
+            if token:
+                data = decode_token(token, expected_type="access")
+                uid = int(data["sub"]) if data else None
+                if uid:
+                    session["user_id"] = uid
+        if not uid:
             return jsonify({"error": "unauthorized"}), 401
         return fn(*a, **kw)
     return wrapper
