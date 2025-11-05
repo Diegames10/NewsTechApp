@@ -307,6 +307,14 @@ footer {
   margin: 0 auto 12px auto;
 }
 
+.thumb {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: .5rem 0;
+}
+
 .paginacao { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin: 16px 0; }
 .paginacao .page-btn {
   border: 1px solid #cfcfcf; background: #fff; color:#111; padding:6px 10px; border-radius:8px; cursor:pointer;
@@ -314,3 +322,4 @@ footer {
 .paginacao .page-btn[disabled] { opacity:.6; cursor:not-allowed; }
 .paginacao .page-btn.active { font-weight:700; border-color: var(--primary); }
 body.dark .paginacao .page-btn { background:#333; color:#f5f5f5; border-color:#555; }
+
