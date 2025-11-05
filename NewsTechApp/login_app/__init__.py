@@ -55,4 +55,10 @@ def create_app():
     from login_app.routes.posts_api import posts_api
     app.register_blueprint(posts_api)  # expõe /api/posts
 
+    # === Fazer upload de imagens das postagens ===
+    app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "/data/uploads")
+    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
     return app
