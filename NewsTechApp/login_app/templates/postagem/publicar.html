@@ -34,7 +34,13 @@
   </header>
 
   <main class="escritor-container">
-    <form id="form-post" class="form-noticia" enctype="multipart/form-data" method="post" autocomplete="off">
+    <form id="form-post"
+      class="form-noticia"
+      enctype="multipart/form-data"
+      method="post"
+      action="{{ url_for('auth.publicar') }}"
+      autocomplete="off">
+      
       <input type="hidden" id="id" name="id">
 
       <div class="campo">
@@ -69,3 +75,4 @@
   <script type="module" src="{{ url_for('static', filename='js/publicar.api.js') }}"></script>
 </body>
 </html>
+
