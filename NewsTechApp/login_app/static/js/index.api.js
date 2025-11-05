@@ -21,14 +21,19 @@ async function apiDelete(id){
 function postCard(p){
   const div = document.createElement("div");
   div.className = "card";
+  const imgHtml = p.image_url
+    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy">`
+    : "";
+
   div.innerHTML = `
+    ${imgHtml}
     <h3 style="margin:0 0 .25rem 0;">${escapeHtml(p.titulo)}</h3>
     <div class="muted" style="margin-bottom:.5rem;">
       por ${escapeHtml(p.autor)} • ${new Date(p.criado_em).toLocaleString()}
     </div>
     <p style="white-space:pre-wrap; margin-bottom:.75rem;">${escapeHtml(p.conteudo)}</p>
     <div style="display:flex; gap:.5rem;">
-      <a class="btn" href="./publicar.html?id=${p.id}">Editar</a>
+      <a class="btn" href="/publicar?id=${p.id}">Editar</a>
       <button class="btn danger" data-del="${p.id}">Excluir</button>
     </div>
   `;
