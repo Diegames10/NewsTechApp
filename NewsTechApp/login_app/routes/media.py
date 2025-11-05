@@ -6,8 +6,11 @@ media_bp = Blueprint("media", __name__)
 
 @media_bp.route("/media/<path:filename>")
 def media_file(filename):
-    upload_dir = current_app.config.get("UPLOAD_DIR", "/data/uploads")
-    full = os.path.join(upload_dir, filename)
-    if not os.path.isfile(full):
+    """Entrega segura de arquivos enviados para /data/uploads"""
+    upload_dir = current_app.config.get("UPLOAD_FOLDER", "/data/uploads")
+    file_path = os.path.join(upload_dir, filename)
+
+    if not os.path.isfile(file_path):
         abort(404)
+
     return send_from_directory(upload_dir, filename)
