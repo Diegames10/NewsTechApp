@@ -1,143 +1,127 @@
+// static/js/index.api.js
+(() => {
+  const API = '/api/posts'; // se o index rodar fora do mesmo domínio, use a URL completa
+  const $lista = document.getElementById('lista-noticias');
+  const $vazio = document.getElementById('vazio');
+  const $q = document.getElementById('q');
+  const $ordem = document.getElementById('ordem');
+  const $btnAtualizar = document.getElementById('btn-atualizar');
+  const $paginacao = document.getElementById('paginacao');
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Publicar Notícia</title>
+  // estado local
+  let posts = [];
+  let filtrados = [];
+  let pagina = 1;
+  const POR_PAGINA = 10;
 
-  <!-- CSS (sempre via url_for) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css') }}">
+  const fmtData = (iso) => {
+    try { return new Date(iso).toLocaleString(); } catch { return ''; }
+  };
 
-  <style>
-    .toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
-    .toolbar input[type="search"], .toolbar select {
-      padding: 8px 10px; border-radius: 8px; border: 1px solid #cfcfcf; background: #fff; color: #000;
-    }
-    body.dark .toolbar input[type="search"], body.dark .toolbar select {
-      background:#333; color:#f5f5f5; border:1px solid #555;
-    }
-    .btn { background: var(--primary); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-    .btn.secondary { background:#6b7280; }
-    .btn.danger { background:#dc2626; }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .lista-vazia { text-align:center; opacity:.8; padding:24px 0; }
-    .card-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  const render = () => {
+    // paginação
+    const inicio = (pagina - 1) * POR_PAGINA;
+    const fim = inicio + POR_PAGINA;
+    const paginaItens = filtrados.slice(inicio, fim);
 
-    /* Modal */
-    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:1000; }
-    .modal {
-      width:min(720px, 92vw); background:var(--bg); color:var(--text);
-      border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:18px;
+    if (!filtrados.length) {
+      $lista.innerHTML = '';
+      $vazio.style.display = 'block';
+      $paginacao.innerHTML = '';
+      return;
     }
-    .modal header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-    .modal h3 { margin:0; }
-    .modal .modal-body { display:grid; gap:10px; }
-    .modal .row { display:grid; gap:6px; }
-    .modal footer { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
-    .modal input[type="text"], .modal textarea, .modal input[type="file"] {
-      width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cfcfcf; background:#fff; color:#000;
-    }
-    body.dark .modal input[type="text"], body.dark .modal textarea, body.dark .modal input[type="file"] {
-      background:#333; color:#f5f5f5; border:1px solid #555;
-    }
-    .modal .img-preview { max-width:100%; border-radius:8px; display:block; }
-    .modal .close-x { background:transparent; border:none; font-size:1.4rem; cursor:pointer; color:inherit; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>📰 NewsTech</h1>
-    <nav>
-      <!-- ideal: a âncora aqui deveria apontar para uma ROTA Flask que renderiza publicar.html -->
-      <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
 
-      <div class="perfil-container">
-        <button id="perfil-btn" type="button">
-          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.png') }}" alt="Perfil">
-          <span id="perfil-nome">Entrar</span> ▾
-        </button>
-        <div class="perfil-menu" id="perfil-menu">
-          <div class="perfil-info">
-            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.png') }}" alt="Foto de perfil">
-            <strong id="menu-nome">Visitante</strong>
-          </div>
-          <hr>
-          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
-          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
-        </div>
+    $vazio.style.display = 'none';
+
+    $lista.innerHTML = paginaItens.map(p => `
+      <article class="card-noticia" style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:0 0 12px 0;background:var(--bg);color:var(--text)">
+        <h3 style="margin:.2rem 0">${p.titulo}</h3>
+        <p style="margin:.2rem 0;color:#555"><small>por ${p.autor} • ${fmtData(p.criado_em)}</small></p>
+        ${p.image_url ? `
+          <img src="${p.image_url}" alt="imagem do post"
+               style="max-width:100%;border-radius:10px;margin:.5rem 0">
+        ` : ''}
+        <p style="margin:.4rem 0 0 0">${p.conteudo}</p>
+      </article>
+    `).join('');
+
+    // navegação de páginas
+    const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+    const btn = (num, label = num) =>
+      `<button class="btn ${num===pagina?'secondary':''}" data-page="${num}" ${num===pagina?'disabled':''} style="margin:2px 4px">${label}</button>`;
+
+    const anterior = pagina > 1 ? btn(pagina - 1, '« Anterior') : '';
+    const proxima  = pagina < totalPaginas ? btn(pagina + 1, 'Próxima »') : '';
+
+    $paginacao.innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:center;padding:8px 0">
+        ${anterior}
+        ${Array.from({length: totalPaginas}, (_,i) => btn(i+1)).join('')}
+        ${proxima}
       </div>
-    </nav>
-  </header>
+    `;
 
-  <main>
-    <h2>📰 Postagens da Comunidade</h2>
+    // listeners dos botões de página
+    $paginacao.querySelectorAll('button[data-page]').forEach(b => {
+      b.addEventListener('click', () => {
+        pagina = parseInt(b.dataset.page, 10);
+        render();
+      });
+    });
+  };
 
-    <div class="toolbar">
-      <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." />
-      <select id="ordem">
-        <option value="recente">Mais recentes primeiro</option>
-        <option value="antigo">Mais antigas primeiro</option>
-        <option value="titulo-az">Título A → Z</option>
-        <option value="titulo-za">Título Z → A</option>
-      </select>
-      <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
+  const aplicarFiltros = () => {
+    const termo = ($q.value || '').trim().toLowerCase();
 
-      <a href="{{ url_for('auth.publicar') }}" class="btn" style="text-decoration:none;">➕ Publicar</a>
-    </div>
+    // filtra
+    filtrados = !termo ? [...posts] :
+      posts.filter(p =>
+        (p.titulo || '').toLowerCase().includes(termo) ||
+        (p.conteudo || '').toLowerCase().includes(termo)
+      );
 
-    <div id="lista-noticias"></div>
+    // ordena
+    const ord = $ordem.value;
+    filtrados.sort((a,b) => {
+      if (ord === 'antigo') return (a.id||0) - (b.id||0);
+      if (ord === 'titulo-az') return (a.titulo||'').localeCompare(b.titulo||'');
+      if (ord === 'titulo-za') return (b.titulo||'').localeCompare(a.titulo||'');
+      // padrão: recentes primeiro
+      return (b.id||0) - (a.id||0);
+    });
 
-    <!-- ÁREA DE PAGINAÇÃO -->
-    <nav id="paginacao" class="paginacao" aria-label="Paginação"></nav>
+    // volta pra primeira página ao mudar filtro/ordem
+    pagina = 1;
+    render();
+  };
 
-    <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia salva localmente.</div>
-  </main>
-  <!-- Modal de edição -->
-  <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal">
-      <header>
-        <h3>Editar publicação</h3>
-        <button id="modal-close" class="close-x" aria-label="Fechar">✕</button>
-      </header>
-      <div class="modal-body">
-        <div class="row">
-          <label for="edit-titulo">Título</label>
-          <input type="text" id="edit-titulo" />
-        </div>
-        <div class="row">
-          <label for="edit-autor">Autor</label>
-          <input type="text" id="edit-autor" />
-        </div>
-        <div class="row">
-          <label for="edit-conteudo">Conteúdo</label>
-          <textarea id="edit-conteudo" rows="6"></textarea>
-        </div>
-        <div class="row">
-          <label for="edit-imagem">Imagem (opcional — deixa em branco para manter)</label>
-          <input type="file" id="edit-imagem" accept="image/*" />
-          <img id="edit-preview" class="img-preview" alt="Prévia" style="display:none;">
-        </div>
-      </div>
-      <footer>
-        <button id="modal-cancel" class="btn secondary" type="button">Cancelar</button>
-        <button id="modal-save" class="btn" type="button">Salvar</button>
-      </footer>
-    </div>
-  </div>
+  const carregar = async () => {
+    $lista.innerHTML = `<p style="color:#666">Carregando…</p>`;
+    try {
+      // pegue mais itens de uma vez para filtrar no cliente
+      const res = await fetch(`${API}?limit=50`);
+      if (!res.ok) throw new Error('Falha ao carregar posts');
+      posts = await res.json();
+      aplicarFiltros();
+    } catch (err) {
+      console.error(err);
+      $lista.innerHTML = `<p style="color:#b00">Erro ao carregar publicações.</p>`;
+      $paginacao.innerHTML = '';
+    }
+  };
 
-  <!-- JS base (tema/menu) -->
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-  <!-- Inicialização da listagem (CRUD) -->
-  <script type="module" src="{{ url_for('static', filename='js/index.api.js') }}"></script>
-  <footer>
-    <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
-  </footer>
+  // eventos
+  $btnAtualizar.addEventListener('click', carregar);
 
-</body>
-</html>
+  // pequena “delay” na busca pra não renderizar a cada tecla
+  let t;
+  $q.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(aplicarFiltros, 200);
+  });
 
+  $ordem.addEventListener('change', aplicarFiltros);
 
-
-
+  // start
+  carregar();
+})();
