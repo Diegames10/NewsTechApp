@@ -2,14 +2,20 @@
 import os
 
 class Config:
-    # Flask
-    SECRET_KEY = os.getenv("SECRET_KEY", "troque-este-segredo-em-producao")
+   SECRET_KEY = os.getenv("SECRET_KEY", "troque-este-segredo-em-producao")
 
-    # SQLAlchemy (exemplo)
+    # Banco principal (usuários etc.)
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:////data/app.db")
+
+    # Banco de postagens (bind)
     SQLALCHEMY_BINDS = {
-        "posts": os.getenv("POSTS_DB_URL", "sqlite:////data/posts.db")
+        "posts": os.getenv("POSTS_DATABASE_URL", "sqlite:////data/posts.db")
     }
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Uploads no disco persistente do Render
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/data/uploads")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # JWT (PyJWT manual)
