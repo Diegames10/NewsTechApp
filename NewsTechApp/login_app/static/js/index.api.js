@@ -30,7 +30,7 @@ async function apiDelete(id){
 function postCard(p){
   const div = document.createElement("div");
   div.className = "card";
-
+  
   // log para ver o que está chegando
   console.log("POST:", p);
 
@@ -56,18 +56,17 @@ function postCard(p){
 
 async function render(q=""){
   const items = await apiList(q);
-  if (!listEl) return; // segurança
+  console.log("LISTA:", items); // confirme que vem image_url
 
   listEl.innerHTML = "";
-  if (!items.length){
-    if (emptyEl) emptyEl.style.display = "block";
-    if (countEl) countEl.textContent = "0 itens";
-    return;
-  }
+  if (!items.length){ emptyEl.style.display="block"; countEl.textContent="0 itens"; return; }
+  emptyEl.style.display="none";
 
-  if (emptyEl) emptyEl.style.display = "none";
-  items.forEach(p => listEl.appendChild(postCard(p)));
-  if (countEl) countEl.textContent = `${items.length} ${items.length===1?"item":"itens"}`;
+  for (const p of items){
+    const card = postCard(p);
+    listEl.appendChild(card);
+  }
+  countEl.textContent = `${items.length} ${items.length===1?"item":"itens"}`;
 }
 
 document.addEventListener("click", async (e) => {
