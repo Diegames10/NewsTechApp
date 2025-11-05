@@ -71,5 +71,14 @@ def create_app():
     app.register_blueprint(google_bp, url_prefix="/oauth2/login")
     app.register_blueprint(github_bp, url_prefix="/oauth2/login")
     app.register_blueprint(posts_api)  # expõe /api/posts
-
+    
+    # ==============================
+    # === uploads no disco persistente + blueprint de mídia ===
+    # ==============================    
+    app.config.setdefault("UPLOAD_DIR", "/data/uploads")
+    os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
+    
+    from login_app.routes.media import media_bp
+    app.register_blueprint(media_bp)
+    
     return app
