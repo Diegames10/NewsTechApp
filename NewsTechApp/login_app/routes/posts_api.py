@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, abort, session, current_app, url_
 from functools import wraps
 from sqlalchemy import or_
 from login_app import db
-from login_app.models.post import Post
+from login_app.models.post import Post, db
 from login_app.models.user import User
 from uuid import uuid4
 import os
@@ -14,7 +14,40 @@ from login_app.utils.jwt_auth import login_required_api
 # ======================================================
 # 🔗 Blueprint da API de Postagens
 # ======================================================
-posts_api = Blueprint("posts_api", __name__, url_prefix="/api/posts")
+posts_api = Blueprint("posts_api", __name__)
+
+@posts_api.post("/api/posts")
+def create_post():
+    data = request.form if request.form else request.get_json(silent=True) or {}
+    titulo = (data.get("titulo") or "").strip()
+    conteudo = (data.get("conteudo") or "").strip()
+
+    if not session.get("user_id"):
+        abort(401)
+
+    autor = session.get("user_name") or "Anônimo"
+
+    p = Post(titulo=titulo, conteudo=conteudo, autor=autor)
+    # tratar upload de imagem se vier via multipart...
+    db.session.add(p)
+    db.session.commit()
+    return jsonify(p.to_dict()), 201
+
+@posts_api.put("/api/posts/<int:post_id>")
+def update_post(post_id):
+    if not session.get("user_id"):
+        abort(401)
+
+    p = Post.query.get_or_404(post_id)
+    data = request.form if request.form else request.get_json(silent=True) or {}
+
+    p.titulo = (data.get("titulo") or p.titulo).strip()
+    p.conteudo = (data.get("conteudo") or p.conteudo).strip()
+    # reforça o autor do usuário logado
+    p.autor = session.get("user_name") or p.autor
+
+    db.session.commit()
+    return jsonify(p.to_dict())
 
 # ======================================================
 # 🔒 Decorator: exige login ativo
