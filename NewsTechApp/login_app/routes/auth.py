@@ -179,19 +179,12 @@ def dashboard():
 
 @auth_bp.route("/api/me")
 def api_me():
-    uid = session.get("user_id")
-    if not uid:
-        return {"logged": False}, 200
-
-    user = User.query.get(uid)
-    # fallback pro email se username estiver vazio
-    username = (user.username or user.email or "Usuário").strip()
-    return {
-        "logged": True,
-        "id": user.id,
-        "username": username,
-        "email": user.email
-    }, 200
+    user = {
+        "loggedIn": bool(session.get("user_id")),
+        "name": session.get("user_name"),
+        "email": session.get("user_email"),
+    }
+    return jsonify(user)
 
 # ===============================
 # 🚪 Logout
