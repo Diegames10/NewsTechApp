@@ -39,16 +39,15 @@ def create_app():
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
         return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
-
+        
     @app.context_processor
     def inject_current_user():
+        from flask import session  # <- importa aqui
         return {
-            "current_user_name": session.get("user_name"),
-            "current_user_email": session.get("user_email"),
-            "current_user_avatar": session.get("user_avatar"),
-            "current_user_logged": bool(session.get("user_id")),
+        "current_user_id": session.get("user_id"),
+        "current_user_name": session.get("user_name"),
+        "is_authenticated": bool(session.get("user_id")),
         }
-
     # ==============================
     # SMTP (Brevo)
     # ==============================
