@@ -95,25 +95,21 @@ def list_posts():
 def create_post():
     # multipart (form + arquivo) ou JSON puro
     if request.content_type and "multipart/form-data" in request.content_type:
-        titulo   = (request.form.get("titulo") or "").strip()
-        autor    = (request.form.get("autor") or "").strip()
-        conteudo = (request.form.get("conteudo") or "").strip()
-        image    = request.files.get("image")
-    else:
-        data = request.get_json(silent=True) or {}
-        titulo   = (data.get("titulo") or "").strip()
-        autor    = (data.get("autor") or "").strip()
-        conteudo = (data.get("conteudo") or "").strip()
-        image    = None  # JSON não traz arquivo
+    titulo   = (request.form.get("titulo") or "").strip()
+    conteudo = (request.form.get("conteudo") or "").strip()
+    image    = request.files.get("image")
+else:
+    data     = request.get_json(silent=True) or {}
+    titulo   = (data.get("titulo") or "").strip()
+    conteudo = (data.get("conteudo") or "").strip()
+    image    = None
 
-    if not titulo or not conteudo:
-        return jsonify({"error": "Título e conteúdo são obrigatórios"}), 400
+if not titulo or not conteudo:
+    return jsonify({"error": "Título e conteúdo são obrigatórios"}), 400
 
-    # se não veio autor no form, usa o nome do usuário logado
-    _, autor_display = current_user()
-    autor_final = autor or autor_display
-
-    post = Post(titulo=titulo, conteudo=conteudo, autor=autor_final)
+# autor SEMPRE da sessão
+_, autor_display = current_user()
+post = Post(titulo=titulo, conteudo=conteudo, autor=autor_display)
 
     # trata imagem se houver
     if image and image.filename:
