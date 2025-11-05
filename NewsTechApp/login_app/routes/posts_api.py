@@ -40,15 +40,13 @@ def current_user():
 # 🧰 Util: salvar imagem no UPLOAD_FOLDER
 # ======================================================
 def _save_image(file):
-    if not file or not file.filename:
+    if not file or not getattr(file, "filename", ""):
         return None, None
-    ext = file.filename.rsplit('.', 1)[-1].lower()
+    ext = file.filename.rsplit(".", 1)[-1].lower()
     if ext not in {"png", "jpg", "jpeg", "gif", "webp"}:
         return None, "Formato de imagem não permitido"
     filename = f"{uuid4().hex}_{secure_filename(file.filename)}"
-    dest = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
-    file.save(dest)
+    file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
     return filename, None
 
 # ======================================================
