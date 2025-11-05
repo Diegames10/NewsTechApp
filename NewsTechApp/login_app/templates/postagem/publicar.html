@@ -35,31 +35,37 @@
   </header>
 
   <main class="escritor-container">
-    <form id="form-noticia" class="form-noticia">
+    <form id="form-noticia"
+      class="form-noticia"
+      action="{{ url_for('auth.publicar') }}"
+      method="POST"
+      enctype="multipart/form-data">
       <h2>📰 Criar Notícia</h2>
-
+    
       <div class="campo">
         <label for="titulo">Título da notícia</label>
-        <input type="text" id="titulo" placeholder="Digite o título..." required>
+        <input type="text" id="titulo" name="titulo" placeholder="Digite o título..." required>
       </div>
-
+    
       <div class="campo">
         <label for="autor">Autor</label>
-        <input type="text" id="autor" placeholder="Seu nome..." required>
+        <input type="text" id="autor" name="autor" placeholder="Seu nome..." required>
       </div>
-
+    
       <div class="campo">
         <label for="conteudo">Conteúdo</label>
-        <textarea id="conteudo" rows="6" placeholder="Escreva a notícia aqui..." required></textarea>
+        <textarea id="conteudo" name="conteudo" rows="6" placeholder="Escreva a notícia aqui..." required></textarea>
       </div>
-
+    
       <div class="campo">
         <label for="imagem">Imagem da Notícia</label>
-        <input type="file" id="imagem" accept="image/*">
+        <!-- o back-end espera "image" -->
+        <input type="file" id="imagem" name="image" accept="image/*">
       </div>
-
+    
       <button type="submit" class="btn-publicar">📢 Publicar notícia</button>
     </form>
+
   </main>
 
   <footer>
@@ -70,6 +76,7 @@
   
 </body>
 </html>
+
 
 
 
