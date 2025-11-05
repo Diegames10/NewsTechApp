@@ -54,6 +54,20 @@ document.addEventListener("click", async (e)=>{
   }
 });
 
+function renderCard(p){
+  const imgHtml = p.image_url ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia">` : "";
+  return `
+    <article class="card">
+      ${imgHtml}
+      <h3>${p.titulo}</h3>
+      <p class="meta">por ${p.autor}</p>
+      <p>${p.conteudo}</p>
+      <!-- botões editar/excluir etc -->
+    </article>
+  `;
+}
+
+
 searchEl?.addEventListener("input",(e)=>{
   clearTimeout(searchEl._t);
   searchEl._t = setTimeout(()=>render(e.target.value), 200);
