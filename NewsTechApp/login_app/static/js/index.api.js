@@ -73,4 +73,31 @@ searchEl?.addEventListener("input",(e)=>{
   searchEl._t = setTimeout(()=>render(e.target.value), 200);
 });
 
+function renderPost(post){
+  const card = document.createElement('article');
+  card.className = 'card-noticia';
+
+  if (post.image_url) {
+    const img = document.createElement('img');
+    img.className = 'img-noticia';
+    img.src = post.image_url; // <— usar image_url
+    img.alt = post.titulo || 'Imagem da notícia';
+    card.appendChild(img);
+  }
+
+  const h3 = document.createElement('h3');
+  h3.textContent = post.titulo;
+  card.appendChild(h3);
+
+  const small = document.createElement('small');
+  small.textContent = `Por ${post.autor} — ${new Date(post.criado_em).toLocaleString()}`;
+  card.appendChild(small);
+
+  const p = document.createElement('p');
+  p.textContent = post.conteudo;
+  card.appendChild(p);
+
+  return card;
+}
+
 render();
