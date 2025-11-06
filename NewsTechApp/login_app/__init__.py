@@ -97,8 +97,8 @@ def create_app():
     app.config.setdefault("UPLOAD_DIR", "/data/uploads")
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
 
-    from login_app.routes.media import media_bp
-    app.register_blueprint(media_bp)
+    #from login_app.routes.media import media_bp
+    #app.register_blueprint(media_bp)
 
     # ==============================
     # === VERSIONA AS TEMPLATES CADA VEZ QUE FAZ DEPLOY ===
