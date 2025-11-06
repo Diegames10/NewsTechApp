@@ -44,9 +44,9 @@ def create_app():
 
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
-    # envia o arquivo normalmente
+       # envia o arquivo normalmente
         resp = make_response(
-        send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+            send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
         )
     # permite cache local por 7 dias e reuso ao voltar no navegador
     resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
