@@ -51,6 +51,16 @@ def create_app():
     # permite cache local por 7 dias e reuso ao voltar no navegador
     resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
     return resp
+
+    @app.after_request
+    def add_header(resp):
+    # não interfere nas imagens nem em arquivos estáticos
+    if request.path.startswith("/uploads/") or request.path.startswith("/static/"):
+        return resp
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
     
     # ==============================
     # SMTP (Brevo)
