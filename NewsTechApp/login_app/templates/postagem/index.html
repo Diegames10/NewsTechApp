@@ -128,10 +128,9 @@
 
   <!-- JS base (tema/menu) -->
   <!-- Inicialização da listagem (CRUD) -->
-   {% import time %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=time.time()) }}">
-  <script src="{{ url_for('static', filename='js/script.js', v=time.time()) }}"></script>
-  <script type="module" src="{{ url_for('static', filename='js/index.api.js', v=time.time()) }}"></script>
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version) }}">
+   <script src="{{ url_for('static', filename='js/script.js', v=version) }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/index.api.js', v=version) }}"></script>
 
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
@@ -139,6 +138,7 @@
 
 </body>
 </html>
+
 
 
 
