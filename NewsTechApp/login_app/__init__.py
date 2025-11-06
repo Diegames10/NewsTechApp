@@ -81,5 +81,16 @@ def create_app():
     
     from login_app.routes.media import media_bp
     app.register_blueprint(media_bp)
+
+    # ==============================
+    # === VERSIONA AS TEMPLATES CADA VEZ QUE FAZ DEPLOY ===
+    # ==============================  
+    import time as _time
+    
+    @app.context_processor
+    def inject_version():
+            # variável 'version' disponível em TODOS os templates
+        return {"version": int(_time.time())}
+
     
     return app
