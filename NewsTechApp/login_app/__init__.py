@@ -2,13 +2,12 @@
 import os
 from pathlib import Path
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, make_response, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-
 
 # Extensões globais
 db = SQLAlchemy()
@@ -35,33 +34,29 @@ def create_app():
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-
     # ==============================
-    # Uploads (Render usa /data persistente)
+    # Uploads (rota com cache controlado)
     # ==============================
-    
-    from flask import make_response
-
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
-       # envia o arquivo normalmente
+        # envia o arquivo normalmente
         resp = make_response(
             send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
         )
-    # permite cache local por 7 dias e reuso ao voltar no navegador
-    resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-    return resp
+        # permite cache local por 7 dias e reuso ao voltar no navegador
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        return resp
 
     @app.after_request
     def add_header(resp):
-    # não interfere nas imagens nem em arquivos estáticos
-    if request.path.startswith("/uploads/") or request.path.startswith("/static/"):
+        # não interfere nas imagens nem em arquivos estáticos
+        if request.path.startswith("/uploads/") or request.path.startswith("/static/"):
+            return resp
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
         return resp
-    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    resp.headers["Pragma"] = "no-cache"
-    resp.headers["Expires"] = "0"
-    return resp
-    
+
     # ==============================
     # SMTP (Brevo)
     # ==============================
@@ -95,25 +90,24 @@ def create_app():
     app.register_blueprint(google_bp, url_prefix="/oauth2/login")
     app.register_blueprint(github_bp, url_prefix="/oauth2/login")
     app.register_blueprint(posts_api)  # expõe /api/posts
-    
+
     # ==============================
     # === uploads no disco persistente + blueprint de mídia ===
-    # ==============================    
+    # ==============================
     app.config.setdefault("UPLOAD_DIR", "/data/uploads")
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
-    
+
     from login_app.routes.media import media_bp
     app.register_blueprint(media_bp)
 
     # ==============================
     # === VERSIONA AS TEMPLATES CADA VEZ QUE FAZ DEPLOY ===
-    # ==============================  
+    # ==============================
     import time as _time
-    
+
     @app.context_processor
     def inject_version():
-            # variável 'version' disponível em TODOS os templates
+        # variável 'version' disponível em TODOS os templates
         return {"version": int(_time.time())}
 
-    
     return app
