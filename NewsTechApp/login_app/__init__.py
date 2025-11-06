@@ -35,10 +35,23 @@ def create_app():
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+
+    # ==============================
+    # Uploads (Render usa /data persistente)
+    # ==============================
+    
+    from flask import make_response
+
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
-
+    # envia o arquivo normalmente
+    resp = make_response(
+        send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+    )
+    # permite cache local por 7 dias e reuso ao voltar no navegador
+    resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    return resp
+    
     # ==============================
     # SMTP (Brevo)
     # ==============================
