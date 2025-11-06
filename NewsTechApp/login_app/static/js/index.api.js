@@ -133,3 +133,13 @@ if (document.readyState === "loading") {
 } else {
   render();
 }
+
+// Se a página foi restaurada do bfcache, força um refresh leve
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) {
+    // se você usa load() que busca na API:
+    // load();
+    // ou se usa render() com cache local/filtro:
+    render(searchEl?.value || "");
+  }
+});
