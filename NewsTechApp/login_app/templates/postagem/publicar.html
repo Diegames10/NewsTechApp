@@ -70,13 +70,14 @@
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
 
-  
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css') }}?v=7">
-  <script src="{{ url_for('static', filename='js/script.js') }}?v=7"></script>
-  <script type="module" src="{{ url_for('static', filename='js/publicar.api.js') }}?v=7"></script>
+  {% import time %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=time.time()) }}></script>>
+  <script src="{{ url_for('static', filename='js/script.js', v=time.time()) }}></script>></script>
+  <script type="module" src="{{ url_for('static', filename='js/publicar.api.js', v=time.time()) }}></script>
 
 </body>
 </html>
+
 
 
 
