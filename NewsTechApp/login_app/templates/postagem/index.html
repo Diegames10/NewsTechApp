@@ -9,6 +9,14 @@
   <!-- CSS (sempre via url_for) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css') }}">
+  <!-- Ícone da aba e app -->
+ <link rel="icon" type="image/png" sizes="512x512"
+      href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+ <link rel="apple-touch-icon" sizes="512x512"
+      href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+ <meta name="theme-color" content="#ffffff">
+
+
   <style>
     .toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
     .toolbar input[type="search"], .toolbar select {
@@ -138,6 +146,7 @@
 
 </body>
 </html>
+
 
 
 
