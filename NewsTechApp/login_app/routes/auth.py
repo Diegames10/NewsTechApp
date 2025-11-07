@@ -39,14 +39,7 @@ google_bp = make_google_blueprint(
         "https://www.googleapis.com/auth/userinfo.profile",
     ],
     redirect_to="auth.google_callback",
-    # opcional, mas ajuda em cenários de cache/consent:
-    authorization_url_params={
-        "include_granted_scopes": "true",
-        "access_type": "online",   # ou "offline" se você quiser refresh_token do Google
-        "prompt": "consent"        # força tela de consentimento (útil em testes)
-    },
 )
-
 
 github_bp = make_github_blueprint(
     client_id=os.getenv("GITHUB_CLIENT_ID"),
