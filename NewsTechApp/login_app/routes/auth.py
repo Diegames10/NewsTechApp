@@ -29,12 +29,6 @@ auth_bp = Blueprint("auth", __name__)
 
 # ===============================
 # 🔐 OAuth2: Google e GitHub (sem colisão)
-#  - Mantemos o callback interno do Flask-Dance em:
-#    /oauth2/login/google/authorized
-#    /oauth2/login/github/authorized
-#  - E redirecionamos DEPOIS para os SEUS endpoints finais:
-#    /login/google/callback
-#    /login/github/callback
 # ===============================
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
@@ -52,7 +46,6 @@ github_bp = make_github_blueprint(
 
 # ===============================
 # 🔒 Decorator para proteger views
-# (redireciona para /login se não tiver sessão)
 # ===============================
 def login_required_view(fn):
     @wraps(fn)
@@ -63,6 +56,7 @@ def login_required_view(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+
 # ===============================
 # 🏠 Raiz → login
 # ===============================
@@ -70,16 +64,15 @@ def login_required_view(fn):
 def root():
     return redirect(url_for("auth.login"))
 
+
 # ===============================
 # 👤 Login local
 # ===============================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # 1) Se já há sessão ativa → home
     if session.get("user_id"):
         return redirect(url_for("auth.home"))
 
-    # 2) Tenta SSO silencioso via cookie (JWT)
     token = get_access_from_request(request)
     if token:
         try:
@@ -91,47 +84,36 @@ def login():
                 session["username"] = user.username or user.email
                 return redirect(url_for("auth.home"))
         except Exception:
-            # token inválido/expirado → segue para tela de login
             pass
 
-    # 3) POST: valida credenciais
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
-
-        # Se sua tabela tem coluna 'provider', mantém; senão, remove o provider="local"
         try:
             user = User.query.filter_by(email=email, provider="local").first()
         except Exception:
             user = User.query.filter_by(email=email).first()
 
         if user and bcrypt.check_password_hash(user.password_hash, password):
-            # mantém sessão
             session["user_id"] = user.id
             session["username"] = user.username or user.email
-
-            # emite JWTs e seta cookies
             access = create_access_token(user.id)
             refresh = create_refresh_token(user.id)
             csrf_token = os.urandom(16).hex()
-
             resp = make_response(redirect(url_for("auth.home")))
             set_jwt_cookies(resp, access, refresh)
             set_csrf_cookie(resp, csrf_token)
-
             flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
             return resp
 
-        # credenciais inválidas
         flash("E-mail ou senha inválidos.", "danger")
         return render_template("login.html"), 401
 
-    # 4) GET sem sessão/JWT → renderiza form
     return render_template("login.html")
 
+
 # ===============================
-# 🏡 Home (renderiza templates/postagem/index.html)
-# protegida por sessão/JWT
+# 🏡 Home
 # ===============================
 @auth_bp.route("/home")
 def home():
@@ -147,11 +129,11 @@ def home():
                 session["username"] = u.username or u.email
         except Exception:
             return redirect(url_for("auth.login"))
-
     return render_template("postagem/index.html")
 
+
 # ===============================
-# 📝 Publicar (protegida)
+# 📝 Publicar
 # ===============================
 @auth_bp.route("/publicar", methods=["GET"], endpoint="publicar")
 def publicar():
@@ -167,8 +149,8 @@ def publicar():
                 session["username"] = u.username or u.email
         except Exception:
             return redirect(url_for("auth.login"))
-
     return render_template("postagem/publicar.html")
+
 
 # ===============================
 # 📊 Dashboard (opcional)
@@ -179,20 +161,21 @@ def dashboard():
     user = User.query.get(session["user_id"])
     return render_template("dashboard.html", user=user)
 
+
 @auth_bp.route("/api/me")
 def api_me():
     uid = session.get("user_id")
     if not uid:
         return {"logged": False}, 200
-
     user = User.query.get(uid)
     username = (user.username or user.email or "Usuário").strip()
     return {
         "logged": True,
         "id": user.id,
         "username": username,
-        "email": user.email
+        "email": user.email,
     }, 200
+
 
 # ===============================
 # 🚪 Logout
@@ -205,10 +188,10 @@ def logout():
     clear_jwt_cookies(resp)
     return resp
 
-# =========================================================
-# 🌐 ENDPOINTS FINAIS SEUS (pós-OAuth) — sem /authorized
-#  - O Flask-Dance processa /authorized e redireciona pra cá
-# =========================================================
+
+# ===============================
+# 🌐 Google OAuth → callback final
+# ===============================
 @auth_bp.route("/login/google/callback")
 def google_callback():
     if not google.authorized:
@@ -235,7 +218,6 @@ def google_callback():
 
     session["user_id"] = user.id
     session["username"] = user.username or display_name
-
     access = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
     csrf_token = os.urandom(16).hex()
@@ -245,6 +227,10 @@ def google_callback():
     flash(f"✅ Login Google bem-sucedido! Bem-vindo {session['username']}", "success")
     return resp
 
+
+# ===============================
+# 🐙 GitHub OAuth → callback final
+# ===============================
 @auth_bp.route("/login/github/callback")
 def github_callback():
     if not github.authorized:
@@ -252,7 +238,6 @@ def github_callback():
         return redirect(url_for("auth.login"))
 
     try:
-        # 1) Tenta e-mails (requer scope user:email)
         emails_resp = github.get("/user/emails")
         primary_email = None
         if emails_resp.ok:
@@ -263,7 +248,6 @@ def github_callback():
             if not primary_email and emails_resp.json():
                 primary_email = emails_resp.json()[0].get("email")
 
-        # 2) /user para username e fallback de e-mail
         user_resp = github.get("/user")
         user_resp.raise_for_status()
         info = user_resp.json()
@@ -271,7 +255,6 @@ def github_callback():
         email = primary_email or info.get("email")
         if not username and not email:
             raise ValueError("GitHub não retornou username/email")
-
         effective_username = username or (email.split("@")[0] if email else "usuario_github")
     except Exception as e:
         flash(f"Erro ao obter informações do GitHub: {e}", "danger")
@@ -285,7 +268,6 @@ def github_callback():
 
     session["user_id"] = user.id
     session["username"] = user.username or (email or effective_username)
-
     access = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
     csrf_token = os.urandom(16).hex()
@@ -294,35 +276,41 @@ def github_callback():
     set_csrf_cookie(resp, csrf_token)
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
     return resp
-    
-    
-    @auth_bp.route("/register", methods=["GET", "POST"])
-    def register():
-        if request.method == "POST":
-            username = request.form["username"].strip()
-            email = request.form["email"].strip()
-            password = request.form["password"]
-            confirm_password = request.form["confirm_password"]
-    
-            if password != confirm_password:
-                flash("As senhas não coincidem. Tente novamente.", "danger")
-                return redirect(url_for("auth.register"))
-    
-            existing_email = User.query.filter_by(email=email).first()
-            if existing_email:
-                flash("E-mail já registrado. Faça login ou use outro endereço.", "danger")
-                return redirect(url_for("auth.register"))
-    
-            # se sua tabela tiver 'provider', mantenha; senão troque por new_user = User(username=..., email=..., password_hash=...)
-            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-            new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
-            db.session.add(new_user)
-            db.session.commit()
-    
-            flash("✅ Conta criada com sucesso! Faça login para continuar.", "success")
-            return redirect(url_for("auth.login"))
-    
-        return render_template("register.html")
+
+
+# ===============================
+# 🆕 Registro local
+# ===============================
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
+        confirm_password = request.form.get("confirm_password") or ""
+
+        if not username or not email or not password:
+            flash("Preencha todos os campos.", "warning")
+            return redirect(url_for("auth.register"))
+
+        if password != confirm_password:
+            flash("As senhas não coincidem. Tente novamente.", "danger")
+            return redirect(url_for("auth.register"))
+
+        if User.query.filter_by(email=email).first():
+            flash("E-mail já registrado. Faça login ou use outro.", "danger")
+            return redirect(url_for("auth.register"))
+
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+        new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("✅ Conta criada com sucesso! Faça login para continuar.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("register.html")
+
 
 # ===============================
 # ✉️ Enviar e-mail de redefinição
@@ -330,9 +318,7 @@ def github_callback():
 def send_reset_email(user):
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     token = serializer.dumps(user.email, salt="password-reset-salt")
-
     reset_url = url_for("auth.reset_token", token=token, _external=True, _scheme="https")
-
     msg = Message(
         subject="🔑 Redefinição de Senha - NewsTechApp",
         sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
@@ -354,28 +340,27 @@ Se você não solicitou esta redefinição, ignore este e-mail.
     except Exception as e:
         print(f"❌ Erro ao enviar e-mail: {e}")
 
+
 # ===============================
 # 🔁 Solicitar redefinição
 # ===============================
-@auth_bp.route('/reset_request', methods=['GET', 'POST'])
+@auth_bp.route("/reset_request", methods=["GET", "POST"])
 def reset_request():
-    if request.method == 'POST':
-        email = request.form['email'].strip()
+    if request.method == "POST":
+        email = request.form["email"].strip()
         user = User.query.filter_by(email=email).first()
-
         if not user:
-            flash('E-mail não encontrado.', 'danger')
-            return redirect(url_for('auth.reset_request'))
+            flash("E-mail não encontrado.", "danger")
+            return redirect(url_for("auth.reset_request"))
 
         if getattr(user, "provider", "local") != "local":
-            flash('Esta conta usa login via Google ou GitHub. Redefina a senha diretamente no provedor.', 'warning')
-            return redirect(url_for('auth.login'))
+            flash("Esta conta usa login via Google ou GitHub.", "warning")
+            return redirect(url_for("auth.login"))
 
         token = generate_reset_token(user.email)
-        reset_link = url_for('auth.reset_token', token=token, _external=True)
-
-        msg = Message('Redefinição de Senha - NewsTechApp', recipients=[email])
-        msg.body = f'''Olá!
+        reset_link = url_for("auth.reset_token", token=token, _external=True)
+        msg = Message("Redefinição de Senha - NewsTechApp", recipients=[email])
+        msg.body = f"""Olá!
 
 Para redefinir sua senha, acesse o link abaixo:
 
@@ -383,12 +368,13 @@ Para redefinir sua senha, acesse o link abaixo:
 
 O link expira em 1 hora.
 Se você não solicitou, ignore este e-mail.
-'''
+"""
         mail.send(msg)
-        flash('Um e-mail foi enviado com instruções para redefinir sua senha.', 'info')
-        return redirect(url_for('auth.login'))
+        flash("Um e-mail foi enviado com instruções para redefinir sua senha.", "info")
+        return redirect(url_for("auth.login"))
 
-    return render_template('reset_request.html')
+    return render_template("reset_request.html")
+
 
 # ===============================
 # 🔐 Redefinir senha via token
@@ -413,31 +399,29 @@ def reset_token(token):
 
     return render_template("reset_password.html")
 
+
 # ===============================
-# 🔐 Restaura sessão pelo access_token (antes de cada request)
+# 🔐 Restaurar sessão automaticamente
 # ===============================
 @auth_bp.before_app_request
 def restore_session_from_jwt():
     if session.get("user_id"):
-        return  # já autenticado
-
+        return
     token = get_access_from_request(request)
     if not token:
         return
-
     data = decode_token(token, expected_type="access")
     if not data:
         return
-
     user = User.query.get(int(data["sub"]))
     if not user:
         return
-
     session["user_id"] = user.id
     session["username"] = user.username or user.email
 
+
 # ===============================
-# 🔁 Endpoint de refresh do access token
+# 🔁 Endpoint de refresh
 # ===============================
 @auth_bp.route("/refresh", methods=["POST"])
 def refresh():
@@ -445,20 +429,15 @@ def refresh():
         refresh_token = get_refresh_from_request(request)
         if not refresh_token:
             return jsonify({"error": "missing refresh"}), 401
-
         data = decode_token(refresh_token, expected_type="refresh")
         if not data:
             return jsonify({"error": "invalid refresh"}), 401
-
         user = User.query.get(int(data["sub"]))
         if not user:
             return jsonify({"error": "user not found"}), 404
-
         new_access = create_access_token(user.id)
         csrf_token = os.urandom(16).hex()
-
         resp = jsonify({"message": "refreshed"})
-        # mantém o mesmo refresh, apenas renova o access
         set_jwt_cookies(resp, new_access, refresh_token)
         set_csrf_cookie(resp, csrf_token)
         return resp, 200
