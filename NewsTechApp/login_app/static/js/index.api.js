@@ -1,21 +1,25 @@
 // =======================
 // Elementos
 // =======================
-const listEl   = document.getElementById("lista-noticias") || document.getElementById("list");
-const emptyEl  = document.getElementById("vazio")          || document.getElementById("empty");
-const countEl  = document.getElementById("contador")       || document.getElementById("count");
-const searchEl = document.getElementById("q")              || document.getElementById("search");
+const listEl     = document.getElementById("lista-noticias") || document.getElementById("list");
+const emptyEl    = document.getElementById("vazio")          || document.getElementById("empty");
+const countEl    = document.getElementById("contador")       || document.getElementById("count");
+const searchEl   = document.getElementById("q")              || document.getElementById("search");
 const refreshBtn = document.getElementById("btn-atualizar");
 
 // =======================
-// Estado da paginação
+// Config/Estado
 // =======================
 let currentPage = 1;
 let totalPages  = 1;
 const PER_PAGE  = 10;
 
+// imagens
+const ABOVE_THE_FOLD   = 4;        // quantos cards carregam "eager"
+const FALLBACK_ASPECT  = "16 / 9"; // reserva espaço p/ imagem
+
 // =======================
-// Helpers
+/* Helpers */
 // =======================
 function safeSetText(el, text) { if (el) el.textContent = text; }
 function setCount(n) { safeSetText(countEl, `${n} ${n === 1 ? "item" : "itens"}`); }
@@ -26,29 +30,34 @@ function escapeHtml(s = "") {
   ));
 }
 
+function ensureNumber(n, fallback = 0) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : fallback;
+}
+
 // =======================
-// API
+/* API */
 // =======================
 async function apiList(q = "", page = 1) {
   const u = new URL("/api/posts", window.location.origin);
   if (q) u.searchParams.set("q", q);
-  u.searchParams.set("page", page);
+  u.searchParams.set("page", ensureNumber(page, 1));
   u.searchParams.set("per_page", PER_PAGE);
 
   const r = await fetch(u, {
     headers: { "Accept": "application/json" },
-    credentials: "include" // mantém cookies/sessão
+    credentials: "include"
   });
   if (!r.ok) throw new Error(`Falha ao listar (${r.status})`);
   const data = await r.json();
 
-  // lê meta da API
-  currentPage = data?.meta?.page  || 1;
-  totalPages  = data?.meta?.pages || 1;
+  // meta da API
+  currentPage = ensureNumber(data?.meta?.page, 1);
+  totalPages  = ensureNumber(data?.meta?.pages, 1);
 
-  // aceita { items: [...] } ou { Objectitems: [...] } ou lista direta
-  const items = Array.isArray(data) ? data : (data.items || data.Objectitems || []);
-  return items;
+  // aceita { items: [...] } ou lista direta
+  const items = Array.isArray(data) ? data : (data.items || []);
+  return Array.isArray(items) ? items : [];
 }
 
 async function apiDelete(id) {
@@ -57,9 +66,9 @@ async function apiDelete(id) {
 }
 
 // =======================
-// UI
+/* UI */
 // =======================
-function postCard(p) {
+function postCard(p, idx = 0) {
   const div = document.createElement("div");
   div.className = "card";
 
@@ -69,10 +78,32 @@ function postCard(p) {
   const dt       = p.created_at || p.criado_em || "";
   const dtStr    = dt ? new Date(dt).toLocaleString() : "";
 
-  const imgHtml = p.image_url
-    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy"
-         onerror="this.dataset.err=1;console.warn('Falha ao carregar imagem:', this.src)"/>`
-    : "";
+  // primeiras imagens: eager + alta prioridade; demais: lazy
+  const eager    = idx < ABOVE_THE_FOLD;
+  const loading  = eager ? "eager" : "lazy";
+  const priority = eager ? 'fetchpriority="high"' : "";
+
+  const imgHtml = p.image_url ? `
+    <img
+      class="thumb"
+      src="${p.image_url}"
+      alt="Imagem da notícia"
+      loading="${loading}"
+      ${priority}
+      decoding="async"
+      style="width:100%; aspect-ratio:${FALLBACK_ASPECT}; object-fit:cover; background:#eee;"
+      onerror="
+        if (!this.dataset.retried) {
+          this.dataset.retried = 1;
+          this.src = this.src + (this.src.includes('?') ? '&' : '?') + 'b=' + Date.now();
+          console.warn('Retry imagem com cache-buster:', this.src);
+        } else {
+          this.dataset.err = 1;
+          console.warn('Falha ao carregar imagem (sem retry):', this.src);
+        }
+      "
+    />
+  ` : "";
 
   div.innerHTML = `
     ${imgHtml}
@@ -100,7 +131,7 @@ function renderPagination() {
     const b = document.createElement("button");
     b.textContent = label;
     b.disabled = !!disabled;
-    b.className = isActive ? "btn active" : "btn";
+    b.className = "btn" + (isActive ? " active" : "");
     b.style.margin = "0 .25rem";
     b.addEventListener("click", onClick);
     return b;
@@ -108,7 +139,9 @@ function renderPagination() {
 
   // anterior
   pagEl.appendChild(
-    mkBtn("◀", currentPage === 1, () => { if (currentPage > 1) { currentPage--; render(searchEl?.value || ""); } })
+    mkBtn("◀", currentPage <= 1, () => {
+      if (currentPage > 1) { currentPage--; render(searchEl?.value || ""); }
+    })
   );
 
   // janela de páginas
@@ -118,28 +151,31 @@ function renderPagination() {
   if (end - start + 1 < windowSize) start = Math.max(1, end - windowSize + 1);
 
   for (let i = start; i <= end; i++) {
-    const btn = mkBtn(String(i), i === currentPage, () => {
-      if (currentPage !== i) { currentPage = i; render(searchEl?.value || ""); }
-    }, i === currentPage);
+    const isActive = i === currentPage;
+    const btn = mkBtn(String(i), isActive, () => {
+      if (!isActive) { currentPage = i; render(searchEl?.value || ""); }
+    }, isActive);
     pagEl.appendChild(btn);
   }
 
   // próximo
   pagEl.appendChild(
-    mkBtn("▶", currentPage === totalPages, () => { if (currentPage < totalPages) { currentPage++; render(searchEl?.value || ""); } })
+    mkBtn("▶", currentPage >= totalPages, () => {
+      if (currentPage < totalPages) { currentPage++; render(searchEl?.value || ""); }
+    })
   );
 
-  // info opcional
+  // info
   const info = document.createElement("span");
   info.style.marginLeft = ".5rem";
   info.style.opacity = ".7";
-  info.textContent = `Página ${currentPage} de ${totalPages}`;
+  info.textContent = `Página ${currentPage} de ${Math.max(totalPages, 1)}`;
   pagEl.appendChild(info);
 }
 
 async function render(q = "") {
   if (!listEl) {
-    console.error('[index.api] Container da lista não encontrado (#lista-noticias ou #list).');
+    console.error("[index.api] Container da lista não encontrado (#lista-noticias ou #list).");
     return;
   }
 
@@ -148,11 +184,23 @@ async function render(q = "") {
     listEl.innerHTML = "";
 
     if (!Array.isArray(items) || items.length === 0) {
+      // Se a página atual ficou vazia mas ainda há páginas antes, volta 1 página
+      if (currentPage > 1 && totalPages >= currentPage) {
+        currentPage = Math.max(1, currentPage - 1);
+        const retryItems = await apiList(q, currentPage);
+        if (Array.isArray(retryItems) && retryItems.length) {
+          retryItems.forEach((p, i) => listEl.appendChild(postCard(p, i)));
+          setCount(retryItems.length);
+          renderPagination();
+          if (emptyEl) emptyEl.style.display = "none";
+          return;
+        }
+      }
       if (emptyEl) emptyEl.style.display = "block";
       setCount(0);
     } else {
       if (emptyEl) emptyEl.style.display = "none";
-      for (const p of items) listEl.appendChild(postCard(p));
+      items.forEach((p, i) => listEl.appendChild(postCard(p, i)));
       setCount(items.length);
     }
 
@@ -164,26 +212,25 @@ async function render(q = "") {
     }
     if (emptyEl) emptyEl.style.display = "block";
     setCount(0);
-    // mesmo em erro, tenta desenhar paginação com estado atual
-    renderPagination();
+    renderPagination(); // ainda mostra navegação com estado atual
   }
 }
 
 // =======================
-// Eventos
+/* Eventos */
 // =======================
 
-// exclusão delegada
+// exclusão delegada (manter página; se ficar vazia, recua 1 página)
 document.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-del]");
   if (!btn) return;
-  const id = Number(btn.dataset.del);
+  const id = ensureNumber(btn.dataset.del, NaN);
   if (!Number.isFinite(id)) return;
 
   try {
     if (confirm("Excluir esta postagem?")) {
       await apiDelete(id);
-      // mantém a página atual ao excluir
+      // Recarrega; se a página ficar vazia, o render() já recua 1 página
       await render(searchEl?.value || "");
     }
   } catch (err) {
@@ -201,7 +248,7 @@ searchEl?.addEventListener("input", (e) => {
   }, 250);
 });
 
-// botão atualizar — mantém a página atual
+// botão atualizar — mantém a página atual e o filtro
 refreshBtn?.addEventListener("click", () => {
   render(searchEl?.value || "");
 });
@@ -213,7 +260,7 @@ if (document.readyState === "loading") {
   render();
 }
 
-// Se a página foi restaurada do bfcache, força um refresh leve mantendo página
+// Se a página foi restaurada do bfcache, força um refresh leve mantendo a página/filtro
 window.addEventListener("pageshow", (e) => {
   if (e.persisted) render(searchEl?.value || "");
 });
