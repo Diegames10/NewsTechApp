@@ -1,25 +1,21 @@
 // =======================
 // Elementos
 // =======================
-const listEl     = document.getElementById("lista-noticias") || document.getElementById("list");
-const emptyEl    = document.getElementById("vazio")          || document.getElementById("empty");
-const countEl    = document.getElementById("contador")       || document.getElementById("count");
-const searchEl   = document.getElementById("q")              || document.getElementById("search");
+const listEl   = document.getElementById("lista-noticias") || document.getElementById("list");
+const emptyEl  = document.getElementById("vazio")          || document.getElementById("empty");
+const countEl  = document.getElementById("contador")       || document.getElementById("count");
+const searchEl = document.getElementById("q")              || document.getElementById("search");
 const refreshBtn = document.getElementById("btn-atualizar");
 
 // =======================
-// Config/Estado
+// Estado da paginação
 // =======================
 let currentPage = 1;
 let totalPages  = 1;
 const PER_PAGE  = 10;
 
-// imagens
-const ABOVE_THE_FOLD   = 4;        // quantos cards carregam "eager"
-const FALLBACK_ASPECT  = "16 / 9"; // reserva espaço p/ imagem
-
 // =======================
-/* Helpers */
+// Helpers
 // =======================
 function safeSetText(el, text) { if (el) el.textContent = text; }
 function setCount(n) { safeSetText(countEl, `${n} ${n === 1 ? "item" : "itens"}`); }
@@ -30,34 +26,29 @@ function escapeHtml(s = "") {
   ));
 }
 
-function ensureNumber(n, fallback = 0) {
-  const x = Number(n);
-  return Number.isFinite(x) ? x : fallback;
-}
-
 // =======================
-/* API */
+// API
 // =======================
 async function apiList(q = "", page = 1) {
   const u = new URL("/api/posts", window.location.origin);
   if (q) u.searchParams.set("q", q);
-  u.searchParams.set("page", ensureNumber(page, 1));
+  u.searchParams.set("page", page);
   u.searchParams.set("per_page", PER_PAGE);
 
   const r = await fetch(u, {
     headers: { "Accept": "application/json" },
-    credentials: "include"
+    credentials: "include" // mantém cookies/sessão
   });
   if (!r.ok) throw new Error(`Falha ao listar (${r.status})`);
   const data = await r.json();
 
-  // meta da API
-  currentPage = ensureNumber(data?.meta?.page, 1);
-  totalPages  = ensureNumber(data?.meta?.pages, 1);
+  // lê meta da API
+  currentPage = data?.meta?.page  || 1;
+  totalPages  = data?.meta?.pages || 1;
 
-  // aceita { items: [...] } ou lista direta
-  const items = Array.isArray(data) ? data : (data.items || []);
-  return Array.isArray(items) ? items : [];
+  // aceita { items: [...] } ou { Objectitems: [...] } ou lista direta
+  const items = Array.isArray(data) ? data : (data.items || data.Objectitems || []);
+  return items;
 }
 
 async function apiDelete(id) {
@@ -66,8 +57,9 @@ async function apiDelete(id) {
 }
 
 // =======================
-/* UI */
-// =======================function postCard(p, idx = 0) {
+// UI
+// =======================
+function postCard(p) {
   const div = document.createElement("div");
   div.className = "card";
 
@@ -77,58 +69,13 @@ async function apiDelete(id) {
   const dt       = p.created_at || p.criado_em || "";
   const dtStr    = dt ? new Date(dt).toLocaleString() : "";
 
-  // ===========================
-  // Imagem: eager nas primeiras, lazy nas demais + retry
-  // ===========================
-  if (p.image_url) {
-    const eager = idx < (typeof ABOVE_THE_FOLD === "number" ? ABOVE_THE_FOLD : 2);
-    const img = document.createElement("img");
-    img.className = "thumb";
-    img.src = p.image_url;
-    img.alt = "Imagem da notícia";
-    img.decoding = "async";
-    img.loading = eager ? "eager" : "lazy";
-    if (eager) img.setAttribute("fetchpriority", "high");
+  const imgHtml = p.image_url
+    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy"
+         onerror="this.dataset.err=1;console.warn('Falha ao carregar imagem:', this.src)"/>`
+    : "";
 
-    // Reserva layout e evita salto
-    try { img.style.aspectRatio = String(FALLBACK_ASPECT || "16/9"); } catch {}
-    img.style.width = "100%";
-    img.style.objectFit = "cover";
-    img.style.background = "#eee";
-
-    // Marca como carregado (para CSS fazer fade-in)
-    const markLoaded = () => { img.dataset.loaded = "1"; };
-    img.addEventListener("load", markLoaded, { once: true });
-
-    // Retry 1x com cache-buster; depois marca erro e libera o layout
-    img.addEventListener("error", () => {
-      if (!img.dataset.retried) {
-        img.dataset.retried = "1";
-        try {
-          const u = new URL(img.src, window.location.href);
-          u.searchParams.set("b", Date.now());
-          img.src = u.toString();
-          console.warn("Retry imagem com cache-buster:", img.src);
-        } catch {
-          img.src = img.src + (img.src.includes("?") ? "&" : "?") + "b=" + Date.now();
-          console.warn("Retry imagem (fallback) com cache-buster:", img.src);
-        }
-      } else {
-        img.dataset.err = "1";
-        markLoaded(); // garante que o CSS tire o placeholder mesmo em erro
-        console.warn("Falha ao carregar imagem (sem retry):", img.src);
-      }
-    });
-
-    div.appendChild(img);
-  }
-
-  // ===========================
-  // Conteúdo textual do card
-  // ===========================
-  div.insertAdjacentHTML(
-    "beforeend",
-    `
+  div.innerHTML = `
+    ${imgHtml}
     <h3 style="margin:0 0 .25rem 0;">${escapeHtml(titulo)}</h3>
     <div class="muted" style="margin-bottom:.5rem;">
       por ${escapeHtml(autor)} ${dtStr ? `• ${dtStr}` : ""}
@@ -140,9 +87,7 @@ async function apiDelete(id) {
       <a class="btn" href="/publicar?id=${p.id}">Editar</a>
       <button class="btn danger" data-del="${p.id}">Excluir</button>
     </div>
-    `
-  );
-
+  `;
   return div;
 }
 
@@ -155,7 +100,7 @@ function renderPagination() {
     const b = document.createElement("button");
     b.textContent = label;
     b.disabled = !!disabled;
-    b.className = "btn" + (isActive ? " active" : "");
+    b.className = isActive ? "btn active" : "btn";
     b.style.margin = "0 .25rem";
     b.addEventListener("click", onClick);
     return b;
@@ -163,9 +108,7 @@ function renderPagination() {
 
   // anterior
   pagEl.appendChild(
-    mkBtn("◀", currentPage <= 1, () => {
-      if (currentPage > 1) { currentPage--; render(searchEl?.value || ""); }
-    })
+    mkBtn("◀", currentPage === 1, () => { if (currentPage > 1) { currentPage--; render(searchEl?.value || ""); } })
   );
 
   // janela de páginas
@@ -175,31 +118,28 @@ function renderPagination() {
   if (end - start + 1 < windowSize) start = Math.max(1, end - windowSize + 1);
 
   for (let i = start; i <= end; i++) {
-    const isActive = i === currentPage;
-    const btn = mkBtn(String(i), isActive, () => {
-      if (!isActive) { currentPage = i; render(searchEl?.value || ""); }
-    }, isActive);
+    const btn = mkBtn(String(i), i === currentPage, () => {
+      if (currentPage !== i) { currentPage = i; render(searchEl?.value || ""); }
+    }, i === currentPage);
     pagEl.appendChild(btn);
   }
 
   // próximo
   pagEl.appendChild(
-    mkBtn("▶", currentPage >= totalPages, () => {
-      if (currentPage < totalPages) { currentPage++; render(searchEl?.value || ""); }
-    })
+    mkBtn("▶", currentPage === totalPages, () => { if (currentPage < totalPages) { currentPage++; render(searchEl?.value || ""); } })
   );
 
-  // info
+  // info opcional
   const info = document.createElement("span");
   info.style.marginLeft = ".5rem";
   info.style.opacity = ".7";
-  info.textContent = `Página ${currentPage} de ${Math.max(totalPages, 1)}`;
+  info.textContent = `Página ${currentPage} de ${totalPages}`;
   pagEl.appendChild(info);
 }
 
 async function render(q = "") {
   if (!listEl) {
-    console.error("[index.api] Container da lista não encontrado (#lista-noticias ou #list).");
+    console.error('[index.api] Container da lista não encontrado (#lista-noticias ou #list).');
     return;
   }
 
@@ -208,23 +148,11 @@ async function render(q = "") {
     listEl.innerHTML = "";
 
     if (!Array.isArray(items) || items.length === 0) {
-      // Se a página atual ficou vazia mas ainda há páginas antes, volta 1 página
-      if (currentPage > 1 && totalPages >= currentPage) {
-        currentPage = Math.max(1, currentPage - 1);
-        const retryItems = await apiList(q, currentPage);
-        if (Array.isArray(retryItems) && retryItems.length) {
-          retryItems.forEach((p, i) => listEl.appendChild(postCard(p, i)));
-          setCount(retryItems.length);
-          renderPagination();
-          if (emptyEl) emptyEl.style.display = "none";
-          return;
-        }
-      }
       if (emptyEl) emptyEl.style.display = "block";
       setCount(0);
     } else {
       if (emptyEl) emptyEl.style.display = "none";
-      items.forEach((p, i) => listEl.appendChild(postCard(p, i)));
+      for (const p of items) listEl.appendChild(postCard(p));
       setCount(items.length);
     }
 
@@ -236,25 +164,26 @@ async function render(q = "") {
     }
     if (emptyEl) emptyEl.style.display = "block";
     setCount(0);
-    renderPagination(); // ainda mostra navegação com estado atual
+    // mesmo em erro, tenta desenhar paginação com estado atual
+    renderPagination();
   }
 }
 
 // =======================
-/* Eventos */
+// Eventos
 // =======================
 
-// exclusão delegada (manter página; se ficar vazia, recua 1 página)
+// exclusão delegada
 document.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-del]");
   if (!btn) return;
-  const id = ensureNumber(btn.dataset.del, NaN);
+  const id = Number(btn.dataset.del);
   if (!Number.isFinite(id)) return;
 
   try {
     if (confirm("Excluir esta postagem?")) {
       await apiDelete(id);
-      // Recarrega; se a página ficar vazia, o render() já recua 1 página
+      // mantém a página atual ao excluir
       await render(searchEl?.value || "");
     }
   } catch (err) {
@@ -272,7 +201,7 @@ searchEl?.addEventListener("input", (e) => {
   }, 250);
 });
 
-// botão atualizar — mantém a página atual e o filtro
+// botão atualizar — mantém a página atual
 refreshBtn?.addEventListener("click", () => {
   render(searchEl?.value || "");
 });
@@ -284,7 +213,7 @@ if (document.readyState === "loading") {
   render();
 }
 
-// Se a página foi restaurada do bfcache, força um refresh leve mantendo a página/filtro
+// Se a página foi restaurada do bfcache, força um refresh leve mantendo página
 window.addEventListener("pageshow", (e) => {
   if (e.persisted) render(searchEl?.value || "");
 });
