@@ -2,6 +2,22 @@
 {% block content %}
 <div class="container mt-5" style="max-width: 420px;">
   
+<style>
+  /* Exibe o ícone da logo em tamanho real no index */
+  .logo-full {
+    display: inline-block;
+    max-width: 100%; /* evita quebrar em telas menores */
+    height: auto;
+  }
+
+  /* Remove estilos anteriores (sombras ou bordas) */
+  .logo-full {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+</style>
+
   <!-- 🧩 LOGO DO APLICATIVO -->
  <div class="text-center my-4">
   <img 
