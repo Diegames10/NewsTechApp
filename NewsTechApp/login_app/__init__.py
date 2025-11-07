@@ -2,18 +2,20 @@
 import os
 from pathlib import Path
 
-from flask import Flask, send_from_directory, make_response, request
+from flask import Flask, send_from_directory, make_response, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.http import http_date, parse_date  # p/ ETag/Last-Modified
 
 # Extensões globais
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
 mail = Mail()  # suporte a e-mails
+
 
 def create_app():
     app = Flask(__name__)
@@ -35,17 +37,64 @@ def create_app():
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # ==============================
+    # Helper: resposta com cache (ETag/Last-Modified)
+    # ==============================
+    def cached_file_response(directory: str, filename: str):
+        file_path = os.path.join(directory, filename)
+        if not os.path.isfile(file_path):
+            abort(404)
+
+        st = os.stat(file_path)
+        mtime = int(st.st_mtime)
+        size = st.st_size
+
+        # ETag fraca (suficiente p/ cache)
+        etag = f'W/"{size:x}-{mtime:x}"'
+        last_modified = http_date(mtime)
+
+        # Condicionais do cliente
+        inm = request.headers.get("If-None-Match")
+        ims = request.headers.get("If-Modified-Since")
+
+        # Valida ETag primeiro
+        if inm and etag in inm:
+            resp = make_response("", 304)
+            resp.headers["ETag"] = etag
+            resp.headers["Last-Modified"] = last_modified
+            resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+            resp.headers["Access-Control-Allow-Origin"] = "*"
+            return resp
+
+        # Depois valida Last-Modified
+        if ims:
+            try:
+                ims_dt = parse_date(ims)
+                if ims_dt and int(ims_dt.timestamp()) >= mtime:
+                    resp = make_response("", 304)
+                    resp.headers["ETag"] = etag
+                    resp.headers["Last-Modified"] = last_modified
+                    resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+                    resp.headers["Access-Control-Allow-Origin"] = "*"
+                    return resp
+            except Exception:
+                pass  # se algo der errado, segue servindo o arquivo
+
+        # Entrega o arquivo normalmente
+        resp = make_response(
+            send_from_directory(directory, filename, as_attachment=False)
+        )
+        resp.headers["ETag"] = etag
+        resp.headers["Last-Modified"] = last_modified
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        return resp
+
+    # ==============================
     # Uploads (rota com cache controlado)
     # ==============================
     @app.route("/uploads/<path:filename>")
     def uploads(filename):
-        # envia o arquivo normalmente
-        resp = make_response(
-            send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
-        )
-        # permite cache local por 7 dias e reuso ao voltar no navegador
-        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-        resp.headers["Access-Control-Allow-Origin"] = "*"  # evita bloqueio CORS
+        upload_dir = app.config["UPLOAD_FOLDER"]
         return cached_file_response(upload_dir, filename)
 
     @app.after_request
@@ -85,24 +134,23 @@ def create_app():
     # Blueprints
     # ==============================
     from login_app.routes.auth import auth_bp, google_bp, github_bp
-    from login_app.routes.posts_api import posts_api  # arquivo: posts_api.py ; variável: posts_api
+    from login_app.routes.posts_api import posts_api  # expõe /api/posts
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(google_bp, url_prefix="/oauth2/login")
     app.register_blueprint(github_bp, url_prefix="/oauth2/login")
-    app.register_blueprint(posts_api)  # expõe /api/posts
+    app.register_blueprint(posts_api)
 
     # ==============================
-    # === uploads no disco persistente + blueprint de mídia ===
+    # uploads + (opcional) blueprint de mídia
     # ==============================
     app.config.setdefault("UPLOAD_DIR", "/data/uploads")
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
-
-    #from login_app.routes.media import media_bp
-    #app.register_blueprint(media_bp)
+    # from login_app.routes.media import media_bp
+    # app.register_blueprint(media_bp)
 
     # ==============================
-    # === VERSIONA AS TEMPLATES CADA VEZ QUE FAZ DEPLOY ===
+    # Versiona assets nos templates a cada deploy
     # ==============================
     import time as _time
 
@@ -110,53 +158,5 @@ def create_app():
     def inject_version():
         # variável 'version' disponível em TODOS os templates
         return {"version": int(_time.time())}
-
-    def cached_file_response(directory: str, filename: str):
-    file_path = os.path.join(directory, filename)
-    if not os.path.isfile(file_path):
-        abort(404)
-
-    st = os.stat(file_path)
-    mtime = int(st.st_mtime)
-    size  = st.st_size
-
-    # ETag fraca (leve e suficiente para cache)
-    etag = f'W/"{size:x}-{mtime:x}"'
-    last_modified = http_date(mtime)
-
-    # Condicionais do cliente
-    inm = request.headers.get("If-None-Match")
-    ims = request.headers.get("If-Modified-Since")
-
-    # Valida ETag primeiro
-    if inm and etag in inm:
-        resp = make_response("", 304)
-        resp.headers["ETag"] = etag
-        resp.headers["Last-Modified"] = last_modified
-        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-        resp.headers["Access-Control-Allow-Origin"] = "*"
-        return resp
-
-    # Depois valida Last-Modified
-    if ims:
-        try:
-            ims_dt = parse_date(ims)
-            if ims_dt and int(ims_dt.timestamp()) >= mtime:
-                resp = make_response("", 304)
-                resp.headers["ETag"] = etag
-                resp.headers["Last-Modified"] = last_modified
-                resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-                resp.headers["Access-Control-Allow-Origin"] = "*"
-                return resp
-        except Exception:
-            pass  # se algo der errado, segue servindo o arquivo
-
-        # Entrega o arquivo normalmente
-        resp = make_response(send_from_directory(directory, filename, as_attachment=False))
-        resp.headers["ETag"] = etag
-        resp.headers["Last-Modified"] = last_modified
-        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-        resp.headers["Access-Control-Allow-Origin"] = "*"
-        return resp
 
     return app
