@@ -13,24 +13,6 @@ from login_app.models.user import User
 # =====================================================
 auth_bp = Blueprint("auth", __name__)
 
-# =====================================================
-# 🔹 Google OAuth2
-# =====================================================
-google_bp = make_google_blueprint(
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_to="auth.google_authorized",
-    scope=["profile", "email"]
-)
-
-# =====================================================
-# 🔹 GitHub OAuth2
-# =====================================================
-github_bp = make_github_blueprint(
-    client_id=os.getenv("GITHUB_CLIENT_ID"),
-    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    redirect_to="auth.github_authorized"
-)
 
 # =====================================================
 # 🔹 Rotas locais
