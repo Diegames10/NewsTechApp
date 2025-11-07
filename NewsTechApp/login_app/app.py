@@ -98,66 +98,6 @@ def logout():
 
 
 # =====================================================
-# 🔹 Login com Google
-# =====================================================
-@auth_bp.route("/oauth2/login/google/authorized")
-def google_authorized():
-    if not google.authorized:
-        flash("Falha na autorização com Google.", "danger")
-        return redirect(url_for("auth.login"))
-
-    resp = google.get("/oauth2/v2/userinfo")
-    if not resp.ok:
-        flash("Erro ao obter informações do Google.", "danger")
-        return redirect(url_for("auth.login"))
-
-    info = resp.json()
-    email = info["email"]
-    username = info.get("name", email.split("@")[0])
-
-    user = User.query.filter_by(email=email, provider="google").first()
-    if not user:
-        user = User(username=username, email=email, password_hash="oauth", provider="google")
-        db.session.add(user)
-        db.session.commit()
-
-    session["user_id"] = user.id
-    session["username"] = user.username
-    flash(f"Bem-vindo, {user.username} (Google)!", "success")
-    return redirect(url_for("auth.dashboard"))
-
-
-# =====================================================
-# 🔹 Login com GitHub
-# =====================================================
-@auth_bp.route("/oauth2/login/github/authorized")
-def github_authorized():
-    if not github.authorized:
-        flash("Falha na autorização com GitHub.", "danger")
-        return redirect(url_for("auth.login"))
-
-    resp = github.get("/user")
-    if not resp.ok:
-        flash("Erro ao obter informações do GitHub.", "danger")
-        return redirect(url_for("auth.login"))
-
-    info = resp.json()
-    username = info["login"]
-    email = info.get("email") or f"{username}@github.com"  # fallback se GitHub não retornar email
-
-    user = User.query.filter_by(username=username, provider="github").first()
-    if not user:
-        user = User(username=username, email=email, password_hash="oauth", provider="github")
-        db.session.add(user)
-        db.session.commit()
-
-    session["user_id"] = user.id
-    session["username"] = user.username
-    flash(f"Bem-vindo, {user.username} (GitHub)!", "success")
-    return redirect(url_for("auth.dashboard"))
-
-
-# =====================================================
 # 🔹 Recuperar senha
 # =====================================================
 @auth_bp.route("/reset_request", methods=["GET", "POST"])
