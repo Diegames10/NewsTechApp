@@ -294,6 +294,35 @@ def github_callback():
     set_csrf_cookie(resp, csrf_token)
     flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
     return resp
+    
+    
+    @auth_bp.route("/register", methods=["GET", "POST"])
+    def register():
+        if request.method == "POST":
+            username = request.form["username"].strip()
+            email = request.form["email"].strip()
+            password = request.form["password"]
+            confirm_password = request.form["confirm_password"]
+    
+            if password != confirm_password:
+                flash("As senhas não coincidem. Tente novamente.", "danger")
+                return redirect(url_for("auth.register"))
+    
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                flash("E-mail já registrado. Faça login ou use outro endereço.", "danger")
+                return redirect(url_for("auth.register"))
+    
+            # se sua tabela tiver 'provider', mantenha; senão troque por new_user = User(username=..., email=..., password_hash=...)
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+            new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
+            db.session.add(new_user)
+            db.session.commit()
+    
+            flash("✅ Conta criada com sucesso! Faça login para continuar.", "success")
+            return redirect(url_for("auth.login"))
+    
+        return render_template("register.html")
 
 # ===============================
 # ✉️ Enviar e-mail de redefinição
