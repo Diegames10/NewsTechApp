@@ -151,12 +151,12 @@ def create_app():
         except Exception:
             pass  # se algo der errado, segue servindo o arquivo
 
-    # Entrega o arquivo normalmente
-    resp = make_response(send_from_directory(directory, filename, as_attachment=False))
-    resp.headers["ETag"] = etag
-    resp.headers["Last-Modified"] = last_modified
-    resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    return resp
+        # Entrega o arquivo normalmente
+        resp = make_response(send_from_directory(directory, filename, as_attachment=False))
+        resp.headers["ETag"] = etag
+        resp.headers["Last-Modified"] = last_modified
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        return resp
 
     return app
