@@ -296,3 +296,24 @@ window.addEventListener("pageshow", (e) => {
     requestAnimationFrame(() => ensureImagesVisible());
   }
 });
+
+// Se o usuário alternar app/aba e voltar, reforça imagens
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    requestAnimationFrame(() => ensureImagesVisible());
+  }
+});
+
+// =======================
+// 💡 Autoexecuta o botão "Atualizar" ao carregar a página
+// =======================
+window.addEventListener("load", () => {
+  const btn = document.getElementById("btn-atualizar");
+  if (btn) {
+    // pequeno atraso garante que o listener do botão já foi registrado
+    setTimeout(() => {
+      btn.click();
+      console.debug("Botão 'Atualizar' executado automaticamente após o load.");
+    }, 300);
+  }
+});
