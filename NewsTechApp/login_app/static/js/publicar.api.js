@@ -1,4 +1,4 @@
-// static/js/index.api.js
+// static/js/publicar.api.js
 (function () {
   // Seletores base (compatíveis com seu HTML)
   const $list   = document.getElementById("lista-noticias"); // container de cards
