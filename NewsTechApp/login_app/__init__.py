@@ -45,6 +45,7 @@ def create_app():
         )
         # permite cache local por 7 dias e reuso ao voltar no navegador
         resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        resp.headers["Access-Control-Allow-Origin"] = "*"  # evita bloqueio CORS
         return resp
 
     @app.after_request
