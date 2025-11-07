@@ -67,8 +67,7 @@ async function apiDelete(id) {
 
 // =======================
 /* UI */
-// =======================
-function postCard(p, idx = 0) {
+// =======================function postCard(p, idx = 0) {
   const div = document.createElement("div");
   div.className = "card";
 
@@ -78,35 +77,58 @@ function postCard(p, idx = 0) {
   const dt       = p.created_at || p.criado_em || "";
   const dtStr    = dt ? new Date(dt).toLocaleString() : "";
 
-  // primeiras imagens: eager + alta prioridade; demais: lazy
-  const eager    = idx < ABOVE_THE_FOLD;
-  const loading  = eager ? "eager" : "lazy";
-  const priority = eager ? 'fetchpriority="high"' : "";
+  // ===========================
+  // Imagem: eager nas primeiras, lazy nas demais + retry
+  // ===========================
+  if (p.image_url) {
+    const eager = idx < (typeof ABOVE_THE_FOLD === "number" ? ABOVE_THE_FOLD : 2);
+    const img = document.createElement("img");
+    img.className = "thumb";
+    img.src = p.image_url;
+    img.alt = "Imagem da notícia";
+    img.decoding = "async";
+    img.loading = eager ? "eager" : "lazy";
+    if (eager) img.setAttribute("fetchpriority", "high");
 
-  const imgHtml = p.image_url ? `
-    <img
-      class="thumb"
-      src="${p.image_url}"
-      alt="Imagem da notícia"
-      loading="${loading}"
-      ${priority}
-      decoding="async"
-      style="width:100%; aspect-ratio:${FALLBACK_ASPECT}; object-fit:cover; background:#eee;"
-      onerror="
-        if (!this.dataset.retried) {
-          this.dataset.retried = 1;
-          this.src = this.src + (this.src.includes('?') ? '&' : '?') + 'b=' + Date.now();
-          console.warn('Retry imagem com cache-buster:', this.src);
-        } else {
-          this.dataset.err = 1;
-          console.warn('Falha ao carregar imagem (sem retry):', this.src);
+    // Reserva layout e evita salto
+    try { img.style.aspectRatio = String(FALLBACK_ASPECT || "16/9"); } catch {}
+    img.style.width = "100%";
+    img.style.objectFit = "cover";
+    img.style.background = "#eee";
+
+    // Marca como carregado (para CSS fazer fade-in)
+    const markLoaded = () => { img.dataset.loaded = "1"; };
+    img.addEventListener("load", markLoaded, { once: true });
+
+    // Retry 1x com cache-buster; depois marca erro e libera o layout
+    img.addEventListener("error", () => {
+      if (!img.dataset.retried) {
+        img.dataset.retried = "1";
+        try {
+          const u = new URL(img.src, window.location.href);
+          u.searchParams.set("b", Date.now());
+          img.src = u.toString();
+          console.warn("Retry imagem com cache-buster:", img.src);
+        } catch {
+          img.src = img.src + (img.src.includes("?") ? "&" : "?") + "b=" + Date.now();
+          console.warn("Retry imagem (fallback) com cache-buster:", img.src);
         }
-      "
-    />
-  ` : "";
+      } else {
+        img.dataset.err = "1";
+        markLoaded(); // garante que o CSS tire o placeholder mesmo em erro
+        console.warn("Falha ao carregar imagem (sem retry):", img.src);
+      }
+    });
 
-  div.innerHTML = `
-    ${imgHtml}
+    div.appendChild(img);
+  }
+
+  // ===========================
+  // Conteúdo textual do card
+  // ===========================
+  div.insertAdjacentHTML(
+    "beforeend",
+    `
     <h3 style="margin:0 0 .25rem 0;">${escapeHtml(titulo)}</h3>
     <div class="muted" style="margin-bottom:.5rem;">
       por ${escapeHtml(autor)} ${dtStr ? `• ${dtStr}` : ""}
@@ -118,7 +140,9 @@ function postCard(p, idx = 0) {
       <a class="btn" href="/publicar?id=${p.id}">Editar</a>
       <button class="btn danger" data-del="${p.id}">Excluir</button>
     </div>
-  `;
+    `
+  );
+
   return div;
 }
 
