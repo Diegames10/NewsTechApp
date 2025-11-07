@@ -70,7 +70,7 @@ function postCard(p) {
   const dtStr    = dt ? new Date(dt).toLocaleString() : "";
 
   const imgHtml = p.image_url
-    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="lazy"
+    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="eager"
          onerror="this.dataset.err=1;console.warn('Falha ao carregar imagem:', this.src)"/>`
     : "";
 
