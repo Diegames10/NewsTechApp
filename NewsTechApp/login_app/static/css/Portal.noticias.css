@@ -198,8 +198,6 @@ footer {
   margin-top: 40px;
 }
 
-/* Removido: blocos antigos que causavam conflito (body.modo-escuro, etc.) */
-
 /* === RESPONSIVIDADE === */
 
 /* Tablets e telas médias */
@@ -291,6 +289,7 @@ footer {
   }
 }
 
+/* === CARDS E IMAGENS === */
 .card-noticia {
   background: var(--bg);
   color: var(--text);
@@ -299,6 +298,7 @@ footer {
   padding: 16px;
   margin-bottom: 16px;
 }
+
 .img-noticia {
   display: block;
   width: 100%;
@@ -307,28 +307,64 @@ footer {
   margin: 0 auto 12px auto;
 }
 
-.thumb {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
+/* ===============================
+   🖼️ Ajuste seguro para imagens (mobile e desktop)
+   =============================== */
+.thumb,
+.card .thumb {
   display: block;
-  margin: .5rem 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;           /* reserva espaço antes do load (corrige sumiço no mobile) */
+  object-fit: cover;              /* mantém proporção sem distorcer */
+  border-radius: 10px;
+  background-color: #eaeaea;      /* cor de fundo enquanto carrega */
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: opacity 0.3s ease;
+  opacity: 0;                     /* inicia escondida até carregar */
 }
 
-.card .thumb{
-  max-width:100%;
-  height:auto;
-  display:block;
-  border-radius:8px;
-  margin-bottom:8px;
+/* Assim que a imagem carregar (JS seta data-loaded="1"), aparece suavemente */
+.thumb[data-loaded="1"],
+.card .thumb[data-loaded="1"] {
+  opacity: 1;
 }
 
-.paginacao { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin: 16px 0; }
+/* Dark mode mantém fundo neutro */
+body.dark .thumb,
+body.dark .card .thumb {
+  background-color: #2a2a2a;
+}
+
+/* === PAGINAÇÃO === */
+.paginacao { 
+  display:flex; 
+  gap:6px; 
+  align-items:center; 
+  flex-wrap:wrap; 
+  margin: 16px 0; 
+}
+
 .paginacao .page-btn {
-  border: 1px solid #cfcfcf; background: #fff; color:#111; padding:6px 10px; border-radius:8px; cursor:pointer;
+  border: 1px solid #cfcfcf; 
+  background: #fff; 
+  color:#111; 
+  padding:6px 10px; 
+  border-radius:8px; 
+  cursor:pointer;
 }
-.paginacao .page-btn[disabled] { opacity:.6; cursor:not-allowed; }
-.paginacao .page-btn.active { font-weight:700; border-color: var(--primary); }
-body.dark .paginacao .page-btn { background:#333; color:#f5f5f5; border-color:#555; }
 
+.paginacao .page-btn[disabled] { 
+  opacity:.6; 
+  cursor:not-allowed; 
+}
 
+.paginacao .page-btn.active { 
+  font-weight:700; 
+  border-color: var(--primary); 
+}
+
+body.dark .paginacao .page-btn { 
+  background:#333; 
+  color:#f5f5f5; 
+  border-color:#555; 
+}
