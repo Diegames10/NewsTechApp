@@ -46,7 +46,7 @@ def create_app():
         # permite cache local por 7 dias e reuso ao voltar no navegador
         resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
         resp.headers["Access-Control-Allow-Origin"] = "*"  # evita bloqueio CORS
-        return resp
+        return cached_file_response(upload_dir, filename)
 
     @app.after_request
     def add_header(resp):
@@ -110,5 +110,53 @@ def create_app():
     def inject_version():
         # variável 'version' disponível em TODOS os templates
         return {"version": int(_time.time())}
+
+    def cached_file_response(directory: str, filename: str):
+    file_path = os.path.join(directory, filename)
+    if not os.path.isfile(file_path):
+        abort(404)
+
+    st = os.stat(file_path)
+    mtime = int(st.st_mtime)
+    size  = st.st_size
+
+    # ETag fraca (leve e suficiente para cache)
+    etag = f'W/"{size:x}-{mtime:x}"'
+    last_modified = http_date(mtime)
+
+    # Condicionais do cliente
+    inm = request.headers.get("If-None-Match")
+    ims = request.headers.get("If-Modified-Since")
+
+    # Valida ETag primeiro
+    if inm and etag in inm:
+        resp = make_response("", 304)
+        resp.headers["ETag"] = etag
+        resp.headers["Last-Modified"] = last_modified
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        return resp
+
+    # Depois valida Last-Modified
+    if ims:
+        try:
+            ims_dt = parse_date(ims)
+            if ims_dt and int(ims_dt.timestamp()) >= mtime:
+                resp = make_response("", 304)
+                resp.headers["ETag"] = etag
+                resp.headers["Last-Modified"] = last_modified
+                resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+                resp.headers["Access-Control-Allow-Origin"] = "*"
+                return resp
+        except Exception:
+            pass  # se algo der errado, segue servindo o arquivo
+
+    # Entrega o arquivo normalmente
+    resp = make_response(send_from_directory(directory, filename, as_attachment=False))
+    resp.headers["ETag"] = etag
+    resp.headers["Last-Modified"] = last_modified
+    resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
     return app
