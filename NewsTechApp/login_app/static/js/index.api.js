@@ -5,7 +5,7 @@ const listEl     = document.getElementById("lista-noticias") || document.getElem
 const emptyEl    = document.getElementById("vazio")          || document.getElementById("empty");
 const countEl    = document.getElementById("contador")       || document.getElementById("count");
 const searchEl   = document.getElementById("q")              || document.getElementById("search");
-//const refreshBtn = document.getElementById("btn-atualizar");
+const refreshBtn = document.getElementById("btn-atualizar");
 
 // =======================
 // Estado da paginação
