@@ -1,10 +1,10 @@
 // =======================
 // Elementos
 // =======================
-const listEl   = document.getElementById("lista-noticias") || document.getElementById("list");
-const emptyEl  = document.getElementById("vazio")          || document.getElementById("empty");
-const countEl  = document.getElementById("contador")       || document.getElementById("count");
-const searchEl = document.getElementById("q")              || document.getElementById("search");
+const listEl     = document.getElementById("lista-noticias") || document.getElementById("list");
+const emptyEl    = document.getElementById("vazio")          || document.getElementById("empty");
+const countEl    = document.getElementById("contador")       || document.getElementById("count");
+const searchEl   = document.getElementById("q")              || document.getElementById("search");
 const refreshBtn = document.getElementById("btn-atualizar");
 
 // =======================
@@ -13,6 +13,10 @@ const refreshBtn = document.getElementById("btn-atualizar");
 let currentPage = 1;
 let totalPages  = 1;
 const PER_PAGE  = 10;
+
+// Imagens acima da dobra + fallback de proporção p/ evitar “pulo” de layout
+const ABOVE_THE_FOLD  = 3;
+const FALLBACK_ASPECT = "16/9";
 
 // =======================
 // Helpers
@@ -26,6 +30,17 @@ function escapeHtml(s = "") {
   ));
 }
 
+function withCacheBuster(src) {
+  try {
+    const url = new URL(src, window.location.origin);
+    url.searchParams.set("b", Date.now());
+    return url.toString();
+  } catch {
+    const sep = src.includes("?") ? "&" : "?";
+    return `${src}${sep}b=${Date.now()}`;
+  }
+}
+
 // =======================
 // API
 // =======================
@@ -37,7 +52,7 @@ async function apiList(q = "", page = 1) {
 
   const r = await fetch(u, {
     headers: { "Accept": "application/json" },
-    credentials: "include" // mantém cookies/sessão
+    credentials: "include"
   });
   if (!r.ok) throw new Error(`Falha ao listar (${r.status})`);
   const data = await r.json();
@@ -57,9 +72,39 @@ async function apiDelete(id) {
 }
 
 // =======================
+// Imagens: robustez extra
+// =======================
+function ensureImagesVisible() {
+  const imgs = document.querySelectorAll("img.thumb");
+  let idx = 0;
+  imgs.forEach((img) => {
+    const eager  = idx < ABOVE_THE_FOLD;
+    const broken = !img.complete || img.naturalWidth === 0 || img.dataset.err === "1";
+
+    if (eager) {
+      img.loading = "eager";
+      img.setAttribute("fetchpriority", "high");
+    }
+
+    // listeners (uma vez) para marcar carregamento/erro
+    img.addEventListener("load",  () => { img.dataset.loaded = "1"; }, { once: true });
+    img.addEventListener("error", () => { img.dataset.loaded = "1"; }, { once: true });
+
+    // se “quebrada”, faz 1 retry com cache-buster
+    if (broken && !img.dataset.retried) {
+      img.dataset.retried = "1";
+      img.src = withCacheBuster(img.src);
+      img.addEventListener("error", () => { img.dataset.err = "1"; }, { once: true });
+    }
+
+    idx++;
+  });
+}
+
+// =======================
 // UI
 // =======================
-function postCard(p) {
+function postCard(p, idx = 0) {
   const div = document.createElement("div");
   div.className = "card";
 
@@ -69,13 +114,12 @@ function postCard(p) {
   const dt       = p.created_at || p.criado_em || "";
   const dtStr    = dt ? new Date(dt).toLocaleString() : "";
 
-  const imgHtml = p.image_url
-    ? `<img class="thumb" src="${p.image_url}" alt="Imagem da notícia" loading="eager"
-         onerror="this.dataset.err=1;console.warn('Falha ao carregar imagem:', this.src)"/>`
-    : "";
+  // Primeiras N imagens com prioridade
+  const eager    = idx < ABOVE_THE_FOLD;
+  const loading  = eager ? "eager" : "lazy";
 
+  // monta conteúdo textual
   div.innerHTML = `
-    ${imgHtml}
     <h3 style="margin:0 0 .25rem 0;">${escapeHtml(titulo)}</h3>
     <div class="muted" style="margin-bottom:.5rem;">
       por ${escapeHtml(autor)} ${dtStr ? `• ${dtStr}` : ""}
@@ -88,6 +132,36 @@ function postCard(p) {
       <button class="btn danger" data-del="${p.id}">Excluir</button>
     </div>
   `;
+
+  // cria a <img> “na mão” para controlar robustez
+  if (p.image_url) {
+    const img = document.createElement("img");
+    img.className        = "thumb";
+    img.src              = p.image_url;
+    img.alt              = "Imagem da notícia";
+    img.loading          = loading;
+    img.decoding         = "async";
+    img.style.width      = "100%";
+    img.style.aspectRatio= FALLBACK_ASPECT;
+    img.style.objectFit  = "cover";
+    img.style.background = "#eee";
+    if (eager) img.setAttribute("fetchpriority", "high");
+
+    // listeners seguros
+    img.addEventListener("load",  () => { img.dataset.loaded = "1"; }, { once: true });
+    img.addEventListener("error", () => {
+      if (!img.dataset.retried) {
+        img.dataset.retried = "1";
+        img.src = withCacheBuster(img.src);
+      } else {
+        img.dataset.err = "1";
+      }
+    }, { once: true });
+
+    // coloca a imagem como primeiro filho do card
+    div.insertBefore(img, div.firstChild);
+  }
+
   return div;
 }
 
@@ -152,11 +226,15 @@ async function render(q = "") {
       setCount(0);
     } else {
       if (emptyEl) emptyEl.style.display = "none";
-      for (const p of items) listEl.appendChild(postCard(p));
+      items.forEach((p, i) => listEl.appendChild(postCard(p, i)));
       setCount(items.length);
     }
 
     renderPagination();
+
+    // aguarda um “tick” e garante imagens visíveis
+    await Promise.resolve();
+    ensureImagesVisible();
   } catch (err) {
     console.error(err);
     if (listEl && !listEl.innerHTML) {
@@ -164,8 +242,8 @@ async function render(q = "") {
     }
     if (emptyEl) emptyEl.style.display = "block";
     setCount(0);
-    // mesmo em erro, tenta desenhar paginação com estado atual
     renderPagination();
+    ensureImagesVisible();
   }
 }
 
@@ -183,7 +261,6 @@ document.addEventListener("click", async (e) => {
   try {
     if (confirm("Excluir esta postagem?")) {
       await apiDelete(id);
-      // mantém a página atual ao excluir
       await render(searchEl?.value || "");
     }
   } catch (err) {
@@ -213,7 +290,9 @@ if (document.readyState === "loading") {
   render();
 }
 
-// Se a página foi restaurada do bfcache, força um refresh leve mantendo página
+// Se a página foi restaurada do bfcache, apenas garante as imagens (sem reconsultar a API)
 window.addEventListener("pageshow", (e) => {
-  if (e.persisted) render(searchEl?.value || "");
+  if (e.persisted) {
+    requestAnimationFrame(() => ensureImagesVisible());
+  }
 });
