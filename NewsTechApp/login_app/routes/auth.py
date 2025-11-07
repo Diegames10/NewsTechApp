@@ -1,6 +1,6 @@
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash,
-    session, current_app, jsonify, make_response, send_from_directory
+    session, current_app, jsonify, make_response
 )
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.github import make_github_blueprint, github
@@ -23,28 +23,31 @@ from login_app.utils.jwt_auth import (
     decode_token,
 )
 
-from uuid import uuid4
-from werkzeug.utils import secure_filename
-import sqlite3
-
-
 load_dotenv()
 
 auth_bp = Blueprint("auth", __name__)
 
 # ===============================
-# 🔐 OAuth2: Google e GitHub
+# 🔐 OAuth2: Google e GitHub (sem colisão)
+#  - Mantemos o callback interno do Flask-Dance em:
+#    /oauth2/login/google/authorized
+#    /oauth2/login/github/authorized
+#  - E redirecionamos DEPOIS para os SEUS endpoints finais:
+#    /login/google/callback
+#    /login/github/callback
 # ===============================
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_to="auth.google_authorized"
+    scope=["openid", "email", "profile"],
+    redirect_to="auth.google_callback",
 )
 
 github_bp = make_github_blueprint(
     client_id=os.getenv("GITHUB_CLIENT_ID"),
     client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    redirect_to="auth.github_authorized"
+    scope="user:email",
+    redirect_to="auth.github_callback",
 )
 
 # ===============================
@@ -72,12 +75,12 @@ def root():
 # ===============================
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # 1) Se já há sessão ativa -> home
+    # 1) Se já há sessão ativa → home
     if session.get("user_id"):
         return redirect(url_for("auth.home"))
 
     # 2) Tenta SSO silencioso via cookie (JWT)
-    token = get_access_from_request(request)  # sempre passe 'request'
+    token = get_access_from_request(request)
     if token:
         try:
             payload = decode_token(token, expected_type="access")
@@ -96,7 +99,7 @@ def login():
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
 
-        # Se sua tabela tem coluna 'provider', mantenha o filtro; senão, remova 'provider="local"'
+        # Se sua tabela tem coluna 'provider', mantém; senão, remove o provider="local"
         try:
             user = User.query.filter_by(email=email, provider="local").first()
         except Exception:
@@ -119,17 +122,16 @@ def login():
             flash(f"✅ Bem-vindo de volta, {session['username']}!", "success")
             return resp
 
-        # credenciais inválidas → volta pro form com 401
+        # credenciais inválidas
         flash("E-mail ou senha inválidos.", "danger")
         return render_template("login.html"), 401
 
-    # 4) GET sem sessão/JWT → renderiza form (AQUI ESTAVA O PROBLEMA: faltava return)
+    # 4) GET sem sessão/JWT → renderiza form
     return render_template("login.html")
 
-
 # ===============================
-# 🏡 Home (renderiza templates/index.html)
-# protegida por sessão
+# 🏡 Home (renderiza templates/postagem/index.html)
+# protegida por sessão/JWT
 # ===============================
 @auth_bp.route("/home")
 def home():
@@ -149,8 +151,7 @@ def home():
     return render_template("postagem/index.html")
 
 # ===============================
-# 🏡 Publicar
-# protegida por sessão
+# 📝 Publicar (protegida)
 # ===============================
 @auth_bp.route("/publicar", methods=["GET"], endpoint="publicar")
 def publicar():
@@ -169,7 +170,6 @@ def publicar():
 
     return render_template("postagem/publicar.html")
 
-    
 # ===============================
 # 📊 Dashboard (opcional)
 # ===============================
@@ -186,7 +186,6 @@ def api_me():
         return {"logged": False}, 200
 
     user = User.query.get(uid)
-    # fallback pro email se username estiver vazio
     username = (user.username or user.email or "Usuário").strip()
     return {
         "logged": True,
@@ -205,13 +204,13 @@ def logout():
     resp = make_response(redirect(url_for("auth.login")))
     clear_jwt_cookies(resp)
     return resp
-    #return redirect(url_for("auth.login"))
 
-# ===============================
-# 🌐 Google OAuth
-# ===============================
-@auth_bp.route("/oauth2/login/google/authorized")
-def google_authorized():
+# =========================================================
+# 🌐 ENDPOINTS FINAIS SEUS (pós-OAuth) — sem /authorized
+#  - O Flask-Dance processa /authorized e redireciona pra cá
+# =========================================================
+@auth_bp.route("/login/google/callback")
+def google_callback():
     if not google.authorized:
         flash("Autorização Google negada.", "danger")
         return redirect(url_for("auth.login"))
@@ -220,9 +219,10 @@ def google_authorized():
         resp = google.get("/oauth2/v2/userinfo")
         resp.raise_for_status()
         info = resp.json()
-        email = info["email"]
-        # você pode pegar nome exibível, se existir
-        display_name = info.get("name") or email
+        email = info.get("email")
+        display_name = info.get("name") or (email.split("@")[0] if email else "Usuário")
+        if not email:
+            raise ValueError("Google não retornou e-mail")
     except Exception as e:
         flash(f"Erro ao obter informações do Google: {e}", "danger")
         return redirect(url_for("auth.login"))
@@ -235,46 +235,56 @@ def google_authorized():
 
     session["user_id"] = user.id
     session["username"] = user.username or display_name
-    flash(f"✅ Login Google bem-sucedido! Bem-vindo {session['username']}", "success")
-    
+
     access = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
     csrf_token = os.urandom(16).hex()
     resp = make_response(redirect(url_for("auth.home")))
     set_jwt_cookies(resp, access, refresh)
     set_csrf_cookie(resp, csrf_token)
+    flash(f"✅ Login Google bem-sucedido! Bem-vindo {session['username']}", "success")
     return resp
 
-    #return redirect(url_for("auth.home"))
-
-# ===============================
-# 🐙 GitHub OAuth
-# ===============================
-@auth_bp.route("/oauth2/login/github/authorized")
-def github_authorized():
+@auth_bp.route("/login/github/callback")
+def github_callback():
     if not github.authorized:
         flash("Autorização GitHub negada.", "danger")
         return redirect(url_for("auth.login"))
 
     try:
-        resp = github.get("/user")
-        resp.raise_for_status()
-        info = resp.json()
-        username = info["login"]
-        email = info.get("email")  # pode vir None
+        # 1) Tenta e-mails (requer scope user:email)
+        emails_resp = github.get("/user/emails")
+        primary_email = None
+        if emails_resp.ok:
+            for item in emails_resp.json():
+                if item.get("primary") and item.get("verified"):
+                    primary_email = item.get("email")
+                    break
+            if not primary_email and emails_resp.json():
+                primary_email = emails_resp.json()[0].get("email")
+
+        # 2) /user para username e fallback de e-mail
+        user_resp = github.get("/user")
+        user_resp.raise_for_status()
+        info = user_resp.json()
+        username = info.get("login")
+        email = primary_email or info.get("email")
+        if not username and not email:
+            raise ValueError("GitHub não retornou username/email")
+
+        effective_username = username or (email.split("@")[0] if email else "usuario_github")
     except Exception as e:
         flash(f"Erro ao obter informações do GitHub: {e}", "danger")
         return redirect(url_for("auth.login"))
 
-    user = User.query.filter_by(username=username, provider="github").first()
+    user = User.query.filter_by(username=effective_username, provider="github").first()
     if not user:
-        user = User(username=username, email=email, provider="github", password_hash="oauth")
+        user = User(username=effective_username, email=email, provider="github", password_hash="oauth")
         db.session.add(user)
         db.session.commit()
 
     session["user_id"] = user.id
-    session["username"] = user.username or (email or username)
-    flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
+    session["username"] = user.username or (email or effective_username)
 
     access = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
@@ -282,44 +292,8 @@ def github_authorized():
     resp = make_response(redirect(url_for("auth.home")))
     set_jwt_cookies(resp, access, refresh)
     set_csrf_cookie(resp, csrf_token)
+    flash(f"✅ Login GitHub bem-sucedido! Bem-vindo {session['username']}", "success")
     return resp
-    
-    #return redirect(url_for("auth.home"))
-
-# ===============================
-# 🆕 Registro local
-# ===============================
-@auth_bp.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"].strip()
-        email = request.form["email"].strip()
-        password = request.form["password"]
-        confirm_password = request.form["confirm_password"]
-
-        if password != confirm_password:
-            flash("As senhas não coincidem. Tente novamente.", "danger")
-            return redirect(url_for("auth.register"))
-
-        existing_email = User.query.filter_by(email=email).first()
-        if existing_email:
-            flash("E-mail já registrado. Faça login ou use outro endereço.", "danger")
-            return redirect(url_for("auth.register"))
-
-        existing_user = User.query.filter_by(username=username, provider="local").first()
-        if existing_user:
-            flash("Nome de usuário já existe. Por favor, escolha outro.", "danger")
-            return redirect(url_for("auth.register"))
-
-        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-        new_user = User(username=username, email=email, password_hash=hashed_password, provider="local")
-        db.session.add(new_user)
-        db.session.commit()
-
-        flash("✅ Conta criada com sucesso! Faça login para continuar.", "success")
-        return redirect(url_for("auth.login"))
-
-    return render_template("register.html")
 
 # ===============================
 # ✉️ Enviar e-mail de redefinição
@@ -364,7 +338,7 @@ def reset_request():
             flash('E-mail não encontrado.', 'danger')
             return redirect(url_for('auth.reset_request'))
 
-        if user.provider != "local":
+        if getattr(user, "provider", "local") != "local":
             flash('Esta conta usa login via Google ou GitHub. Redefina a senha diretamente no provedor.', 'warning')
             return redirect(url_for('auth.login'))
 
@@ -411,17 +385,14 @@ def reset_token(token):
     return render_template("reset_password.html")
 
 # ===============================
-# 🔐 Restaurar sessão automaticamente a partir do access_token
+# 🔐 Restaura sessão pelo access_token (antes de cada request)
 # ===============================
-
 @auth_bp.before_app_request
 def restore_session_from_jwt():
     if session.get("user_id"):
         return  # já autenticado
 
-    from login_app.utils.jwt_auth import get_access_from_request, decode_token
-
-    token = get_access_from_request(request)  # <<< padronize assim
+    token = get_access_from_request(request)
     if not token:
         return
 
@@ -436,9 +407,8 @@ def restore_session_from_jwt():
     session["user_id"] = user.id
     session["username"] = user.username or user.email
 
-
 # ===============================
-# 🔐 Endpoint de refresh
+# 🔁 Endpoint de refresh do access token
 # ===============================
 @auth_bp.route("/refresh", methods=["POST"])
 def refresh():
@@ -465,5 +435,3 @@ def refresh():
         return resp, 200
     except Exception:
         return jsonify({"error": "refresh failed"}), 400
-
-
