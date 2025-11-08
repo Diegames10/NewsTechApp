@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard RSS | NewsTechApp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
+  <style>
+  /* ===============================
+     🎨 SIDEBAR RESPONSIVA TOTAL
+     =============================== */
+  .rss-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: clamp(220px, 22vw, 300px); /* largura fluida */
+    background: #0b1220;
+    border-right: 1px solid #162036;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(0.8rem, 1.5vw, 1.2rem);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.3s ease;
+    font-size: clamp(0.85rem, 1vw, 1rem);
+  }
+
+  .rss-sidebar h1 {
+    text-align: center;
+    color: #38bdf8;
+    font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+    margin: 0.5rem 0 1rem;
+  }
+
+  /* =========================
+     📁 SEÇÕES DOBRÁVEIS
+     ========================= */
+  details {
+    background: #162036;
+    border-radius: 10px;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    transition: background 0.3s ease;
+  }
+
+  details:hover {
+    background: #1e2b46;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    color: #38bdf8;
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+    outline: none;
+    user-select: none;
+  }
+
+  summary::after {
+    content: "▼";
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+  }
+
+  details[open] summary::after {
+    transform: rotate(-180deg);
+  }
+
+  details ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 1rem 0.8rem 1.4rem;
+  }
+
+  details li {
+    margin: 0.4rem 0;
+  }
+
+  details a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    display: block;
+    font-size: clamp(0.85rem, 1vw, 1rem);
+  }
+
+  details a:hover {
+    color: #38bdf8;
+    text-decoration: underline;
+  }
+
+  /* =========================
+     📱 BOTÃO DE MENU
+     ========================= */
+  .rss-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #38bdf8;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    color: #0f172a;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 200;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    transition: transform 0.2s ease, background 0.3s;
+  }
+
+  .rss-toggle:hover {
+    background: #7dd3fc;
+    transform: scale(1.05);
+  }
+
+  /* =========================
+     🖥️ BREAKPOINTS
+     ========================= */
+  @media (max-width: 1024px) {
+    .rss-sidebar {
+      width: 240px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .rss-sidebar {
+      transform: translateX(-100%);
+      position: fixed;
+    }
+    .rss-sidebar.open {
+      transform: translateX(0);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rss-sidebar {
+      width: 80vw;
+      padding: 0.8rem;
+    }
+    .rss-sidebar h1 {
+      font-size: 1.2rem;
+    }
+    details summary {
+      font-size: 1rem;
+    }
+    details a {
+      font-size: 0.9rem;
+    }
+  }
+  </style>
+</head>
+
+<body>
+  
+  <!-- 🗂️ SIDEBAR -->
+  <aside id="rss-sidebar" class="rss-sidebar">
+    <h1></h1>
+    <h1>Feeds NewsTech</1>
+    <details open>
+      <summary>💻 Hardware</summary>
+      <ul>
+        <li><a href="/rss/hardware/nacional">Nacional</a></li>
+        <li><a href="/rss/hardware/internacional">Internacional</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>🎮 Games</summary>
+      <ul>
+        <li><a href="/rss/games/nacional">Nacional</a></li>
+        <li><a href="/rss/games/internacional">Internacional</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>🧠 Tecnologia</summary>
+      <ul>
+        <li><a href="/rss/tecnologia/ia/nacional">IA - Nacional</a></li>
+        <li><a href="/rss/tecnologia/ia/internacional">IA - Internacional</a></li>
+        <li><a href="/rss/tecnologia/seguranca/nacional">Segurança - Nacional</a></li>
+        <li><a href="/rss/tecnologia/seguranca/internacional">Segurança - Internacional</a></li>
+        <li><a href="/rss/tecnologia/gadgets/nacional">Gadgets - Nacional</a></li>
+        <li><a href="/rss/tecnologia/gadgets/internacional">Gadgets - Internacional</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>👨‍💻 Desenvolvedores</summary>
+      <ul>
+        <li><a href="/rss/desenvolvedores/nacional">Nacional</a></li>
+        <li><a href="/rss/desenvolvedores/internacional">Internacional</a></li>
+        <li><a href="/rss/desenvolvedores/devops">DevOps</a></li>
+        <li><a href="/rss/desenvolvedores/ai_tools">IA & Ferramentas</a></li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>🤖 Assistente NewsTech</summary>
+      <ul>
+        <li><a href="/assistente">Abrir Assistente</a></li>
+      </ul>
+    </details>
+  </aside>
+
+  
+
+  <script>
+    // Toggle sidebar em telas pequenas
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebar = document.getElementById("rss-sidebar");
+      const toggle = document.getElementById("rss-toggle");
+
+      toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+        toggle.textContent = sidebar.classList.contains("open") ? "✖ Fechar" : "☰ RSS";
+      });
+
+      // Fecha com tecla ESC
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+          toggle.textContent = "☰ RSS";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
