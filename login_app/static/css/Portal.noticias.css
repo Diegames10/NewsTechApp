@@ -1,30 +1,39 @@
+/* ==========================================
+   🔧 AJUSTE SEGURO — TOOLBAR + SIDEBAR BASE
+   (isolado e compatível com restante do CSS)
+========================================== */
+
+/* === TOOLBAR === */
 .toolbar {
   display: flex;
-  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 16px;
   background: var(--card);
   padding: 12px;
   border-radius: 12px;
   box-shadow: 0 2px 8px var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Campo de busca */
 .toolbar input[type="search"] {
   flex: 1 1 260px;
   min-width: 200px;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #cfcfcf;
-  background: #fff;
-  color: #000;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
+/* Tema escuro do campo de busca */
 body.dark .toolbar input[type="search"] {
   background: #333;
   color: #f5f5f5;
   border: 1px solid #555;
-}
 
 .toolbar .btn {
   background: var(--primary);
@@ -36,39 +45,42 @@ body.dark .toolbar input[type="search"] {
   font-weight: 600;
 }
 
+/* Botões da toolbar */
+.toolbar .btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity .25s ease, transform .1s ease;
+}
+.toolbar .btn:hover { opacity: 0.9; }
+.toolbar .btn:active { transform: translateY(1px); }
 .toolbar .btn:disabled { opacity: .6; cursor: not-allowed; }
 
+/* Contador da toolbar */
 .toolbar-count {
   opacity: .8;
-  margin-left: auto; /* empurra o contador para a direita */
+  margin-left: auto; /* empurra o contador p/ direita */
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
+/* === SIDEBAR — remoção segura de regras antigas === */
+/* ❌ Removemos o antigo layout fixo e display:none
+   pois o sistema off-canvas já está implementado abaixo. */
 
-/* layout básico do sidebar */
+/*
 #sidebar {
   position: fixed;
   top: 16px;
   left: 16px;
   width: 260px;
-  z-index: 900; /* abaixo do chat float se ele usar 1000+ */
+  z-index: 900;
 }
 
-/* botão */
-#sidebar-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid #cfcfcf;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px var(--shadow);
-}
-body.dark #sidebar-toggle { border-color: #555; }
-
-/* painel de conteúdo do sidebar */
 #sidebar .sidebar-content {
   margin-top: 10px;
   background: var(--card);
@@ -78,9 +90,121 @@ body.dark #sidebar-toggle { border-color: #555; }
   padding: 12px;
 }
 
-/* ESCONDER quando fechado (chave!) */
 #sidebar[data-state="closed"] .sidebar-content { display: none; }
+*/
 
+/* === SIDEBAR NOVO (off-canvas) === */
+/* Dimensão do topo (altura aproximada do header) */
+
+:root { --header-h: 80px; }
+
+/* Botão sempre visível */
+#sidebar-toggle {
+  position: fixed;
+  top: calc(var(--header-h) + 16px);
+  left: 16px;
+  z-index: 1100;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: background .25s ease, color .25s ease;
+}
+body.dark #sidebar-toggle { border-color: #555; }
+
+/* Overlay container */
+#sidebar {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1090;
+}
+
+/* Painel deslizante */
+#sidebar-content {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  width: 280px;
+  height: calc(100vh - var(--header-h));
+  overflow: auto;
+  background: var(--card);
+  color: var(--text);
+  border-right: 1px solid var(--border);
+  box-shadow: 8px 0 20px rgba(0,0,0,.2);
+  padding: 12px;
+  transform: translateX(-105%);
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+}
+
+/* Aberto */
+#sidebar[data-state="open"] { pointer-events: auto; }
+#sidebar[data-state="open"] #sidebar-content {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Overlay em telas pequenas */
+@media (max-width: 991.98px) {
+  #sidebar::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  #sidebar[data-state="open"]::after {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Recuo do main no desktop */
+@media (min-width: 992px) {
+  body.has-sidebar-open main {
+    margin-left: 312px; /* 280 + respiro */
+    transition: margin-left .25s ease;
+  }
+}
+
+/* Conteúdo interno da sidebar */
+.sidebar-title {
+  margin: 4px 8px 8px;
+  font-weight: 600;
+}
+.sidebar-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sidebar-nav li { margin: 4px 0; }
+.sidebar-nav a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background .2s;
+}
+.sidebar-nav a:hover { background: var(--hover); }
+
+/* Acessibilidade e foco */
+#sidebar .sidebar-nav a:link,
+#sidebar .sidebar-nav a:visited,
+#sidebar .sidebar-nav a:active { color: inherit; }
+#sidebar .sidebar-nav a:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
+  outline-offset: 2px;
+}
 /* título e lista */
 #sidebar .sidebar-title { margin: 4px 8px 8px; }
 #sidebar .sidebar-nav { list-style: none; margin: 0; padding: 0; }
@@ -820,5 +944,6 @@ body.dark #sidebar-toggle{ border-color:#555; }
   outline:2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
   outline-offset:2px;
 }
+
 
 
