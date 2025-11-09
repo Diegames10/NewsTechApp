@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5" style="max-width: 420px;">
+  
+<style>
+  /* Exibe o ícone da logo em tamanho real no index */
+  .logo-full {
+    display: inline-block;
+    max-width: 100%; /* evita quebrar em telas menores */
+    height: auto;
+  }
+
+  /* Remove estilos anteriores (sombras ou bordas) */
+  .logo-full {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+</style>
+
+  <!-- 🧩 LOGO DO APLICATIVO -->
+ <div class="text-center my-4">
+  <img 
+    src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
+    alt="Logo NewsTechApp"
+    class="logo-full"
+  >
+</div>
+  
+  <h3 class="text-center mb-4">Login</h3>
+
+  
+  <form method="POST" action="{{ url_for('auth.login') }}">
+    <!-- E-mail -->
+    <div class="mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input type="email" class="form-control" name="email" placeholder="Digite seu e-mail" required>
+    </div>
+
+    <!-- Senha -->
+    <div class="mb-3 position-relative">
+      <label for="password" class="form-label">Senha</label>
+      <div class="input-group">
+        <input type="password" class="form-control" name="password" id="password" placeholder="Digite sua senha" required>
+        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mt-3">Entrar</button>
+  </form>
+
+  <div class="text-center mt-3">
+    <a href="{{ url_for('auth.reset_request') }}">Esqueceu sua senha?</a>
+  </div>
+
+  <div class="text-center mt-3">
+    <p>Ou entre com:</p>
+    <a href="{{ url_for('google.login') }}" class="btn btn-outline-danger w-100 mb-2">
+      <i class="bi bi-google"></i> Entrar com Google
+    </a>
+    <a href="{{ url_for('github.login') }}" class="btn btn-outline-dark w-100">
+      <i class="bi bi-github"></i> Entrar com GitHub
+    </a>
+  </div>
+
+  <p class="text-center mt-3">
+    Não tem uma conta? 
+    <a href="{{ url_for('auth.register') }}">Registrar-se</a>
+  </p>
+</div>
+
+<!-- Mostrar/ocultar senha -->
+<script>
+  const togglePassword = document.getElementById("togglePassword");
+  const password = document.getElementById("password");
+  togglePassword.addEventListener("click", function() {
+    const type = password.getAttribute("type") === "password" ? "text" : "password";
+    password.setAttribute("type", type);
+    this.innerHTML = type === "password" ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+  });
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}

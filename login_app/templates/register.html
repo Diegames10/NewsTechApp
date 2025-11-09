@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5" style="max-width: 450px;">
+  <h3 class="text-center mb-4">Criar Conta</h3>
+
+  <form method="POST" action="{{ url_for('auth.register') }}">
+    <!-- Nome de usuário -->
+    <div class="mb-3">
+      <label for="username" class="form-label">Nome de Usuário</label>
+      <input type="text" class="form-control" name="username" required>
+    </div>
+
+    <!-- E-mail -->
+    <div class="mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input type="email" class="form-control" name="email" required>
+    </div>
+
+    <!-- Senha -->
+    <div class="mb-3 position-relative">
+      <label for="password" class="form-label">Senha</label>
+      <div class="input-group">
+        <input type="password" class="form-control" name="password" id="password" required>
+        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Confirmação da senha -->
+    <div class="mb-3 position-relative">
+      <label for="confirm_password" class="form-label">Confirmar Senha</label>
+      <div class="input-group">
+        <input type="password" class="form-control" name="confirm_password" id="confirm_password" required>
+        <button class="btn btn-outline-secondary" type="button" id="toggleConfirm">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+  </form>
+
+  <p class="text-center mt-3">
+    Já possui uma conta? 
+    <a href="{{ url_for('auth.login') }}">Fazer login</a>
+  </p>
+</div>
+
+<!-- Scripts para mostrar/ocultar senha -->
+<script>
+  const togglePassword = document.getElementById("togglePassword");
+  const password = document.getElementById("password");
+  togglePassword.addEventListener("click", function() {
+    const type = password.getAttribute("type") === "password" ? "text" : "password";
+    password.setAttribute("type", type);
+    this.innerHTML = type === "password" ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+  });
+
+  const toggleConfirm = document.getElementById("toggleConfirm");
+  const confirm = document.getElementById("confirm_password");
+  toggleConfirm.addEventListener("click", function() {
+    const type = confirm.getAttribute("type") === "password" ? "text" : "password";
+    confirm.setAttribute("type", type);
+    this.innerHTML = type === "password" ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+  });
+</script>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}
