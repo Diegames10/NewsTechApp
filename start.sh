@@ -36,4 +36,6 @@ fi
 
 echo "Iniciando servidor Gunicorn..."
 cd /app
-exec gunicorn wsgi:app --bind 0.0.0.0:8080 --workers 3 --timeout 120
+
+# exec gunicorn wsgi:app --bind 0.0.0.0:8080 --workers 3 --timeout 120
+export FLASK_APP='login_app:create_app'  # para o Flask-Migrate (mantém factory)
