@@ -42,18 +42,18 @@ ajuste pra mim com cuidado
     </nav>
   </header>
 
-  <!-- SIDEBAR (fixa à esquerda) -->
-  <button id="sidebar-toggle" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
-  <aside id="sidebar" class="sidebar" data-state="closed" aria-label="Menu lateral">
-    <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
-      <h3 class="sidebar-title">Categorias</h3>
-      <ul class="sidebar-nav">
-        <li><a href="{{ url_for('news.rss_dashboard_page') }}">📰 RSS Dashboard</a></li>
-        <li><a href="{{ url_for('auth.publicar') }}">➕ Publicar</a></li>
-        <li><a href="{{ url_for('auth.home') }}">🏠 Início</a></li>
-      </ul>
-    </nav>
-  </aside>
+  <!-- SIDEBAR (básico) -->
+<button id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
+
+<aside id="sidebar" class="sidebar" data-state="closed" aria-label="Menu lateral">
+  <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
+    <h3 class="sidebar-title">Categorias</h3>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('news.rss_dashboard_page') }}">📰 RSS Dashboard</a></li>
+      <li><a href="{{ url_for('auth.home') }}">🏠 Início</a></li>
+    </ul>
+  </nav>
+</aside>
 
   <!-- CHAT FLOAT (inferior direito) -->
   <button id="chatfloat-toggle" class="chatfloat-button" aria-expanded="false" title="Abrir assistente">💬</button>
@@ -132,4 +132,5 @@ ajuste pra mim com cuidado
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
