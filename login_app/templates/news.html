@@ -6,6 +6,7 @@
   <title>Busca | NewsTechApp</title>
 
   <!-- CSS -->
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
@@ -185,7 +186,8 @@
       });
     });
   </script>
-
+  <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
