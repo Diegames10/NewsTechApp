@@ -1,17 +1,19 @@
-<!-- Sidebar fixo/colapsável -->
+<!-- templates/_sidebar.html -->
 <aside id="sidebar" class="sidebar" aria-label="Menu lateral" data-state="closed">
-  <button id="sidebar-toggle" class="sidebar-toggle" aria-expanded="false" aria-controls="sidebar">
+  <button id="sidebar-toggle"
+          class="sidebar-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="sidebar-content">
     ☰ Menu
   </button>
 
-  <nav class="sidebar-content" aria-hidden="true">
+  <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
     <h3 class="sidebar-title">Categorias</h3>
-    <ul class="sidebar-list">
+    <ul class="sidebar-nav">
       <li><a href="{{ url_for('news.rss_dashboard_page') }}">📰 RSS Dashboard</a></li>
       <li><a href="{{ url_for('auth.publicar') }}">➕ Publicar</a></li>
       <li><a href="{{ url_for('auth.home') }}">🏠 Início</a></li>
-      <!-- adicione outras entradas aqui -->
     </ul>
   </nav>
 </aside>
-
