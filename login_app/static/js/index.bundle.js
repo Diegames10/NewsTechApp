@@ -20,11 +20,8 @@
   const safeSetText = (el, text) => { if (el) el.textContent = text; };
   const setCount = (n) => safeSetText(countEl, `${n} ${n === 1 ? "item" : "itens"}`);
 
-  function escapeHtml(s = "") {
-    return s.replace(/[&<>"']/g, c => (
-      {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]
-    ));
-  }
+  const escapeHtml = (s = "") =>
+    s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
   function withCacheBuster(src) {
     try {
@@ -43,10 +40,7 @@
     u.searchParams.set("page", page);
     u.searchParams.set("per_page", PER_PAGE);
 
-    const r = await fetch(u, {
-      headers: { "Accept": "application/json" },
-      credentials: "include"
-    });
+    const r = await fetch(u, { headers: { "Accept": "application/json" }, credentials: "include" });
     if (!r.ok) throw new Error(`Falha ao listar (${r.status})`);
     const data = await r.json();
 
@@ -265,6 +259,7 @@
   });
 })();
 
+
 // ------------------------------
 // MÓDULO: Sidebar (esquerda)
 // ------------------------------
@@ -288,6 +283,7 @@
     localStorage.setItem("sidebar-open", open ? "1" : "0");
   });
 
+  // fechar ao clicar fora (mobile/desktop)
   document.addEventListener("click", (e) => {
     if (sidebar.dataset.state !== "open") return;
     const within = sidebar.contains(e.target) || toggle.contains(e.target);
@@ -295,8 +291,9 @@
   });
 })();
 
+
 // ------------------------------
-// MÓDULO: Chat Float (inferior direito)
+// MÓDULO: Chat Float (inferior direito) — com abrir/fechar confiável
 // ------------------------------
 (() => {
   const panel    = document.getElementById("chatfloat-panel");
@@ -309,14 +306,29 @@
 
   const API = "/api/chat"; // ajuste se seu blueprint diferir
 
+  // Usa classe .open (coerente com o CSS); não depende de atributo hidden
   function setOpen(open) {
-    panel.hidden = !open;
-    btn.setAttribute("aria-expanded", String(open));
-    if (open) input.focus();
+    const willOpen = Boolean(open);
+    panel.classList.toggle("open", willOpen);
+    btn.setAttribute("aria-expanded", String(willOpen));
+    if (willOpen) input.focus();
   }
+  const isOpen = () => panel.classList.contains("open");
 
-  btn.addEventListener("click", () => setOpen(panel.hidden));
+  // Alterna ao clicar no botão
+  btn.addEventListener("click", () => setOpen(!isOpen()));
+  // Fecha com X
   closeBtn?.addEventListener("click", () => setOpen(false));
+
+  // Fecha com ESC e com clique fora
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen()) setOpen(false);
+  });
+  document.addEventListener("click", (e) => {
+    if (!isOpen()) return;
+    const within = panel.contains(e.target) || btn.contains(e.target);
+    if (!within) setOpen(false);
+  });
 
   function push(role, text) {
     const el = document.createElement("div");
