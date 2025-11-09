@@ -69,7 +69,6 @@
     </form>
   </div>
 
-
   <!-- Off-canvas do NewsAPI (abre pela esquerda) -->
   <aside id="newsapi-sidebar"
          class="newsapi-sidebar"
@@ -88,30 +87,31 @@
       </ul>
     </nav>
   </aside>
-</div>
-<!-- === /NewsAPI === -->
-
+  <!-- === /NewsAPI === -->
 
   <!-- CONTEÚDO -->
   <main>
+    <!-- === NewsAPI: bloco acima das postagens === -->
+    <section id="ext-newsapi" data-endpoint="/api/news" aria-labelledby="ext-newsapi-title" style="margin-top:32px;">
+      <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre hardware e Devs ! (NewsAPI)</h2>
+
+      <div class="toolbar" id="ext-newsapi-toolbar" style="margin-top:12px;">
+        <input id="ext-newsapi-q" type="search" placeholder="Buscar em portais (ex.: Intel, NVIDIA, React)" aria-label="Buscar em portais">
+        <button id="ext-newsapi-search" class="btn" type="button">🔎 Buscar</button>
+        <button id="ext-newsapi-clear" class="btn" type="button">✖ Limpar</button>
+        <span id="ext-newsapi-count" class="toolbar-count" aria-live="polite"></span>
+      </div>
+
+      <div id="ext-newsapi-list"></div>
+      <nav id="ext-newsapi-pager" class="paginacao" aria-label="Paginação NewsAPI" style="margin-top:12px;"></nav>
+      <div id="ext-newsapi-empty" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
+    </section>
+    <!-- === /NewsAPI === -->
+
+    <!-- Título das postagens da comunidade (fica depois do bloco NewsAPI) -->
+    <h2>📰 Postagens da Comunidade</h2>
+
     <!-- TOOLBAR que o JS usa -->
-  <section id="ext-newsapi" data-endpoint="/api/news" aria-labelledby="ext-newsapi-title" style="margin-top:32px;">
-  <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre hardware e Devs ! (NewsAPI)</h2>
-    
-    <h2>📰 Postagens da Comunidade</h2
-
-  <div class="toolbar" id="ext-newsapi-toolbar" style="margin-top:12px;">
-    <input id="ext-newsapi-q" type="search" placeholder="Buscar em portais (ex.: Intel, NVIDIA, React)" aria-label="Buscar em portais">
-    <button id="ext-newsapi-search" class="btn" type="button">🔎 Buscar</button>
-    <button id="ext-newsapi-clear" class="btn" type="button">✖ Limpar</button>
-    <span id="ext-newsapi-count" class="toolbar-count" aria-live="polite"></span>
-  </div>
-
-  <div id="ext-newsapi-list"></div>
-  <nav id="ext-newsapi-pager" class="paginacao" aria-label="Paginação NewsAPI" style="margin-top:12px;"></nav>
-  <div id="ext-newsapi-empty" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
-</section>
-
     <div class="toolbar" id="toolbar">
       <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." aria-label="Buscar" />
       <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
@@ -123,8 +123,6 @@
     <nav id="paginacao" class="paginacao" aria-label="Paginação"></nav>
     <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
   </main>
-
-  
 
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
@@ -139,18 +137,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
