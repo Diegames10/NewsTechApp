@@ -7,6 +7,41 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
 
+ <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
+
+  <!-- Ícones -->
+  <link rel="icon" type="image/png" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <link rel="apple-touch-icon" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>📰 NewsTech</h1>
+    <nav>
+      <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
+      <div class="perfil-container">
+        <button id="perfil-btn" type="button">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil">
+          <span id="perfil-nome">Entrar</span> ▾
+        </button>
+        <div class="perfil-menu" id="perfil-menu">
+          <div class="perfil-info">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil">
+            <strong id="menu-nome">Visitante</strong>
+          </div>
+          <hr>
+          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
+          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
   <style>
     /* ======== LAYOUT GERAL ======== */
     :root{
@@ -300,5 +335,7 @@
 
   <!-- Seu JS do chat (já inclui o toggle do chat flutuante com classe .open) -->
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
