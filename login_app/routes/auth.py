@@ -521,3 +521,10 @@ def refresh():
         return resp, 200
     except Exception:
         return jsonify({"error": "refresh failed"}), 400
+
+
+# em routes/auth.py (ou onde preferir):
+@auth_bp.route("/index")
+def index_page():
+    return render_template("index.html")
+
