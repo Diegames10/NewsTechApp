@@ -1,0 +1,18 @@
+<!-- Chat flutuante -->
+<div id="chatfloat" class="chatfloat" aria-live="polite">
+  <button id="chatfloat-toggle" class="chatfloat-btn" aria-expanded="false" aria-controls="chatfloat-panel">💬</button>
+
+  <div id="chatfloat-panel" class="chatfloat-panel" hidden>
+    <header class="chatfloat-header">
+      <strong>Assistente</strong>
+      <button id="chatfloat-close" class="chatfloat-close" aria-label="Fechar">✕</button>
+    </header>
+
+    <div id="chatfloat-messages" class="chatfloat-messages" role="log" aria-live="polite"></div>
+
+    <form id="chatfloat-form" class="chatfloat-form" autocomplete="off">
+      <input id="chatfloat-input" type="text" placeholder="Digite sua mensagem…" required />
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+</div>
