@@ -70,14 +70,13 @@
           style="width:25%; height:auto; display:block; margin:0 auto;"
          >
     </div>
-    <!-- === NewsAPI: bloco acima das postagens === -->
     <!-- Bloco de acesso à página de notícias -->
     <section id="news-section" style="text-align:center; margin:40px 0;">
       <h2 style="margin-bottom:12px;">🗞️ Acesse as notícias de Hardware, Games e Devs</h2>
       <p style="color:#94a3b8; margin-bottom:20px;">
         Clique abaixo para abrir a página completa de notícias atualizadas.
       </p>
-      <a href="{{ url_for('news.news_html') }}" 
+      <a href="{{ url_for('news.news_home') }}" 
          class="btn"
          style="
            display:inline-block;
@@ -94,6 +93,7 @@
         🔗 Ir para Página de Notícias
       </a>
     </section>
+
 
 
     <!-- Título das postagens da comunidade (fica depois do bloco NewsAPI) -->
@@ -124,6 +124,7 @@
 
 </body>
 </html>
+
 
 
 
