@@ -107,27 +107,26 @@
     <!-- Aqui vai a lista de notícias ou o conteúdo do index -->
   </main>
 
-  <!-- Chat flutuante (opcional) -->
-  <div id="chatfloat-panel" hidden>
-    <!-- ... conteúdo do chat ... -->
+  <!-- CHAT FLOAT -->
+<button id="chatfloat-toggle" aria-expanded="false" title="Abrir assistente">
+  💬
+</button>
+
+<div id="chatfloat-panel" hidden>
+  <div class="chatfloat-header">
+    <strong>Assistente NewsTech</strong>
+    <button id="chatfloat-close" title="Fechar">×</button>
   </div>
-  <button id="chatfloat-toggle" aria-expanded="false">💬</button>
 
-  <!-- JS principal -->
-  <script src="{{ url_for('static', filename='js/index.bundle.js') }}" defer></script>
-</body>
-    <div class="toolbar">
-      <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." />
-      <select id="ordem">
-        <option value="recente">Mais recentes primeiro</option>
-        <option value="antigo">Mais antigas primeiro</option>
-        <option value="titulo-az">Título A → Z</option>
-        <option value="titulo-za">Título Z → A</option>
-      </select>
-      <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
+  <div id="chatfloat-messages" class="chatfloat-messages">
+    <div class="msg msg-assistant">Olá! Como posso ajudar você hoje? 😊</div>
+  </div>
 
-      <a href="{{ url_for('auth.publicar') }}" class="btn" style="text-decoration:none;">➕ Publicar</a>
-    </div>
+  <form id="chatfloat-form" class="chatfloat-form">
+    <input id="chatfloat-input" type="text" placeholder="Digite sua mensagem..." autocomplete="off" />
+    <button type="submit" title="Enviar">➤</button>
+  </form>
+</div>
 
     <div id="lista-noticias"></div>
 
@@ -187,6 +186,7 @@
 
 </body>
 </html>
+
 
 
 
