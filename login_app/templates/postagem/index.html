@@ -62,7 +62,8 @@
   
   <!-- CONTEÚDO -->
   <main>
-     <div class="text-center my-4" style="text-align:center;">
+     
+    <div class="text-center my-4" style="text-align:center;">
         <img 
           src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
           alt="Logo NewsTechApp"
@@ -94,6 +95,13 @@
       </a>
     </section>
 
+    <div style="text-align:center; margin: 20px 0;">
+      <a href="{{ url_for('assistente.index') }}" 
+         class="btn-assistente"
+         style="background:#38bdf8; color:#0f172a; font-weight:700; padding:12px 18px; border-radius:8px; text-decoration:none; display:inline-block;">
+        🤖 Acessar Assistente I.A NewsTech
+      </a>
+    </div>
 
 
     <!-- Título das postagens da comunidade (fica depois do bloco NewsAPI) -->
@@ -124,6 +132,7 @@
 
 </body>
 </html>
+
 
 
 
