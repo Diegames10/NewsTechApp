@@ -20,8 +20,6 @@
   color: #000;
 }
 
-faça ajuste seguro para que não afete outras coisas 
-
 body.dark .toolbar input[type="search"] {
   background: #333;
   color: #f5f5f5;
@@ -822,4 +820,5 @@ body.dark #sidebar-toggle{ border-color:#555; }
   outline:2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
   outline-offset:2px;
 }
+
 
