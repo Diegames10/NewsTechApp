@@ -458,3 +458,116 @@ body {
     transform: translateX(0);
   }
 }
+
+/* =======================================================
+   🌗 THEME SHIM — habilita light/dark via body.dark
+   Cole no FINAL de static/css/assistente.css
+   Não remove o que existe; isso apenas sobrescreve as cores
+   ======================================================= */
+
+:root {
+  /* Paleta LIGHT */
+  --bg: #ffffff;
+  --text: #1e1e1e;
+  --primary: #38bdf8;
+  --card: #f1f5f9;
+  --input: #e2e8f0;
+  --muted: #475569;   /* textos secundários */
+  --shadow: rgba(0,0,0,.1);
+}
+
+body.dark {
+  /* Paleta DARK */
+  --bg: #0f172a;
+  --text: #f1f5f9;
+  --primary: #38bdf8;
+  --card: #1e293b;
+  --input: #162036;
+  --muted: #94a3b8;
+  --shadow: rgba(0,0,0,.4);
+}
+
+/* ====== Aplicação das variáveis (sobrescreve as cores fixas) ====== */
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  transition: background .25s ease, color .25s ease;
+}
+
+h1,
+#chat-container h2 {
+  color: var(--primary) !important;
+}
+
+/* Contêineres */
+#chat-container {
+  background: var(--card) !important;
+  box-shadow: 0 4px 10px var(--shadow) !important;
+}
+
+#chat-box {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* Busca */
+.search {
+  background: var(--card) !important;
+}
+.search input,
+.search select {
+  background: var(--input) !important;
+  color: var(--text) !important;
+}
+
+/* Botões (inclusive enviar/float) */
+.search button,
+#chat-send,
+#chat-toggle,
+#chat-float-send,
+button,
+.btn {
+  background: var(--primary) !important;
+  color: #0f172a !important; /* bom contraste em ambas paletas */
+}
+
+/* Cards */
+.grid .card,
+.card {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  box-shadow: 0 2px 6px var(--shadow) !important;
+}
+.card p { color: var(--muted) !important; }
+
+/* Thumbs / estados */
+.thumb { background: var(--bg) !important; }
+.thumb--missing {
+  background: var(--input) !important;
+  color: var(--muted) !important;
+}
+
+/* Chat flutuante */
+#chat-float { background: var(--card) !important; }
+#chat-float-box {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+#chat-float-form {
+  background: var(--input) !important;
+}
+
+/* Inputs do chat */
+#chat-input,
+#chat-float-input {
+  background: var(--input) !important;
+  color: var(--text) !important;
+}
+
+/* Header (se aparecer nesta página) */
+header {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+
