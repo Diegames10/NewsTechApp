@@ -70,16 +70,38 @@
   </div>
 
   <!-- === NewsAPI: barra acima da lista === -->
-  <div id="newsapi-root">
-    <div class="newsapi-bar">
-      <button id="newsapi-sidebar-toggle"
-              type="button"
-              class="newsapi-toggle"
-              aria-expanded="false"
-              aria-controls="newsapi-sidebar-content">
-        ☰ Fontes/Seções (NewsAPI)
-      </button>
+<div id="newsapi-root">
+  <div class="newsapi-bar" style="display:flex;justify-content:center;padding:12px 0 6px;">
+    <button id="newsapi-sidebar-toggle"
+            type="button"
+            class="newsapi-toggle"
+            aria-expanded="false"
+            aria-controls="newsapi-sidebar-content">
+      ☰ Fontes/Seções (NewsAPI)
+    </button>
   </div>
+
+  <!-- Off-canvas do NewsAPI (abre pela esquerda) -->
+  <aside id="newsapi-sidebar"
+         class="newsapi-sidebar"
+         data-state="closed"
+         aria-label="Menu lateral NewsAPI"
+         style="position:fixed;inset:0;pointer-events:none;z-index:1090;">
+    <nav id="newsapi-sidebar-content"
+         class="newsapi-sidebar-content"
+         aria-hidden="true"
+         style="position:fixed;top:80px;left:0;width:280px;height:calc(100vh - 96px);overflow:auto;background:var(--card);color:var(--text);border-right:1px solid var(--border, #cfcfcf);box-shadow:8px 0 20px rgba(0,0,0,.2);padding:12px;transform:translateX(-105%);opacity:0;transition:transform .25s ease, opacity .25s ease;">
+      <h3 class="newsapi-sidebar-title" style="margin:4px 8px 8px;">NewsAPI</h3>
+      <ul class="newsapi-sidebar-nav" style="list-style:none;margin:0;padding:0;">
+        <li style="margin:4px 0;"><button type="button" data-feed="top-headlines">Top Headlines</button></li>
+        <li style="margin:4px 0;"><button type="button" data-feed="everything">Everything</button></li>
+        <li style="margin:4px 0;"><button type="button" data-feed="tech">Tecnologia</button></li>
+      </ul>
+    </nav>
+  </aside>
+</div>
+<!-- === /NewsAPI === -->
+
 
   <!-- CONTEÚDO -->
   <main>
@@ -126,6 +148,7 @@
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
 
 
