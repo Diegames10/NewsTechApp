@@ -72,14 +72,7 @@
   </div>
    
   
-  <div class="text-center my-4" style="text-align:center;">
-  <img 
-    src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
-    alt="Logo NewsTechApp"
-    class="logo-full"
-    style="width:25%; height:auto; display:block; margin:0 auto;"
-   >
-    </div>
+ 
    
   <!-- Off-canvas do NewsAPI (abre pela esquerda) -->
   <aside id="newsapi-sidebar"
@@ -103,6 +96,14 @@
 
   <!-- CONTEÚDO -->
   <main>
+     <div class="text-center my-4" style="text-align:center;">
+        <img 
+          src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
+          alt="Logo NewsTechApp"
+          class="logo-full"
+          style="width:25%; height:auto; display:block; margin:0 auto;"
+         >
+    </div>
     <!-- === NewsAPI: bloco acima das postagens === -->
     <section id="ext-newsapi" data-endpoint="/api/news" aria-labelledby="ext-newsapi-title" style="margin-top:32px;">
       <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre Hardware, Games e Devs !</h2>
@@ -149,6 +150,7 @@
 
 </body>
 </html>
+
 
 
 
