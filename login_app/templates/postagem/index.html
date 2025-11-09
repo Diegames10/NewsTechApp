@@ -69,6 +69,18 @@
     </form>
   </div>
 
+  <!-- === NewsAPI: barra acima da lista === -->
+  <div id="newsapi-root">
+    <div class="newsapi-bar">
+      <button id="newsapi-sidebar-toggle"
+              type="button"
+              class="newsapi-toggle"
+              aria-expanded="false"
+              aria-controls="newsapi-sidebar-content">
+        ☰ Fontes/Seções (NewsAPI)
+      </button>
+  </div>
+
   <!-- CONTEÚDO -->
   <main>
     <h2>📰 Postagens da Comunidade</h2>
@@ -114,6 +126,7 @@
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
 
 
