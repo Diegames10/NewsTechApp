@@ -2,26 +2,23 @@
 // MÓDULO: Lista de posts + paginação
 // ------------------------------
 (() => {
-  // Elementos
   const listEl     = document.getElementById("lista-noticias") || document.getElementById("list");
   const emptyEl    = document.getElementById("vazio")          || document.getElementById("empty");
   const countEl    = document.getElementById("contador")       || document.getElementById("count");
   const searchEl   = document.getElementById("q")              || document.getElementById("search");
   const refreshBtn = document.getElementById("btn-atualizar");
   const pagEl      = document.getElementById("paginacao");
+  if (!listEl) return; // página sem lista
 
-  // Estado de paginação
   let currentPage = 1;
   let totalPages  = 1;
   const PER_PAGE  = 10;
 
-  // Imagens acima da dobra + proporção fallback
   const ABOVE_THE_FOLD  = 3;
   const FALLBACK_ASPECT = "16/9";
 
-  // Helpers
-  function safeSetText(el, text) { if (el) el.textContent = text; }
-  function setCount(n) { safeSetText(countEl, `${n} ${n === 1 ? "item" : "itens"}`); }
+  const safeSetText = (el, text) => { if (el) el.textContent = text; };
+  const setCount = (n) => safeSetText(countEl, `${n} ${n === 1 ? "item" : "itens"}`);
 
   function escapeHtml(s = "") {
     return s.replace(/[&<>"']/g, c => (
@@ -40,7 +37,6 @@
     }
   }
 
-  // API
   async function apiList(q = "", page = 1) {
     const u = new URL("/api/posts", window.location.origin);
     if (q) u.searchParams.set("q", q);
@@ -54,12 +50,11 @@
     if (!r.ok) throw new Error(`Falha ao listar (${r.status})`);
     const data = await r.json();
 
-    currentPage = data?.meta?.page  || 1;
-    totalPages  = data?.meta?.pages || 1;
+    currentPage = Number(data?.meta?.page)  || 1;
+    totalPages  = Number(data?.meta?.pages) || 1;
 
     // aceita { items: [...] } ou { Objectitems: [...] } ou lista direta
-    const items = Array.isArray(data) ? data : (data.items || data.Objectitems || []);
-    return items;
+    return Array.isArray(data) ? data : (data.items || data.Objectitems || []);
   }
 
   async function apiDelete(id) {
@@ -67,7 +62,6 @@
     if (!r.ok) throw new Error(`Falha ao excluir (${r.status})`);
   }
 
-  // Imagens: robustez extra
   function ensureImagesVisible() {
     const imgs = document.querySelectorAll("img.thumb");
     let idx = 0;
@@ -93,7 +87,6 @@
     });
   }
 
-  // UI
   function postCard(p, idx = 0) {
     const div = document.createElement("div");
     div.className = "card card-noticia";
@@ -107,7 +100,6 @@
     const eager   = idx < ABOVE_THE_FOLD;
     const loading = eager ? "eager" : "lazy";
 
-    // conteúdo textual (imagem será inserida antes, se houver image_url)
     div.innerHTML = `
       <h3 style="margin:0 0 .25rem 0;">${escapeHtml(titulo)}</h3>
       <div class="muted" style="margin-bottom:.5rem;">
@@ -132,7 +124,6 @@
       img.style.width       = "100%";
       img.style.aspectRatio = FALLBACK_ASPECT;
       img.style.objectFit   = "cover";
-
       if (eager) img.setAttribute("fetchpriority", "high");
 
       img.addEventListener("load",  () => { img.dataset.loaded = "1"; }, { once: true });
@@ -164,14 +155,12 @@
       return b;
     };
 
-    // anterior
     pagEl.appendChild(
       mkBtn("◀", currentPage === 1, () => {
         if (currentPage > 1) { currentPage--; render(searchEl?.value || ""); }
       })
     );
 
-    // janela de páginas
     const windowSize = 5;
     let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
     let end   = Math.min(totalPages, start + windowSize - 1);
@@ -184,14 +173,12 @@
       pagEl.appendChild(btn);
     }
 
-    // próximo
     pagEl.appendChild(
       mkBtn("▶", currentPage === totalPages, () => {
         if (currentPage < totalPages) { currentPage++; render(searchEl?.value || ""); }
       })
     );
 
-    // info opcional
     const info = document.createElement("span");
     info.style.marginLeft = ".5rem";
     info.style.opacity = ".7";
@@ -200,8 +187,6 @@
   }
 
   async function render(q = "") {
-    if (!listEl) return;
-
     try {
       const items = await apiList(q, currentPage);
       listEl.innerHTML = "";
@@ -220,7 +205,7 @@
       ensureImagesVisible();
     } catch (err) {
       console.error(err);
-      if (listEl && !listEl.innerHTML) {
+      if (!listEl.innerHTML) {
         listEl.innerHTML = `<p style="color:#dc2626">Erro ao carregar as notícias.</p>`;
       }
       if (emptyEl) emptyEl.style.display = "block";
@@ -230,7 +215,6 @@
     }
   }
 
-  // Eventos
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-del]");
     if (!btn) return;
@@ -260,7 +244,6 @@
     render(searchEl?.value || "");
   });
 
-  // start
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => render(), { once: true });
   } else {
@@ -276,7 +259,6 @@
     }
   });
 
-  // auto-ativar "Atualizar" após load (opcional)
   window.addEventListener("load", () => {
     const btn = document.getElementById("btn-atualizar");
     if (btn) setTimeout(() => btn.click(), 300);
@@ -294,11 +276,9 @@
   function setState(open) {
     sidebar.dataset.state = open ? "open" : "closed";
     toggle.setAttribute("aria-expanded", String(open));
-    const content = sidebar.querySelector(".sidebar-content");
-    if (content) content.setAttribute("aria-hidden", String(!open));
+    sidebar.querySelector(".sidebar-content")?.setAttribute("aria-hidden", String(!open));
   }
 
-  // restaurar estado do usuário (opcional)
   const savedOpen = localStorage.getItem("sidebar-open") === "1";
   setState(savedOpen);
 
@@ -308,7 +288,6 @@
     localStorage.setItem("sidebar-open", open ? "1" : "0");
   });
 
-  // fechar ao clicar fora (mobile)
   document.addEventListener("click", (e) => {
     if (sidebar.dataset.state !== "open") return;
     const within = sidebar.contains(e.target) || toggle.contains(e.target);
