@@ -821,4 +821,108 @@ body.dark #sidebar-toggle{ border-color:#555; }
   outline-offset:2px;
 }
 
+/* =================================== */
+/* ===== NewsAPI (escopo seguro) ===== */
+/* =================================== */
+#newsapi-root { position: relative; z-index: 0; }
+
+/* Barra acima do conteúdo, centralizada */
+#newsapi-root .newsapi-bar{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:.75rem;
+  padding: 12px 0 6px;
+}
+
+/* Botão central (usa sticky para acompanhar o topo sem “flutuar” pela página) */
+#newsapi-root .newsapi-toggle{
+  position: sticky;     /* não é fixed! */
+  top: 12px;            /* distância ao topo ao rolar */
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border, #cfcfcf);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px var(--shadow, rgba(0,0,0,.1));
+}
+body.dark #newsapi-root .newsapi-toggle{ border-color:#555; }
+
+/* Contêiner de overlay (inativo quando fechado) */
+#newsapi-sidebar {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1090;
+}
+
+/* Painel deslizante (esquerda) */
+#newsapi-sidebar-content{
+  position: fixed;
+  top: 80px;                /* abaixo do header */
+  left: 0;
+  width: 280px;
+  height: calc(100vh - 96px);
+  overflow: auto;
+  background: var(--card);
+  color: var(--text);
+  border-right: 1px solid var(--border, #cfcfcf);
+  box-shadow: 8px 0 20px rgba(0,0,0,.2);
+  padding: 12px;
+
+  transform: translateX(-105%);
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+}
+
+/* Abre */
+#newsapi-sidebar[data-state="open"]{ pointer-events: auto; }
+#newsapi-sidebar[data-state="open"] #newsapi-sidebar-content{
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Overlay no mobile */
+@media (max-width: 991.98px){
+  #newsapi-sidebar::after{
+    content:""; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  #newsapi-sidebar[data-state="open"]::after{
+    opacity: 1; pointer-events: auto;
+  }
+}
+
+/* (Opcional) empurrar main no desktop quando aberto */
+@media (min-width: 992px){
+  body.newsapi-has-sidebar-open main{
+    margin-left: 312px; /* 280 + respiro */
+    transition: margin-left .25s ease;
+  }
+}
+
+/* Itens internos */
+#newsapi-root .newsapi-sidebar-title{ margin: 4px 8px 8px; }
+#newsapi-root .newsapi-sidebar-nav{ list-style: none; margin: 0; padding: 0; }
+#newsapi-root .newsapi-sidebar-nav li{ margin: 4px 0; }
+
+#newsapi-root .newsapi-sidebar-nav a,
+#newsapi-root .newsapi-sidebar-nav button{
+  display: block; width: 100%; text-align: left;
+  text-decoration: none; color: inherit;
+  background: transparent; border: none;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+}
+#newsapi-root .newsapi-sidebar-nav a:hover,
+#newsapi-root .newsapi-sidebar-nav button:hover{
+  background: var(--hover, rgba(0,0,0,.08));
+}
+
+
+
 
