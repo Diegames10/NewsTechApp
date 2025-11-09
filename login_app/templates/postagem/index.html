@@ -139,8 +139,8 @@
   <!-- Inicialização da listagem (CRUD) -->
    <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version) }}">
    <script src="{{ url_for('static', filename='js/script.js', v=version) }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/index.api.js', v=version) }}"></script>
-   
+   <!-- <script type="module" src="{{ url_for('static', filename='js/index.api.js', v=version) }}"></script> -->
+   <script src="{{ url_for('static', filename='js/index.bundle.js', v=version) }}" defer></script>
    <script src="{{ url_for('static', filename='js/sidebar.js', v=version) }}"></script>
    <script src="{{ url_for('static', filename='js/chatfloat.js', v=version) }}"></script>
 
@@ -153,6 +153,7 @@
 
 </body>
 </html>
+
 
 
 
