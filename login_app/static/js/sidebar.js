@@ -1,37 +1,43 @@
-// ------------------------------
-// MÓDULO: Sidebar (abre/fecha e ajusta layout)
-// ------------------------------
 (() => {
   const sidebar = document.getElementById("sidebar");
+  const content = document.getElementById("sidebar-content");
   const toggle  = document.getElementById("sidebar-toggle");
-  const main    = document.querySelector("main");
-  if (!sidebar || !toggle || !main) return;
-
-  function setState(open) {
-    sidebar.dataset.state = open ? "open" : "closed";
-    toggle.setAttribute("aria-expanded", String(open));
-    document.body.classList.toggle("sidebar-open", open);
+  if (!sidebar || !content || !toggle) {
+    console.warn("[sidebar] elementos não encontrados");
+    return;
   }
 
-  // restaura estado do usuário
-  const savedOpen = localStorage.getItem("sidebar-open") === "1";
-  setState(savedOpen);
+  function setState(open){
+    sidebar.dataset.state = open ? "open" : "closed";
+    toggle.setAttribute("aria-expanded", String(open));
+    content.setAttribute("aria-hidden", String(!open));
+    document.body.classList.toggle("has-sidebar-open", open);
+    console.debug("[sidebar] state =", open ? "open" : "closed");
+  }
 
-  toggle.addEventListener("click", () => {
+  // restaura estado salvo
+  const saved = localStorage.getItem("sidebar-open") === "1";
+  setState(saved);
+
+  // abre/fecha no botão
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
     const open = sidebar.dataset.state !== "open";
     setState(open);
     localStorage.setItem("sidebar-open", open ? "1" : "0");
   });
 
-  // fecha ao clicar fora (mobile ou desktop)
+  // fecha clicando fora (overlay/mobile)
   document.addEventListener("click", (e) => {
     if (sidebar.dataset.state !== "open") return;
-    const within = sidebar.contains(e.target) || toggle.contains(e.target);
+    const within = content.contains(e.target) || toggle.contains(e.target);
     if (!within) setState(false);
   });
 
-  // fecha com ESC
+  // acessibilidade: ESC fecha
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") setState(false);
+    if (e.key === "Escape" && sidebar.dataset.state === "open") {
+      setState(false);
+    }
   });
 })();
