@@ -1,22 +1,25 @@
+# Dockerfile (na raiz do repo)
 FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libffi-dev libssl-dev libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libffi-dev libssl-dev libpq-dev ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Se o requirements.txt está em login_app/
+COPY login_app/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --upgrade pip && pip install --no-cache-dir -r /tmp/requirements.txt
-
+# Copia o projeto inteiro
 COPY . /app
 
+# Garantir permissão do start.sh
+RUN chmod +x /app/start.sh
+
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    SQLALCHEMY_DATABASE_URI=sqlite:////data/app.db \
-    UPLOAD_FOLDER=/data/uploads
+    FLASK_APP=wsgi.py
 
 EXPOSE 8080
 
-RUN chmod +x /app/start.sh
 CMD ["/app/start.sh"]
