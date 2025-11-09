@@ -1,3 +1,49 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  background: var(--card);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.toolbar input[type="search"] {
+  flex: 1 1 260px;
+  min-width: 200px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #000;
+}
+
+body.dark .toolbar input[type="search"] {
+  background: #333;
+  color: #f5f5f5;
+  border: 1px solid #555;
+}
+
+.toolbar .btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.toolbar .btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.toolbar-count {
+  opacity: .8;
+  margin-left: auto; /* empurra o contador para a direita */
+}
+
+
 /* layout básico do sidebar */
 #sidebar {
   position: fixed;
@@ -511,4 +557,5 @@ body.dark .chatfloat-form { border-color: rgba(255, 255, 255, 0.1); }
   background-color: rgba(128,128,128,0.4);
   border-radius: 4px;
 }
+
 
