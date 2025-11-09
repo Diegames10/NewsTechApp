@@ -8,6 +8,9 @@
     sidebar.dataset.state = open ? "open" : "closed";
     toggle.setAttribute("aria-expanded", String(open));
     sidebar.querySelector(".sidebar-content")?.setAttribute("aria-hidden", String(!open));
+
+    // ✅ Adiciona ou remove a classe no <body> para ajustar o layout
+    document.body.classList.toggle("has-sidebar-open", open);
   }
 
   // restaurar estado do usuário (opcional)
