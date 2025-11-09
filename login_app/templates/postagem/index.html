@@ -77,11 +77,11 @@
       </div>
     </nav>
   </header>
-  {% include "partials/_sidebar.html" %}
-  {% include "partials/_chatfloat.html" %}
+ 
   <main>
     <h2>📰 Postagens da Comunidade</h2>
-
+    {% include "partials/_sidebar.html" %}
+    {% include "partials/_chatfloat.html" %}
     <div class="toolbar">
       <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." />
       <select id="ordem">
@@ -153,6 +153,7 @@
 
 </body>
 </html>
+
 
 
 
