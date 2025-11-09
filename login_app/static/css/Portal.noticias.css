@@ -569,5 +569,95 @@ body.dark .chatfloat-form { border-color: rgba(255, 255, 255, 0.1); }
   flex-direction: column;
 }
 
+/* =========================
+   PATCH 1 — Toolbar (garante contraste em dark)
+========================= */
+body.dark .toolbar {
+  border: 1px solid var(--border);
+}
+
+/* =========================
+   PATCH 2 — Sidebar: evita roxo/visited
+========================= */
+#sidebar .sidebar-nav a:link,
+#sidebar .sidebar-nav a:visited,
+#sidebar .sidebar-nav a:active {
+  color: inherit;
+}
+
+/* Hover já existe; só garantimos foco acessível */
+#sidebar .sidebar-nav a:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
+  outline-offset: 2px;
+}
+
+/* =========================
+   PATCH 3 — Recúo do conteúdo quando sidebar abre
+   (o JS deve fazer: document.body.classList.toggle('has-sidebar-open', open))
+========================= */
+body.has-sidebar-open main {
+  /* 260px (largura) + 2*16px (gaps) => deixa um ‘respiro’ */
+  margin-left: calc(260px + 32px);
+  transition: margin-left .25s ease;
+}
+
+/* Em telas menores, não recuamos o main: sidebar se comporta como “overlay” */
+@media (max-width: 1024px) {
+  body.has-sidebar-open main {
+    margin-left: auto;
+  }
+}
+
+/* =========================
+   PATCH 4 — Botões unificados (a.btn e button.btn)
+   (se você já colou isso antes, pode ignorar)
+========================= */
+.btn,
+a.btn,
+button.btn {
+  display: inline-block;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff !important;
+  line-height: 1.15;
+  transition: transform .02s ease, filter .15s ease, opacity .15s ease;
+}
+.btn:hover,
+a.btn:hover,
+button.btn:hover { filter: brightness(0.95); text-decoration: none; }
+.btn:active,
+a.btn:active,
+button.btn:active { transform: translateY(1px); }
+.btn:focus,
+a.btn:focus,
+button.btn:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
+  outline-offset: 2px;
+}
+.btn[disabled],
+button.btn:disabled,
+a.btn.disabled { opacity: .6; cursor: not-allowed; pointer-events: none; }
+.btn.secondary { background: #6b7280; }
+.btn.danger    { background: #dc2626; }
+.btn.ghost     { background: transparent; color: var(--text) !important; border: 1px solid var(--border); }
+body.dark .btn.ghost { border-color: #555; color: #f5f5f5 !important; }
+.card-actions .btn { margin-right: .5rem; }
+
+/* =========================
+   PATCH 5 — ChatFloat: prioridade sobre main/aside
+========================= */
+#chatfloat-panel { z-index: 1001; }
+#chatfloat-toggle { z-index: 1002; }
+
+/* já existe, mas garantimos que hidden sempre oculta */
+#chatfloat-panel[hidden] { display: none !important; }
+
 
 
