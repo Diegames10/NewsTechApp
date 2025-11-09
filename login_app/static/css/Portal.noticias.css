@@ -923,6 +923,60 @@ body.dark #newsapi-root .newsapi-toggle{ border-color:#555; }
   background: var(--hover, rgba(0,0,0,.08));
 }
 
+.search {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0b1220;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 1rem auto 2rem;
+  gap: 0.5rem;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #162036;
+  color: #f1f5f9;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.search button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s ease;
+  flex-shrink: 0;
+}
+
+.search button:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search input,
+  .search button {
+    width: 100%;
+  }
+}
+
 
 
 
