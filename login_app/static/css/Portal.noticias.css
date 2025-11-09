@@ -659,5 +659,97 @@ body.dark .btn.ghost { border-color: #555; color: #f5f5f5 !important; }
 /* já existe, mas garantimos que hidden sempre oculta */
 #chatfloat-panel[hidden] { display: none !important; }
 
+/* SIDEBAR BASE */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--bg-sidebar, #1e293b);
+  color: var(--text-sidebar, #f1f5f9);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar[data-state="open"] {
+  transform: translateX(0);
+}
+
+/* CONTEÚDO DA SIDEBAR */
+.sidebar-content {
+  padding: 1rem;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin: 0.5rem 0;
+}
+
+.sidebar-nav a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* BOTÃO TOGGLE */
+.sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1100;
+  background: var(--primary, #38bdf8);
+  border: none;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #0ea5e9;
+}
+
+/* EFEITO NO CONTEÚDO PRINCIPAL */
+body.sidebar-open main {
+  transition: margin-left 0.3s ease;
+  margin-left: 240px; /* espaço da sidebar */
+}
+
+/* Ajuste no modo escuro */
+body.dark .sidebar {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  body.sidebar-open main {
+    margin-left: 0;
+  }
+}
+
 
 
