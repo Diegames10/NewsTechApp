@@ -1,20 +1,39 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
 echo "Iniciando aplicação NewsTechApp..."
 
-# Garante diretórios de dados
+# Garante diretórios persistentes
 mkdir -p /data /data/uploads
 chmod 755 /data
 
-# Aplica migrations (idempotente). Não use create_all em produção.
-echo "Aplicando migrations..."
-python -m flask --app login_app:create_app db upgrade || true
+# Variáveis de ambiente para Flask CLI
+export PYTHONPATH=/app
+export FLASK_APP=wsgi.py
+export FLASK_ENV=production
 
-# Sobe o servidor via app factory (sem precisar de run.py ou app.py)
+# ===== Migrations seguras =====
+echo "Aplicando migrations..."
+if [ ! -d "/app/migrations" ]; then
+  echo "migrations/ não existe. Inicializando..."
+  flask db init
+fi
+
+# Tenta gerar migração (se não houver mudanças, ignora erro)
+flask db migrate -m "auto" || true
+
+# Tenta aplicar; se falhar por esquemas, fazemos fallback create_all()
+if ! flask db upgrade; then
+  echo "flask db upgrade falhou. Executando fallback db.create_all()..."
+  python3 - <<'PY'
+from login_app import create_app, db
+app = create_app()
+with app.app_context():
+    db.create_all()
+    print("Fallback: db.create_all() executado.")
+PY
+fi
+
 echo "Iniciando servidor Gunicorn..."
-exec gunicorn --factory \
-  -w 2 -k gthread \
-  -b 0.0.0.0:${PORT:-8080} \
-  'login_app:create_app' \
-  --timeout 120 --threads 8
+cd /app
+exec gunicorn wsgi:app --bind 0.0.0.0:8080 --workers 3 --timeout 120
