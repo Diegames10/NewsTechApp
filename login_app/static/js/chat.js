@@ -1,3 +1,65 @@
+// ===== NewsAPI: sidebar próprio (não conflita com .sidebar global) =====
+(() => {
+  const toggle = document.getElementById("newsapi-sidebar-toggle");
+  const aside  = document.getElementById("newsapi-sidebar");
+  const panel  = document.getElementById("newsapi-sidebar-content");
+  if (!toggle || !aside || !panel) return; // não está nessa página
+
+  // garante que o botão não submeta forms
+  if (!toggle.getAttribute("type")) toggle.setAttribute("type", "button");
+
+  const setOpen = (open) => {
+    aside.dataset.state = open ? "open" : "closed";
+    toggle.setAttribute("aria-expanded", String(open));
+    panel.setAttribute("aria-hidden", String(!open));
+
+    // anima o painel (sem depender de CSS externo)
+    panel.style.transform = open ? "translateX(0)" : "translateX(-105%)";
+    panel.style.opacity   = open ? "1" : "0";
+
+    // overlay no mobile (efeito simples)
+    if (open) {
+      aside.style.pointerEvents = "auto";
+      aside.style.setProperty("--newsapi-overlay", "1");
+      aside.style.background = "rgba(0,0,0,.35)";
+    } else {
+      aside.style.pointerEvents = "none";
+      aside.style.background = "transparent";
+    }
+  };
+
+  // estado inicial
+  setOpen(aside.dataset.state === "open");
+
+  // toggle por clique
+  toggle.addEventListener("click", (e) => {
+    e.preventDefault();
+    setOpen(aside.dataset.state !== "open");
+  });
+
+  // fecha ao clicar fora
+  document.addEventListener("click", (e) => {
+    if (aside.dataset.state !== "open") return;
+    const within = aside.contains(e.target) || toggle.contains(e.target);
+    if (!within) setOpen(false);
+  });
+
+  // ESC fecha
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && aside.dataset.state === "open") setOpen(false);
+  });
+
+  // exemplo de binding (opcional): clique nos itens do menu
+  panel.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-feed]");
+    if (!btn) return;
+    const feed = btn.getAttribute("data-feed");
+    // aqui você chama sua função que já carrega as notícias via NewsAPI
+    // ex.: loadNews(feed)
+    // loadNews(feed);
+    setOpen(false);
+  });
+})();
 // static/js/chat.js
 (() => {
   // Evita inicialização dupla
@@ -243,3 +305,4 @@
     console.log("[chat] pronto");
   });
 })();
+
