@@ -40,13 +40,7 @@
     </nav>
   </header>
    
-  <!-- 🧩 LOGO DO APLICATIVO -->
- <div class="text-center my-4">
-  <img 
-    src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
-    alt="Logo NewsTechApp"
-    class="logo-full"
-  >
+ 
 </div>
   <!-- SIDEBAR (básico) -->
   <button id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
@@ -76,7 +70,15 @@
       <button type="submit" title="Enviar">➤</button>
     </form>
   </div>
-
+   
+  <!-- 🧩 LOGO DO APLICATIVO -->
+ <div class="text-center my-4">
+  <img 
+    src="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}" 
+    alt="Logo NewsTechApp"
+    class="logo-full"
+  >
+   
   <!-- Off-canvas do NewsAPI (abre pela esquerda) -->
   <aside id="newsapi-sidebar"
          class="newsapi-sidebar"
@@ -101,7 +103,7 @@
   <main>
     <!-- === NewsAPI: bloco acima das postagens === -->
     <section id="ext-newsapi" data-endpoint="/api/news" aria-labelledby="ext-newsapi-title" style="margin-top:32px;">
-      <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre Hardware, Games e Devs ! (NewsAPI)</h2>
+      <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre Hardware, Games e Devs !</h2>
 
       <div class="toolbar" id="ext-newsapi-toolbar" style="margin-top:12px;">
         <input id="ext-newsapi-q" type="search" placeholder="Buscar em portais (ex.: Intel, NVIDIA, React)" aria-label="Buscar em portais">
@@ -145,5 +147,6 @@
 
 </body>
 </html>
+
 
 
