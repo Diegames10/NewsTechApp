@@ -41,9 +41,8 @@
   </header>
 
   <!-- SIDEBAR (fixa à esquerda) -->
+  <button id="sidebar-toggle" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
   <aside id="sidebar" class="sidebar" data-state="closed" aria-label="Menu lateral">
-    <button id="sidebar-toggle" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
-    
     <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
       <h3 class="sidebar-title">Categorias</h3>
       <ul class="sidebar-nav">
@@ -131,4 +130,5 @@
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
