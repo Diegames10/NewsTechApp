@@ -1,26 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Busca | NewsTechApp</title>
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
-
- <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
-
-  <!-- Ícones -->
-  <link rel="icon" type="image/png" sizes="512x512"
-        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
-  <link rel="apple-touch-icon" sizes="512x512"
-        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
-  <meta name="theme-color" content="#ffffff">
-</head>
-<body>
-  <!-- HEADER -->
-  <header>
+   <header>
     <h1>📰 NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
@@ -41,6 +21,27 @@
       </div>
     </nav>
   </header>
+  <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Busca | NewsTechApp</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
+
+ <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
+
+  <!-- Ícones -->
+  <link rel="icon" type="image/png" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <link rel="apple-touch-icon" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <!-- HEADER -->
+ 
   
   <style>
     /* ======== LAYOUT GERAL ======== */
@@ -338,4 +339,5 @@
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
