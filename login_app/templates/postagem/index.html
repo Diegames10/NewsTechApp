@@ -88,38 +88,7 @@ ajuste pra mim com cuidado
     <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
   </main>
 
-  <!-- MODAL (edição) -->
-  <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal">
-      <header>
-        <h3>Editar publicação</h3>
-        <button id="modal-close" class="close-x" aria-label="Fechar">✕</button>
-      </header>
-      <div class="modal-body">
-        <div class="row">
-          <label for="edit-titulo">Título</label>
-          <input type="text" id="edit-titulo" />
-        </div>
-        <div class="row">
-          <label for="edit-autor">Autor</label>
-          <input type="text" id="edit-autor" />
-        </div>
-        <div class="row">
-          <label for="edit-conteudo">Conteúdo</label>
-          <textarea id="edit-conteudo" rows="6"></textarea>
-        </div>
-        <div class="row">
-          <label for="edit-imagem">Imagem (opcional — deixa em branco para manter)</label>
-          <input type="file" id="edit-imagem" accept="image/*" />
-          <img id="edit-preview" class="img-preview" alt="Prévia" style="display:none;">
-        </div>
-      </div>
-      <footer>
-        <button id="modal-cancel" class="btn secondary" type="button">Cancelar</button>
-        <button id="modal-save" class="btn" type="button">Salvar</button>
-      </footer>
-    </div>
-  </div>
+  
 
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
@@ -132,5 +101,6 @@ ajuste pra mim com cuidado
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
 
