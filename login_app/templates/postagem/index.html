@@ -1,5 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NewsTech • Postagens</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
+
+  <!-- Ícones -->
+  <link rel="icon" type="image/png" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <link rel="apple-touch-icon" sizes="512x512"
+        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
+  <meta name="theme-color" content="#ffffff">
+</head>
 <body>
   <!-- HEADER -->
+
+ajuste pra mim com cuidado 
   <header>
     <h1>📰 NewsTech</h1>
     <nav>
@@ -9,7 +29,7 @@
           <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
-        <div class="perfil-menu" id="perfil-menu" role="menu" aria-hidden="true">
+        <div class="perfil-menu" id="perfil-menu">
           <div class="perfil-info">
             <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil">
             <strong id="menu-nome">Visitante</strong>
@@ -22,23 +42,9 @@
     </nav>
   </header>
 
-  <!-- ===== SIDEBAR (fixa à esquerda) ===== -->
-  <!-- Botão SEMPRE visível (fora do <main>) -->
-  <button
-    id="sidebar-toggle"
-    type="button"
-    aria-expanded="false"
-    aria-controls="sidebar-content"
-    aria-label="Abrir menu lateral"
-  >☰ Menu</button>
-
-  <!-- Contêiner do off-canvas -->
-  <aside
-    id="sidebar"
-    class="sidebar"
-    data-state="closed"
-    aria-label="Menu lateral"
-  >
+  <!-- SIDEBAR (fixa à esquerda) -->
+  <button id="sidebar-toggle" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
+  <aside id="sidebar" class="sidebar" data-state="closed" aria-label="Menu lateral">
     <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
       <h3 class="sidebar-title">Categorias</h3>
       <ul class="sidebar-nav">
@@ -49,35 +55,27 @@
     </nav>
   </aside>
 
-  <!-- ===== CHAT FLOAT (inferior direito) ===== -->
-  <button
-    id="chatfloat-toggle"
-    class="chatfloat-button"
-    type="button"
-    aria-expanded="false"
-    aria-controls="chatfloat-panel"
-    title="Abrir assistente"
-  >💬</button>
-
-  <div id="chatfloat-panel" class="chatfloat-panel" hidden role="dialog" aria-modal="false" aria-label="Assistente NewsTech">
+  <!-- CHAT FLOAT (inferior direito) -->
+  <button id="chatfloat-toggle" class="chatfloat-button" aria-expanded="false" title="Abrir assistente">💬</button>
+  <div id="chatfloat-panel" class="chatfloat-panel" hidden>
     <div class="chatfloat-header">
       <strong>Assistente NewsTech</strong>
-      <button id="chatfloat-close" class="chatfloat-close" type="button" title="Fechar" aria-label="Fechar">×</button>
+      <button id="chatfloat-close" class="chatfloat-close" title="Fechar">×</button>
     </div>
     <div id="chatfloat-messages" class="chatfloat-messages">
       <div class="msg msg-assistant">Olá! Como posso ajudar você hoje? 😊</div>
     </div>
     <form id="chatfloat-form" class="chatfloat-form">
       <input id="chatfloat-input" type="text" placeholder="Digite sua mensagem..." autocomplete="off" />
-      <button type="submit" title="Enviar" aria-label="Enviar">➤</button>
+      <button type="submit" title="Enviar">➤</button>
     </form>
   </div>
 
-  <!-- ===== CONTEÚDO ===== -->
+  <!-- CONTEÚDO -->
   <main>
     <h2>📰 Postagens da Comunidade</h2>
 
-    <!-- TOOLBAR (usada pelo JS) -->
+    <!-- TOOLBAR que o JS usa -->
     <div class="toolbar" id="toolbar">
       <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." aria-label="Buscar" />
       <button id="btn-atualizar" class="btn" type="button">↻ Atualizar</button>
@@ -90,12 +88,12 @@
     <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
   </main>
 
-  <!-- ===== MODAL (edição) ===== -->
+  <!-- MODAL (edição) -->
   <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal">
       <header>
         <h3>Editar publicação</h3>
-        <button id="modal-close" class="close-x" type="button" aria-label="Fechar">✕</button>
+        <button id="modal-close" class="close-x" aria-label="Fechar">✕</button>
       </header>
       <div class="modal-body">
         <div class="row">
@@ -133,3 +131,5 @@
   <script src="{{ url_for('static', filename='js/sidebar.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
+</html>
+
