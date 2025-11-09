@@ -95,6 +95,12 @@
   </header>
 
     <main class="content" role="main">
+       <div style="text-align:center; margin: 1rem 0;">
+        <a href="{{ url_for('auth.home') }}" class="btn" style="background:#38bdf8; color:#0f172a; font-weight:700; padding:10px 16px; border-radius:8px; text-decoration:none; display:inline-block;">
+          ⬅️ Voltar para Início
+        </a>
+      </div>
+
       <h1>🔎 Buscar Notícias</h1>
       <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
         <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
@@ -161,6 +167,7 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
 
 
