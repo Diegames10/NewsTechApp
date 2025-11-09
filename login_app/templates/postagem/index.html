@@ -82,6 +82,40 @@
     <h2>📰 Postagens da Comunidade</h2>
     {% include "partials/_sidebar.html" %}
     {% include "partials/_chatfloat.html" %}
+    <body>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar" data-state="closed">
+      <button id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-expanded="false"
+              aria-controls="sidebar-content">
+        ☰ Menu
+      </button>
+  
+      <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
+        <h3 class="sidebar-title">Categorias</h3>
+        <ul class="sidebar-nav">
+          <li><a href="{{ url_for('news.rss_dashboard_page') }}">📰 RSS Dashboard</a></li>
+          <li><a href="{{ url_for('auth.publicar') }}">➕ Publicar</a></li>
+          <li><a href="{{ url_for('auth.home') }}">🏠 Início</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+  <!-- Conteúdo principal -->
+  <main>
+    <!-- Aqui vai a lista de notícias ou o conteúdo do index -->
+  </main>
+
+  <!-- Chat flutuante (opcional) -->
+  <div id="chatfloat-panel" hidden>
+    <!-- ... conteúdo do chat ... -->
+  </div>
+  <button id="chatfloat-toggle" aria-expanded="false">💬</button>
+
+  <!-- JS principal -->
+  <script src="{{ url_for('static', filename='js/index.bundle.js') }}" defer></script>
+</body>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Buscar por título ou conteúdo..." />
       <select id="ordem">
@@ -153,6 +187,7 @@
 
 </body>
 </html>
+
 
 
 
