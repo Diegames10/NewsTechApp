@@ -731,11 +731,15 @@ body.dark .btn.ghost { border-color: #555; color: #f5f5f5 !important; }
 }
 body.dark #sidebar-toggle{ border-color:#555; }
 
-/* ===== Painel do sidebar (off-canvas) ===== */
-/* ===== Botão fixo, sempre visível ===== */
+/* ====== Sidebar – configuração única e coerente ====== */
+
+/* Dimensão do topo (altura aproximada do header) — ajuste se precisar */
+:root { --header-h: 80px; }
+
+/* Botão sempre visível */
 #sidebar-toggle{
   position:fixed;
-  top:96px;          /* ajuste se seu header mudar de altura */
+  top: calc(var(--header-h) + 16px);
   left:16px;
   z-index:1100;
   display:inline-flex; align-items:center; gap:.5rem;
@@ -746,64 +750,75 @@ body.dark #sidebar-toggle{ border-color:#555; }
 }
 body.dark #sidebar-toggle{ border-color:#555; }
 
-/* ===== Contêiner do sidebar (só para overlay mobile) ===== */
+/* Contêiner do overlay (fica inerte fechado) */
 #sidebar{
-  position:fixed; inset:0 0 0 0;
-  pointer-events:none;          /* só ativa quando abrir */
+  position:fixed; inset:0;
+  pointer-events:none;
   z-index:1090;
 }
 
-/* ===== Painel deslizante ===== */
+/* Painel deslizante (off-canvas) */
 #sidebar-content{
   position:fixed;
-  top:80px;                     /* abaixo do header */
+  top: var(--header-h);
   left:0;
   width:280px;
-  height:calc(100vh - 96px);
+  height: calc(100vh - var(--header-h));
   overflow:auto;
-  background:var(--card); color:var(--text);
+  background: var(--card); color: var(--text);
   border-right:1px solid var(--border);
   box-shadow: 8px 0 20px rgba(0,0,0,.2);
   padding:12px;
 
-  transform:translateX(-105%);  /* escondido por padrão */
+  transform: translateX(-105%);  /* escondido por padrão */
   opacity:0;
   transition: transform .25s ease, opacity .25s ease;
 }
 
-/* quando aberto (o atributo está no <aside id="sidebar">) */
+/* Aberto */
 #sidebar[data-state="open"]{ pointer-events:auto; }
 #sidebar[data-state="open"] #sidebar-content{
-  transform:translateX(0);
+  transform: translateX(0);
   opacity:1;
 }
 
-/* Links */
-#sidebar .sidebar-title{ margin:4px 8px 8px; }
-#sidebar .sidebar-nav{ list-style:none; margin:0; padding:0; }
-#sidebar .sidebar-nav li{ margin:4px 0; }
-#sidebar .sidebar-nav a{
-  display:block; text-decoration:none; color:inherit;
-  padding:8px 10px; border-radius:8px;
-}
-#sidebar .sidebar-nav a:hover{ background:var(--hover); }
-
-/* Empurra o conteúdo no desktop quando aberto */
-@media (min-width: 992px){
-  body.has-sidebar-open main{
-    margin-left:312px; /* 280 + gap */
-    transition: margin-left .25s ease;
-  }
-}
-
-/* Overlay no mobile para fechar ao tocar fora */
+/* Overlay no mobile */
 @media (max-width: 991.98px){
   #sidebar::after{
     content:""; position:fixed; inset:0;
-    background:rgba(0,0,0,.35);
+    background: rgba(0,0,0,.35);
     opacity:0; pointer-events:none; transition:opacity .25s;
   }
   #sidebar[data-state="open"]::after{
     opacity:1; pointer-events:auto;
   }
 }
+
+/* Empurra o conteúdo (desktop) quando aberto */
+@media (min-width: 992px){
+  body.has-sidebar-open main{
+    margin-left: 312px; /* 280 + respiro */
+    transition: margin-left .25s ease;
+  }
+}
+
+/* Conteúdo/links da sidebar */
+.sidebar-title{ margin:4px 8px 8px; }
+.sidebar-nav{ list-style:none; margin:0; padding:0; }
+.sidebar-nav li{ margin:4px 0; }
+.sidebar-nav a{
+  display:block; text-decoration:none; color:inherit;
+  padding:8px 10px; border-radius:8px; transition: background .2s;
+}
+.sidebar-nav a:hover{ background: var(--hover); }
+
+/* Links herdam cor (sem roxo visited) */
+#sidebar .sidebar-nav a:link,
+#sidebar .sidebar-nav a:visited,
+#sidebar .sidebar-nav a:active { color: inherit; }
+#sidebar .sidebar-nav a:focus{
+  outline:2px solid color-mix(in srgb, var(--primary) 50%, #fff 50%);
+  outline-offset:2px;
+}
+
+
