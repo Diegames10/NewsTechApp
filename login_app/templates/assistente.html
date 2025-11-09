@@ -141,11 +141,12 @@
   </section>
 
   <!-- 🔙 Botão de voltar -->
-  <a href="/buscar-chat" class="btn-voltar">← Voltar para a página principal</a>
+  <a href="{{ url_for('auth.home') }}" class="btn-voltar">← Voltar para a página principal</a>
 
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
 
