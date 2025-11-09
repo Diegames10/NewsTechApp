@@ -42,18 +42,6 @@
    
  
 </div>
-  <!-- SIDEBAR (básico) -->
-  <button id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="sidebar-content">☰ Menu</button>
-  
-  <aside id="sidebar" class="sidebar" data-state="closed" aria-label="Menu lateral">
-    <nav id="sidebar-content" class="sidebar-content" aria-hidden="true">
-      <h3 class="sidebar-title">Categorias</h3>
-      <ul class="sidebar-nav">
-        <li><a href="{{ url_for('news.rss_dashboard_page') }}">📰 RSS Dashboard</a></li>
-        <li><a href="{{ url_for('auth.home') }}">🏠 Início</a></li>
-      </ul>
-    </nav>
-  </aside>
 
   <!-- CHAT FLOAT (inferior direito) -->
   <button id="chatfloat-toggle" class="chatfloat-button" aria-expanded="false" title="Abrir assistente">💬</button>
@@ -72,28 +60,6 @@
   </div>
    
   
- 
-   
-  <!-- Off-canvas do NewsAPI (abre pela esquerda) -->
-  <aside id="newsapi-sidebar"
-         class="newsapi-sidebar"
-         data-state="closed"
-         aria-label="Menu lateral NewsAPI"
-         style="position:fixed;inset:0;pointer-events:none;z-index:1090;">
-    <nav id="newsapi-sidebar-content"
-         class="newsapi-sidebar-content"
-         aria-hidden="true"
-         style="position:fixed;top:80px;left:0;width:280px;height:calc(100vh - 96px);overflow:auto;background:var(--card);color:var(--text);border-right:1px solid var(--border, #cfcfcf);box-shadow:8px 0 20px rgba(0,0,0,.2);padding:12px;transform:translateX(-105%);opacity:0;transition:transform .25s ease, opacity .25s ease;">
-      <h3 class="newsapi-sidebar-title" style="margin:4px 8px 8px;">NewsAPI</h3>
-      <ul class="newsapi-sidebar-nav" style="list-style:none;margin:0;padding:0;">
-        <li style="margin:4px 0;"><button type="button" data-feed="top-headlines">Top Headlines</button></li>
-        <li style="margin:4px 0;"><button type="button" data-feed="everything">Everything</button></li>
-        <li style="margin:4px 0;"><button type="button" data-feed="tech">Tecnologia</button></li>
-      </ul>
-    </nav>
-  </aside>
-  <!-- === /NewsAPI === -->
-
   <!-- CONTEÚDO -->
   <main>
      <div class="text-center my-4" style="text-align:center;">
@@ -105,21 +71,30 @@
          >
     </div>
     <!-- === NewsAPI: bloco acima das postagens === -->
-    <section id="ext-newsapi" data-endpoint="/api/news" aria-labelledby="ext-newsapi-title" style="margin-top:32px;">
-      <h2 id="ext-newsapi-title">🗞️ ! Tudo sobre Hardware, Games e Devs !</h2>
-
-      <div class="toolbar" id="ext-newsapi-toolbar" style="margin-top:12px;">
-        <input id="ext-newsapi-q" type="search" placeholder="Buscar em portais (ex.: Intel, NVIDIA, React)" aria-label="Buscar em portais">
-        <button id="ext-newsapi-search" class="btn" type="button">🔎 Buscar</button>
-        <button id="ext-newsapi-clear" class="btn" type="button">✖ Limpar</button>
-        <span id="ext-newsapi-count" class="toolbar-count" aria-live="polite"></span>
-      </div>
-
-      <div id="ext-newsapi-list"></div>
-      <nav id="ext-newsapi-pager" class="paginacao" aria-label="Paginação NewsAPI" style="margin-top:12px;"></nav>
-      <div id="ext-newsapi-empty" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
+    <!-- Bloco de acesso à página de notícias -->
+    <section id="news-section" style="text-align:center; margin:40px 0;">
+      <h2 style="margin-bottom:12px;">🗞️ Acesse as notícias de Hardware, Games e Devs</h2>
+      <p style="color:#94a3b8; margin-bottom:20px;">
+        Clique abaixo para abrir a página completa de notícias atualizadas.
+      </p>
+      <a href="{{ url_for('news.news_html') }}" 
+         class="btn"
+         style="
+           display:inline-block;
+           padding:12px 24px;
+           background:#38bdf8;
+           color:#0f172a;
+           font-weight:600;
+           border-radius:8px;
+           text-decoration:none;
+           transition:background 0.3s ease;
+         "
+         onmouseover="this.style.background='#0ea5e9'"
+         onmouseout="this.style.background='#38bdf8'">
+        🔗 Ir para Página de Notícias
+      </a>
     </section>
-    <!-- === /NewsAPI === -->
+
 
     <!-- Título das postagens da comunidade (fica depois do bloco NewsAPI) -->
     <h2>📰 Postagens da Comunidade</h2>
@@ -137,6 +112,7 @@
     <div id="vazio" class="lista-vazia" style="display:none;">Nenhuma notícia encontrada.</div>
   </main>
 
+  
   <footer>
     <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
@@ -150,6 +126,7 @@
 
 </body>
 </html>
+
 
 
 
