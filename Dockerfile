@@ -11,6 +11,11 @@ WORKDIR /app
 COPY /requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    SQLALCHEMY_DATABASE_URI=sqlite:////data/app.db \
+    UPLOAD_FOLDER=/data/uploads \
+    PREFERRED_URL_SCHEME=https
 # Copia o projeto inteiro
 COPY . /app
 
