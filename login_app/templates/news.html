@@ -179,7 +179,12 @@ h1{
         {% endfor %}
       </div>
     </main>
-  </div>
+
+    <footer>
+      <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
+    </footer>
+  
+</div>
 
   <!-- Chat flutuante -->
   <button id="chat-toggle" aria-label="Abrir chat" type="button">💬</button>
@@ -222,17 +227,13 @@ h1{
     });
   </script>
   
- 
-  
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 
-   <footer>
-    <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
-  </footer>
   
 </body>
 </html>
+
 
 
 
