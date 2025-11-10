@@ -20,51 +20,31 @@
 
   <style>
     /* ======== LAYOUT GERAL ======== */
-    :root {
-      --w-sidebar: 280px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    /* === ÁREA PRINCIPAL (abaixo do header) === */
+main {
+  flex: 1;                     /* ocupa todo o espaço livre abaixo do header */
+  display: grid;               /* centralização fácil */
+  place-items: center;         /* centraliza H e V */
+  padding: 2rem 1rem;          /* respiro nas bordas */
+}
 
-    /* ======== HEADER ======== */
-    header {
-      background: #1e293b;
-      color: #f1f5f9;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .4);
-      position: sticky;
-      top: 0;
-      z-index: 300;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #38bdf8;
-    }
-    header nav {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    header .nav-link {
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    header .nav-link:hover {
-      text-decoration: underline;
-    }
+/* Contêiner do conteúdo da página de notícias */
+.news-wrap {
+  width: min(1100px, 100%);    /* largura máxima agradável */
+  background: #11182780;       /* leve contraste (opcional) */
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+/* A grade de cards em si */
+.grid {
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
     
     
   </style>
@@ -167,6 +147,7 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
 
 
