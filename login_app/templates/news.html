@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Busca | NewsTechApp</title>
 
-  <!-- CSS base do projeto (mantidos) -->
+  <!-- CSS base do projeto -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
 
-  <!-- Ícones -->
   <link rel="icon" type="image/png" sizes="512x512"
         href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
   <link rel="apple-touch-icon" sizes="512x512"
@@ -18,79 +17,89 @@
   <meta name="theme-color" content="#ffffff">
 
   <style>
-    /* ==================== Variáveis e resets seguros ==================== */
-    :root{
+    /* =========================
+       VARIÁVEIS DE TEMA (isoladas)
+    ========================== */
+    #news-page {
+      /* claro (default) */
+      --bg: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #2563eb;
+      --card: #f8fafc;
+      --border: #cbd5e1;
+      --shadow: rgba(0,0,0,.12);
       --header-h: 64px;
-
-      /* fallbacks no caso das variáveis do Portal.noticias.css não carregarem */
-      --bg: #0f172a;
-      --text: #f1f5f9;
-      --primary: #38bdf8;
-      --card: #1e293b;
-      --border: #334155;
-      --muted: #cbd5e1;
-      --shadow: rgba(0,0,0,.25);
     }
-    body.dark{
-      --bg: #0b0f1a;
-      --text: #e5e7eb;
-      --primary: #60a5fa;
+    /* escuro */
+    body.dark #news-page {
+      --bg: #0b1220;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
       --card: #111827;
-      --border: #374151;
-      --muted: #9ca3af;
+      --border: #334155;
       --shadow: rgba(255,255,255,.08);
     }
 
-    /* ==================== Layout base ==================== */
-    html, body { height: 100%; }
-    body{
-      margin:0;
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
+    /* =========================
+       LAYOUT BASE (escopo news-page)
+    ========================== */
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    #news-page {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    /* ==================== Header fixo ==================== */
-    header{
+    /* =========================
+       HEADER FIXO
+    ========================== */
+    #news-page header{
       position: fixed;
       inset: 0 0 auto 0;
       height: var(--header-h);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      background: var(--primary);
-      color:#fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 0 1.25rem;
+      background: var(--primary);
+      color: #fff;
       box-shadow: 0 2px 8px var(--shadow);
-      z-index: 2000;
-      overflow: visible; /* permite o dropdown do perfil transbordar */
+      z-index: 1200;
     }
-    header h1{
-      margin:0;
-      display:flex;
-      align-items:center;
-      gap:.5rem;
+    #news-page header h1{
+      margin: 0;
       font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
     }
-    header nav{
-      display:flex;
-      align-items:center;
-      gap:1rem;
-      overflow: visible;
+    #news-page header nav{
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .nav-link{
-      color:#fff;
-      text-decoration:none;
-      font-weight:600;
+    #news-page .nav-link{
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
     }
-    .nav-link:hover{ opacity:.85; }
+    #news-page .nav-link:hover{ opacity: .85; }
 
-    /* ==================== Conteúdo principal ==================== */
-    main.content{
-      flex:1;
+    /* =========================
+       MAIN (centralizado e responsivo)
+    ========================== */
+    #news-page main.content{
+      flex: 1;
       width: min(1200px, 100% - clamp(24px, 6vw, 64px));
       margin-inline: auto;
       padding-top: calc(var(--header-h) + 16px);
@@ -100,111 +109,150 @@
     }
 
     /* Título e botão voltar */
-    h1.page-title{
-      text-align:center;
-      color: var(--text);
+    #news-page .page-title{
+      text-align: center;
       margin: .25rem 0 1rem;
+      color: var(--text);
       font-size: clamp(1.1rem, 1.5vw + .8rem, 1.8rem);
     }
-    .btn{
-      display:inline-block;
-      text-decoration:none;
+    #news-page .btn{
+      display: inline-block;
+      text-decoration: none;
       background: var(--primary);
-      color:#fff !important;
-      font-weight:700;
-      padding:10px 16px;
-      border-radius:8px;
+      color: #fff !important;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 8px;
       transition: opacity .15s ease, transform .02s ease;
       border: none;
       cursor: pointer;
     }
-    .btn:hover{ opacity:.92; }
-    .btn:active{ transform: translateY(1px); }
+    #news-page .btn:hover{ opacity: .92; }
+    #news-page .btn:active{ transform: translateY(1px); }
 
-    /* ==================== Busca ==================== */
-    .search{
-      display:flex;
-      gap:.5rem;
-      align-items:center;
-      justify-content:center;
+    /* =========================
+       BUSCA
+    ========================== */
+    #news-page .search{
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      justify-content: center;
       background: var(--card);
-      border-radius:10px;
-      padding:.75rem;
-      margin:0 auto 1rem;
-      width:min(1000px,100%);
-      box-shadow: 0 2px 6px var(--shadow);
       border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .75rem;
+      margin: 0 auto 1rem;
+      width: min(1000px, 100%);
+      box-shadow: 0 2px 6px var(--shadow);
     }
-    .search input{
-      flex:1;
-      min-width:220px;
-      max-width:520px;
-      padding:.7rem .9rem;
-      border:1px solid var(--border);
-      border-radius:8px;
+    #news-page .search input{
+      flex: 1;
+      min-width: 220px;
+      max-width: 520px;
+      padding: .7rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       background: var(--bg);
       color: var(--text);
     }
-    .search button{
-      padding:.7rem 1.1rem;
-      border:none;
-      border-radius:8px;
+    #news-page .search button{
+      padding: .7rem 1.1rem;
+      border: none;
+      border-radius: 8px;
       background: var(--primary);
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
       transition: transform .1s ease, opacity .2s;
       flex-shrink: 0;
     }
-    .search button:hover{ transform:scale(1.03); opacity:.92; }
+    #news-page .search button:hover{ transform: scale(1.03); opacity: .92; }
 
-    /* ==================== Grid de cards ==================== */
-    .grid{
-      width:100%;
-      display:grid;
-      gap:clamp(12px, 2vw, 18px);
+    /* =========================
+       GRID DE CARDS
+    ========================== */
+    #news-page .grid{
+      width: 100%;
+      display: grid;
+      gap: clamp(12px, 2vw, 18px);
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      align-items:start;
-      margin-inline:auto;
+      align-items: start;
+      margin-inline: auto;
     }
-    .card{
+    #news-page .card{
       background: var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:1rem;
-      box-shadow:0 2px 6px var(--shadow);
-      display:flex;
-      flex-direction:column;
-      gap:.5rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
     }
-    .card .thumb{
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
+    #news-page .card .thumb{
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
       background: var(--bg);
     }
-    .card h3{
-      margin:.25rem 0;
-      font-size:1.02rem;
+    #news-page .card h3{
+      margin: .25rem 0;
+      font-size: 1.02rem;
       color: var(--text);
     }
-    .card p{
-      margin:0;
+    #news-page .card p{
+      margin: 0;
       color: var(--muted);
-      font-size:.94rem;
-      min-height:3.6em;
+      font-size: .94rem;
+      min-height: 3.6em;
     }
-    .card a{
-      margin-top:auto;
-      color: #93c5fd; /* link com leve contraste no dark */
-      text-decoration:none;
-      font-weight:600;
+    #news-page .card a{
+      margin-top: auto;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
     }
-    .card a:hover{ text-decoration: underline; }
 
-    /* ==================== Footer fixo ao fim e com tema ==================== */
-    footer{
+    /* =========================
+       PERFIL (menu do usuário)
+    ========================== */
+    #news-page .perfil-container{ position: relative; }
+    #news-page #perfil-btn{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    body.dark #news-page #perfil-btn{ background: var(--card); color: var(--text); }
+
+    #news-page .perfil-menu{
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 18px var(--shadow);
+      padding: 12px;
+      width: 240px;
+      z-index: 1300;
+      display: none;          /* fechado por padrão */
+    }
+    #news-page .perfil-menu.open{ display: block; }
+
+    /* =========================
+       FOOTER (sempre no fim)
+    ========================== */
+    #news-page footer{
       background: var(--card);
       color: var(--text);
       border-top: 1px solid var(--border);
@@ -215,63 +263,34 @@
       width: 100%;
     }
 
-    /* ==================== Perfil (menu) ==================== */
-    .perfil-container{ position: relative; }
-    #perfil-btn{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:#fff;
-      color:var(--primary);
-      border:none;
-      border-radius:8px;
-      padding:8px 12px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    body.dark #perfil-btn{ background:var(--card); color:var(--text); }
-
-    .perfil-menu{
-      position:absolute;
-      right:0;
-      top: calc(100% + 8px);
-      display:none;                 /* fechado por padrão */
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius:10px;
-      box-shadow:0 8px 18px var(--shadow);
-      padding:12px;
-      width: 240px;
-      z-index: 2100;                /* acima do header */
-    }
-    .perfil-menu.open{ display:block; }
-
-    /* ==================== Responsividade ==================== */
+    /* =========================
+       RESPONSIVIDADE
+    ========================== */
     @media (max-width:1200px){
-      .grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      #news-page .grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
     }
     @media (max-width:900px){
-      .search{ flex-direction:column; align-items:stretch; }
-      .search button{ width:100%; }
-      .grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      #news-page .search{ flex-direction: column; align-items: stretch; }
+      #news-page .search button{ width: 100%; }
+      #news-page .grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     }
     @media (max-width:560px){
-      .grid{ grid-template-columns: 1fr; }
-      .search input{ min-width:0; max-width:none; }
+      #news-page .grid{ grid-template-columns: 1fr; }
+      #news-page .search input{ min-width: 0; max-width: none; }
     }
   </style>
 </head>
 
 <body>
-  <!-- ==================== Header ==================== -->
+<div id="news-page">
+  <!-- HEADER -->
   <header>
     <h1>📰 NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
 
       <div class="perfil-container">
-        <button id="perfil-btn" type="button" aria-expanded="false" aria-controls="perfil-menu">
+        <button id="perfil-btn" type="button" aria-haspopup="menu" aria-expanded="false">
           <img id="avatar"
                src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
                alt="Perfil"
@@ -279,7 +298,7 @@
           <span id="perfil-nome">Entrar</span> ▾
         </button>
 
-        <div class="perfil-menu" id="perfil-menu">
+        <div class="perfil-menu" id="perfil-menu" role="menu" aria-hidden="true">
           <div class="perfil-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
             <img id="menu-avatar"
                  src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
@@ -295,7 +314,7 @@
     </nav>
   </header>
 
-  <!-- ==================== Conteúdo ==================== -->
+  <!-- MAIN -->
   <main class="content" role="main">
     <div style="text-align:center; margin: 1rem 0;">
       <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
@@ -304,7 +323,8 @@
     <h1 class="page-title">🔎 Buscar Notícias</h1>
 
     <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
-      <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
+      <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer'
+             value="{{ (q or '')|e }}" maxlength="200"/>
       <button type="submit">Buscar</button>
     </form>
 
@@ -323,74 +343,80 @@
     </div>
   </main>
 
-  <!-- ==================== Footer ==================== -->
+  <!-- FOOTER -->
   <footer>
     <p>© 2025 Portal de Notícias — Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
+</div>
 
-  <!-- ==================== Chat flutuante (mantido) ==================== -->
-  <button id="chat-toggle" aria-label="Abrir chat" type="button">💬</button>
-  <div id="chat-float" role="dialog" aria-label="Assistente NewsTech" aria-modal="false">
-    <div id="chat-float-header">🤖 Assistente NewsTech</div>
-    <div id="chat-float-box" aria-live="polite"></div>
-    <form id="chat-float-form">
-      <textarea id="chat-float-input" rows="1" placeholder="Digite sua pergunta…"></textarea>
-      <button type="submit" id="chat-float-send">Enviar</button>
-    </form>
-  </div>
+<!-- Chat flutuante (inalterado) -->
+<button id="chat-toggle" aria-label="Abrir chat" type="button">💬</button>
+<div id="chat-float" role="dialog" aria-label="Assistente NewsTech" aria-modal="false">
+  <div id="chat-float-header">🤖 Assistente NewsTech</div>
+  <div id="chat-float-box" aria-live="polite"></div>
+  <form id="chat-float-form">
+    <textarea id="chat-float-input" rows="1" placeholder="Digite sua pergunta…"></textarea>
+    <button type="submit" id="chat-float-send">Enviar</button>
+  </form>
+</div>
 
-  <!-- ==================== JS mínimo para menu e tema ==================== -->
-  <script>
-    // Menu do perfil: abrir/fechar por classe .open
-    (function () {
-      const btn  = document.getElementById('perfil-btn');
-      const menu = document.getElementById('perfil-menu');
-      if (!btn || !menu) return;
+<!-- JS: menu do perfil + tema (robusto) -->
+<script>
+  // ————— Tema (persistente) —————
+  (function () {
+    const key = 'tema';
+    const body = document.body;
+    const btn = document.getElementById('toggle-tema');
 
-      const toggle = (open) => {
-        if (typeof open !== 'boolean') open = !menu.classList.contains('open');
-        menu.classList.toggle('open', open);
-        btn.setAttribute('aria-expanded', String(open));
-      };
+    function aplicarInicial() {
+      const salvo = localStorage.getItem(key); // 'escuro' | 'claro' | null
+      const prefereEscuro = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+      const usarEscuro = salvo ? (salvo === 'escuro') : prefereEscuro;
+      body.classList.toggle('dark', usarEscuro);
+      if (btn) btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+    }
+    aplicarInicial();
 
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggle();
-      });
-      // Clicar fora fecha
-      document.addEventListener('click', () => toggle(false));
-      // Cliques dentro do menu não propagam
-      menu.addEventListener('click', (e) => e.stopPropagation());
-    })();
+    btn?.addEventListener('click', () => {
+      const usarEscuro = !body.classList.contains('dark');
+      body.classList.toggle('dark', usarEscuro);
+      localStorage.setItem(key, usarEscuro ? 'escuro' : 'claro');
+      btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+    });
+  })();
 
-    // Tema claro/escuro: aplica/remove .dark no <body> e persiste em localStorage
-    (function () {
-      const key  = 'tema';
-      const btn  = document.getElementById('toggle-tema');
-      const body = document.body;
+  // ————— Menu do perfil (abre/fecha, clique fora, ESC) —————
+  (function () {
+    const btn = document.getElementById('perfil-btn');
+    const menu = document.getElementById('perfil-menu');
+    if (!btn || !menu) return;
 
-      function aplicarInicial() {
-        const salvo = localStorage.getItem(key); // 'escuro' | 'claro' | null
-        const prefereEscuro = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-        const usarEscuro = salvo ? (salvo === 'escuro') : prefereEscuro;
-        body.classList.toggle('dark', usarEscuro);
-        if (btn) btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
-      }
-      aplicarInicial();
+    function abrir() {
+      menu.classList.add('open');
+      menu.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+    function fechar() {
+      menu.classList.remove('open');
+      menu.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+    }
 
-      if (btn) {
-        btn.addEventListener('click', () => {
-          const usarEscuro = !body.classList.contains('dark');
-          body.classList.toggle('dark', usarEscuro);
-          localStorage.setItem(key, usarEscuro ? 'escuro' : 'claro');
-          btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
-        });
-      }
-    })();
-  </script>
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const aberto = menu.classList.contains('open');
+      aberto ? fechar() : abrir();
+    });
 
-  <!-- Seus scripts (mantidos) -->
-  <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
-  <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    document.addEventListener('click', () => fechar());
+    menu.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') fechar();
+    });
+  })();
+</script>
+
+<script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
