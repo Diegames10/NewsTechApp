@@ -525,6 +525,7 @@ def refresh():
 
 # em routes/auth.py (ou onde preferir):
 @auth_bp.route("/index")
+@login_required_view
 def index_page():
     return render_template("postagem/index.html")
 
