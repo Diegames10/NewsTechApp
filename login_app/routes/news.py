@@ -59,7 +59,6 @@ def news_home():
 # 🔎 BUSCA — NewsAPI (segura e filtrada)
 # ==========================================================
 @news_bp.get("/buscar-chat")
-@login_required_view
 def buscar():
     raw_q = request.args.get("q", "", type=str).strip()
     safe_q = escape(raw_q)
@@ -184,7 +183,6 @@ def rss_items_page(cat: str, sub: str):
 # 🧩 RSS (API JSON)
 # =========================
 @news_bp.get("/api/rss/subs/<category>")
-@login_required_view
 def rss_list_subs_api(category: str):
     if not list_subkeys:
         return jsonify({"category": category, "subkeys": [], "error": "RSS indisponível"}), 200
@@ -200,7 +198,6 @@ def rss_fetch_items_api(category: str, subkey: str):
 
 
 @news_bp.get("/rss/<cat>/<sub>/<region>")
-@login_required_view
 def rss_page_region(cat, sub, region):
     # exemplo: /rss/tecnologia/gadgets/nacional
     try:
@@ -236,6 +233,7 @@ def rss_page_region(cat, sub, region):
 @login_required_view
 def assistente_page():
     return render_template("assistente.html")
+
 
 
 
