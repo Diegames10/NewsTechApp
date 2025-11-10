@@ -222,36 +222,6 @@
       <button type="submit" id="chat-float-send">Enviar</button>
     </form>
   </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const sidebar = document.getElementById("rss-sidebar");
-      const toggle = document.getElementById("sidebar-toggle");
-      if (!sidebar || !toggle) return;
-
-      const preferMobile = window.matchMedia("(max-width: 900px)");
-      const applyInitial = () => {
-        if (preferMobile.matches) {
-          sidebar.classList.add("sidebar--closed");
-          toggle.setAttribute("aria-expanded", "false");
-          toggle.textContent = "☰";
-        } else {
-          sidebar.classList.remove("sidebar--closed");
-          toggle.setAttribute("aria-expanded", "true");
-          toggle.textContent = "✖";
-        }
-      };
-      applyInitial();
-      preferMobile.addEventListener("change", applyInitial);
-
-      toggle.addEventListener("click", () => {
-        sidebar.classList.toggle("sidebar--closed");
-        const isClosed = sidebar.classList.contains("sidebar--closed");
-        toggle.textContent = isClosed ? "☰" : "✖";
-        toggle.setAttribute("aria-expanded", isClosed ? "false" : "true");
-      });
-    });
-  </script>
   
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
@@ -259,6 +229,7 @@
   
 </body>
 </html>
+
 
 
 
