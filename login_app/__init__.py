@@ -11,7 +11,7 @@ from flask_mail import Mail
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.http import http_date, parse_date  # p/ ETag/Last-Modified
-from login_app.routes.news import news_bp
+from routes.news import news_bp
 app.register_blueprint(news_bp)  # ou com url_prefix se você usar
 
 
