@@ -5,13 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Busca | NewsTechApp</title>
 
-  <!-- CSS -->
-  
+  <!-- CSS base do projeto -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
 
-  <!-- Ícones -->
   <link rel="icon" type="image/png" sizes="512x512"
         href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
   <link rel="apple-touch-icon" sizes="512x512"
@@ -19,200 +16,178 @@
   <meta name="theme-color" content="#ffffff">
 
   <style>
-      /* ===== BASE ===== */
-      :root{ --header-h: 64px; }
-      body{
-        margin:0;
-        background:#0f172a; color:#f1f5f9;
-        font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-      }
-      
-      /* Header fixo (já tinha) */
-      header{
-        position:fixed; inset:0 0 auto 0; height:var(--header-h);
-        display:flex; align-items:center; justify-content:space-between;
-        background:#1e293b; color:#f1f5f9; padding:0 1.25rem;
-        box-shadow:0 2px 8px rgba(0,0,0,.4); z-index:300;
-      }
-      
-      /* Main ocupa a tela, respeitando o header */
-      main{
-        padding-top: calc(var(--header-h) + 16px);
-        padding-bottom: 24px;
-      }
-      
-      /* ===== CONTAINERS CENTRAIS ===== */
-      .page{
-        display:flex; justify-content:center;
-        padding-inline: clamp(12px, 4vw, 24px);
-      }
-      .container{
-        width:min(1200px, 100%);          /* limita a largura total */
-        margin-inline:auto;
-      }
-      
-      /* ===== TÍTULO + VOLTAR ===== */
-      h1{
-        text-align:center; color:#38bdf8;
-        margin: .25rem 0 1rem;
-        font-size:clamp(1.1rem, 1.5vw + .8rem, 1.8rem);
-      }
-      .btn{
-        display:inline-block; text-decoration:none;
-        background:#38bdf8; color:#0f172a; font-weight:700;
-        padding:10px 16px; border-radius:8px;
-      }
-      
-      /* ===== BUSCA ===== */
-      .search{
-        display:flex; gap:.5rem; align-items:center; justify-content:center;
-        background:#0b1220; border-radius:10px;
-        padding:.75rem; margin:0 auto 1rem;
-        width:min(1000px,100%);
-      }
-      .search input{
-        flex:1; min-width:220px; max-width:520px;
-        padding:.7rem .9rem; border:none; border-radius:8px;
-        background:#162036; color:#fff;
-      }
-      .search button{
-        padding:.7rem 1.1rem; border:none; border-radius:8px;
-        background:#38bdf8; color:#0f172a; font-weight:700; cursor:pointer;
-        transition:transform .1s ease, opacity .2s;
-      }
-      .search button:hover{ transform:scale(1.03); opacity:.92; }
-      
-      /* ===== GRID DE CARDS ===== */
-      .grid{
-        width:100%;
-        display:grid; gap:clamp(12px, 2vw, 18px);
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        align-items:start;
-        margin-inline:auto;
-      }
-      .card{
-        background:#1e293b; border-radius:12px; padding:1rem;
-        box-shadow:0 2px 6px rgba(0,0,0,.3);
-        display:flex; flex-direction:column; gap:.5rem;
-      }
-      .card .thumb{ width:100%; height:180px; object-fit:cover; border-radius:10px; background:#0b1220; }
-      .card h3{ margin:.25rem 0; font-size:1.02rem; color:#f8fafc; }
-      .card p{ margin:0; color:#cbd5e1; font-size:.94rem; min-height:3.6em; }
-      .card a{ margin-top:auto; color:#38bdf8; text-decoration:none; font-weight:600; }
-      
-      
-      /* ====== FOOTER CORRIGIDO ====== */
-      html, body {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      main {
-        flex: 1;
-      }
-      
-      footer {
-        background: #1e293b;
-        color: #cbd5e1;
-        text-align: center;
-        font-size: 0.85rem;
-        padding: 12px 16px;
-        margin-top: auto;
-        box-shadow: 0 -2px 6px rgba(0,0,0,.2);
-        width: 100%;              /* ✅ garante que ocupe toda a largura */
-        position: relative;       /* ✅ evita flutuar no layout */
-        z-index: 10;
-      }
+    :root{ --header-h: 64px; }
 
-    
-    /* ===== RESPONSIVIDADE ===== */
-      /* ≥ 1400px: não cresce além do limite, mas dá mais “respiro” interno */
-      @media (min-width:1400px){
-        .container{ width:1200px; }
-      }
-      
-      /* ≤ 1200px: cards levemente menores para caber 3 colunas confortáveis */
-      @media (max-width:1200px){
-        .grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-      }
-      
-      /* ≤ 900px: busca em coluna; grid 2 colunas quando possível */
-      @media (max-width:900px){
-        .search{ flex-direction:column; align-items:stretch; }
-        .search button{ width:100%; }
-        .grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-      }
-      
-      /* ≤ 560px: 1 coluna; inputs 100% */
-      @media (max-width:560px){
-        .grid{ grid-template-columns: 1fr; }
-        .search input{ min-width:0; max-width:none; }
-      }
+    /* Header fixo, com botões à direita */
+    header{
+      position: fixed; inset: 0 0 auto 0; height: var(--header-h);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--primary); color: #fff; padding: 0 1.25rem;
+      box-shadow: 0 2px 8px var(--shadow); z-index: 300;
+    }
+    header h1{ margin:0; font-size: 1.1rem; display:flex; align-items:center; gap:.5rem; }
+    header nav{ display:flex; align-items:center; gap: 1rem; }
+    .nav-link{ color:#fff; text-decoration:none; font-weight:600; }
+    .nav-link:hover{ opacity:.85; }
 
+    /* Layout principal centralizado */
+    html{ height:100%; }
+    body{
+      min-height:100%;
+      display:flex; flex-direction:column;
+      background: var(--bg); color: var(--text);
+      font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+      margin:0;
+    }
+    main.content{
+      flex:1;
+      width: min(1200px, 100% - clamp(24px, 6vw, 64px));
+      margin-inline: auto;                /* centraliza */
+      padding-top: calc(var(--header-h) + 16px);
+      padding-left: clamp(12px, 4vw, 24px);
+      padding-right: clamp(12px, 4vw, 24px);
+      padding-bottom: 0;
+    }
 
+    /* Título + voltar */
+    h1.page-title{
+      text-align:center; color: var(--text);
+      margin: .25rem 0 1rem;
+      font-size: clamp(1.1rem, 1.5vw + .8rem, 1.8rem);
+    }
+    .btn{
+      display:inline-block; text-decoration:none;
+      background: var(--primary); color:#fff !important; font-weight:700;
+      padding:10px 16px; border-radius:8px;
+      transition: opacity .15s ease, transform .02s ease;
+    }
+    .btn:hover{ opacity:.92; }
+    .btn:active{ transform: translateY(1px); }
+
+    /* Busca */
+    .search{
+      display:flex; gap:.5rem; align-items:center; justify-content:center;
+      background: var(--card); border-radius:10px;
+      padding:.75rem; margin:0 auto 1rem;
+      width:min(1000px,100%);
+      box-shadow: 0 2px 6px var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .search input{
+      flex:1; min-width:220px; max-width:520px;
+      padding:.7rem .9rem; border:1px solid var(--border); border-radius:8px;
+      background: var(--bg); color: var(--text);
+    }
+    .search button{
+      padding:.7rem 1.1rem; border:none; border-radius:8px;
+      background: var(--primary); color:#fff; font-weight:700; cursor:pointer;
+      transition: transform .1s ease, opacity .2s;
+    }
+    .search button:hover{ transform:scale(1.03); opacity:.92; }
+
+    /* Grid de cards */
+    .grid{
+      width:100%;
+      display:grid; gap:clamp(12px, 2vw, 18px);
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      align-items:start;
+      margin-inline:auto;
+    }
+    .card{
+      background: var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:1rem;
+      box-shadow:0 2px 6px var(--shadow);
+      display:flex; flex-direction:column; gap:.5rem;
+    }
+    .card .thumb{ width:100%; height:180px; object-fit:cover; border-radius:10px; background: var(--bg); }
+    .card h3{ margin:.25rem 0; font-size:1.02rem; color: var(--text); }
+    .card p{ margin:0; color: var(--muted); font-size:.94rem; min-height:3.6em; }
+    .card a{ margin-top:auto; color: var(--primary); text-decoration:none; font-weight:600; }
+
+    /* Footer que muda com o tema */
+    footer{
+      background: var(--card);
+      color: var(--text);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: .9rem;
+      padding: 12px 16px;
+      margin-top: auto;           /* fixa no fim */
+      width: 100%;
+    }
+
+    /* Responsividade */
+    @media (max-width:1200px){
+      .grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    }
+    @media (max-width:900px){
+      .search{ flex-direction:column; align-items:stretch; }
+      .search button{ width:100%; }
+      .grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    }
+    @media (max-width:560px){
+      .grid{ grid-template-columns: 1fr; }
+      .search input{ min-width:0; max-width:none; }
+    }
   </style>
 </head>
 
 <body>
-  <!-- ✅ HEADER DENTRO DO BODY -->
+  <!-- Header (sem sidebar) -->
   <header>
     <h1>📰 NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
       <div class="perfil-container">
         <button id="perfil-btn" type="button">
-          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil" style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
-        <div class="perfil-menu" id="perfil-menu">
-          <div class="perfil-info">
-            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil">
+        <div class="perfil-menu" id="perfil-menu" style="display:none;position:absolute;right:0;top:45px;background:var(--card);color:var(--text);border-radius:10px;box-shadow:0 4px 12px var(--shadow);padding:12px;width:220px;z-index:100;">
+          <div class="perfil-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
             <strong id="menu-nome">Visitante</strong>
           </div>
           <hr>
-          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
-          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
+          <button id="toggle-tema" type="button" class="btn" style="width:100%;background:var(--primary);">🌙 Modo Escuro</button>
+          <button id="btn-sair" style="display:none;margin-top:8px;width:100%;" class="btn">🚪 Sair</button>
         </div>
       </div>
     </nav>
   </header>
 
-    <main class="content" role="main">
-       <div style="text-align:center; margin: 1rem 0;">
-        <a href="{{ url_for('auth.home') }}" class="btn" style="background:#38bdf8; color:#0f172a; font-weight:700; padding:10px 16px; border-radius:8px; text-decoration:none; display:inline-block;">
-          ⬅️ Voltar para Início
-        </a>
+  <main class="content" role="main">
+    <div style="text-align:center; margin: 1rem 0;">
+      <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
+    </div>
+
+    <h1 class="page-title">🔎 Buscar Notícias</h1>
+
+    <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
+      <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
+      <button type="submit">Buscar</button>
+    </form>
+
+    <!-- GRID -->
+    <div class="grid">
+      {% for a in articles %}
+      <div class="card">
+        {% if a.get('urlToImage') %}
+          <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
+        {% endif %}
+        <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
+        <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
+        <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">Ler matéria completa →</a>
       </div>
+      {% endfor %}
+    </div>
+  </main>
 
-      <h1>🔎 Buscar Notícias</h1>
-      <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
-        <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
-        <button type="submit">Buscar</button>
-      </form>
+  <footer>
+    <p>© 2025 Portal de Notícias — Criado por Bruna Oliveira e Diego Andrioli</p>
+  </footer>
 
-      <!-- GRID DE NOTÍCIAS -->
-      <div class="grid">
-        {% for a in articles %}
-        <div class="card">
-          {% if a.get('urlToImage') %}
-            <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
-          {% endif %}
-          <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
-          <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
-          <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">Ler matéria completa →</a>
-        </div>
-        {% endfor %}
-      </div>
-    </main>
-
-    <footer>
-      <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
-    </footer>
-  
-</div>
-
-  <!-- Chat flutuante -->
+  <!-- Chat flutuante (inalterado) -->
   <button id="chat-toggle" aria-label="Abrir chat" type="button">💬</button>
   <div id="chat-float" role="dialog" aria-label="Assistente NewsTech" aria-modal="false">
     <div id="chat-float-header">🤖 Assistente NewsTech</div>
@@ -222,30 +197,51 @@
       <button type="submit" id="chat-float-send">Enviar</button>
     </form>
   </div>
-  
+
+  <!-- JS mínimo (menu perfil + tema) -->
+  <script>
+    // Menu do perfil abre/fecha
+    (function () {
+      const btn = document.getElementById('perfil-btn');
+      const menu = document.getElementById('perfil-menu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      });
+      document.addEventListener('click', () => {
+        if (menu.style.display === 'block') menu.style.display = 'none';
+      });
+      menu.addEventListener('click', (e) => e.stopPropagation());
+    })();
+
+    // Toggle claro/escuro: aplica/remover .dark no <body>
+    (function () {
+      const key = 'tema';
+      const btn = document.getElementById('toggle-tema');
+      const body = document.body;
+
+      function aplicarInicial() {
+        const salvo = localStorage.getItem(key); // 'escuro' | 'claro' | null
+        const prefereEscuro = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+        const usarEscuro = salvo ? (salvo === 'escuro') : prefereEscuro;
+        body.classList.toggle('dark', usarEscuro);
+        if (btn) btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+      }
+      aplicarInicial();
+
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const usarEscuro = !body.classList.contains('dark');
+          body.classList.toggle('dark', usarEscuro);
+          localStorage.setItem(key, usarEscuro ? 'escuro' : 'claro');
+          btn.textContent = usarEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+        });
+      }
+    })();
+  </script>
+
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
-
-  
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
