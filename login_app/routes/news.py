@@ -1,7 +1,7 @@
 # login_app/routes/news.py
 from flask import Blueprint, render_template, request, jsonify
 from markupsafe import escape
-from utils.guards import login_required_view
+from utils.jwt_auth import login_required_view
 from utils.jwt_auth import login_required_api
 # from . import news_bp
 
@@ -236,6 +236,7 @@ def rss_page_region(cat, sub, region):
 @login_required_view
 def assistente_page():
     return render_template("assistente.html")
+
 
 
 
