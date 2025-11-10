@@ -2,12 +2,8 @@
 from flask import Blueprint, render_template, request, jsonify
 from markupsafe import escape
 
-from ..utils.jwt_auth import (
-    create_access_token, create_refresh_token,
-    set_jwt_cookies, set_csrf_cookie, clear_jwt_cookies,
-    get_access_from_request, get_refresh_from_request,
-    decode_token,
-)
+from login_app.utils.token import login_required_view
+from login_app.utils.jwt_auth import login_required_api
 
 news_bp = Blueprint("news", __name__)
 
@@ -237,6 +233,7 @@ def rss_page_region(cat, sub, region):
 @login_required_view
 def assistente_page():
     return render_template("assistente.html")
+
 
 
 
