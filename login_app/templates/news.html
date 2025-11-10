@@ -130,6 +130,41 @@
       .grid{ grid-template-columns: 1fr; }
       .search input{ min-width:0; max-width:none; }
     }
+
+    header{
+      position: fixed; inset: 0 0 auto 0; height: var(--header-h);
+      display:flex; align-items:center; justify-content:space-between;
+      background: var(--primary); color:#fff; padding:0 1.25rem;
+      box-shadow:0 2px 8px var(--shadow);
+      z-index: 1200;                  /* ↑ garante que o menu fique por cima */
+    }
+    
+    /* Perfil */
+    .perfil-container{ position: relative; }  /* ← âncora p/ posicionar o menu */
+    #perfil-btn{
+      display:flex; align-items:center; gap:8px;
+      background:#fff; color:var(--primary);
+      border:none; border-radius:8px; padding:8px 12px; cursor:pointer;
+      font-weight:600;
+    }
+    body.dark #perfil-btn{ background:var(--card); color:var(--text); }
+    
+    /* Menu do perfil (start escondido) */
+    .perfil-menu{
+      display:none;
+      position:absolute;
+      right:0;
+      top: calc(100% + 8px);          /* abaixo do botão */
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius:10px;
+      box-shadow:0 8px 18px var(--shadow);
+      padding:12px;
+      width: 240px;
+      z-index: 1300;                  /* ↑ acima do header e de outros elementos */
+    }
+    .perfil-menu.open{ display:block; }      /* classe p/ abrir/fechar via JS */
   </style>
 </head>
 
@@ -246,4 +281,5 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
