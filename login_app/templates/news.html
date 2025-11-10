@@ -19,34 +19,94 @@
   <meta name="theme-color" content="#ffffff">
 
   <style>
-    /* ======== LAYOUT GERAL ======== */
-    /* === ÁREA PRINCIPAL (abaixo do header) === */
-main {
-  flex: 1;                     /* ocupa todo o espaço livre abaixo do header */
-  display: grid;               /* centralização fácil */
-  place-items: center;         /* centraliza H e V */
-  padding: 2rem 1rem;          /* respiro nas bordas */
-}
-
-/* Contêiner do conteúdo da página de notícias */
-.news-wrap {
-  width: min(1100px, 100%);    /* largura máxima agradável */
-  background: #11182780;       /* leve contraste (opcional) */
-  border-radius: 12px;
-  padding: 1.25rem;
-}
-
-/* A grade de cards em si */
-.grid {
-  width: 100%;
-  margin: 0 auto;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-}
-
+    /* ======== LAYOUT CENTRALIZADO DA PÁGINA NEWS ======== */
     
+    /* Mantém o cabeçalho fixo e estilizado */
+    header {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .4);
+      position: fixed;     /* fixo no topo */
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 300;
+    }
     
+    /* O corpo abaixo do header */
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* O conteúdo principal ocupa o restante da tela */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;  /* centraliza horizontal */
+      align-items: center;      /* centraliza vertical */
+      padding-top: 90px;        /* espaço pro header fixo */
+      padding-bottom: 40px;
+    }
+    
+    /* Bloco central (caixa da busca + resultados) */
+    .news-wrap {
+      width: min(700px, 90%);
+      background: #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    /* Título e formulário */
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+    
+    form.search {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* Campos */
+    form.search input {
+      flex: 1;
+      min-width: 220px;
+      max-width: 400px;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #162036;
+      color: #fff;
+    }
+    form.search button {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    form.search button:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
   </style>
 </head>
 
@@ -147,6 +207,7 @@ main {
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
 
 
