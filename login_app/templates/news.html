@@ -265,31 +265,23 @@
 
 <body>
   <!-- ==================== Header ==================== -->
-  <header>
+   <header>
     <h1>📰 NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
-
       <div class="perfil-container">
-        <button id="perfil-btn" type="button" aria-expanded="false" aria-controls="perfil-menu">
-          <img id="avatar"
-               src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
-               alt="Perfil"
-               style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
+        <button id="perfil-btn" type="button">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
-
         <div class="perfil-menu" id="perfil-menu">
-          <div class="perfil-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <img id="menu-avatar"
-                 src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
-                 alt="Foto de perfil"
-                 style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
+          <div class="perfil-info">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil">
             <strong id="menu-nome">Visitante</strong>
           </div>
           <hr>
-          <button id="toggle-tema" type="button" class="btn" style="width:100%;">🌙 Modo Escuro</button>
-          <button id="btn-sair" style="display:none;margin-top:8px;width:100%;" class="btn">🚪 Sair</button>
+          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
+          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
         </div>
       </div>
     </nav>
@@ -394,3 +386,4 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
