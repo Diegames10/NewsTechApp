@@ -18,25 +18,27 @@
   <style>
     /* ==================== VARIÁVEIS GERAIS ==================== */
     :root {
-      --bg: #f8fafc;
-      --text: #0f172a;
-      --primary: #38bdf8;
-      --card: #ffffff;
-      --border: #cbd5e1;
-      --muted: #475569;
-      --shadow: rgba(0, 0, 0, 0.08);
-      --header-h: 64px;
-    }
+  /* Tema claro */
+  --bg: #ffffff;          /* fundo principal branco */
+  --text: #0f172a;        /* texto escuro */
+  --primary: #2563eb;     /* azul mais equilibrado */
+  --card: #ffffff;        /* caixas e header brancas */
+  --border: #e2e8f0;      /* cinza leve */
+  --muted: #475569;       /* texto secundário */
+  --shadow: rgba(0, 0, 0, 0.05);
+  --header-h: 64px;
+}
 
-    body.dark {
-      --bg: #0f172a;
-      --text: #f1f5f9;
-      --primary: #60a5fa;
-      --card: #1e293b;
-      --border: #334155;
-      --muted: #94a3b8;
-      --shadow: rgba(255, 255, 255, 0.1);
-    }
+body.dark {
+  /* Tema escuro */
+  --bg: #0f172a;
+  --text: #f1f5f9;
+  --primary: #60a5fa;
+  --card: #1e293b;
+  --border: #334155;
+  --muted: #94a3b8;
+  --shadow: rgba(255, 255, 255, 0.1);
+}
 
     /* ==================== ANIMAÇÃO DE TRANSIÇÃO ==================== */
     body,
@@ -327,3 +329,4 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
