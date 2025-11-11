@@ -63,7 +63,18 @@
     <div style="text-align:center; margin: 1rem 0;">
       <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
     </div>
-
+    <div class="grid">
+      {% for a in articles %}
+      <div class="card">
+        {% if a.get('urlToImage') %}
+        <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
+        {% endif %}
+        <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
+        <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
+        <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">Ler matéria completa →</a>
+      </div>
+      {% endfor %}
+    </div>
     <h1 class="page-title">🔎 Buscar Notícias</h1>
     <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
       <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
@@ -86,6 +97,7 @@
 
   
 </html>
+
 
 
 
