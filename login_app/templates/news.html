@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Busca | NewsTechApp</title>
 
   <!-- CSS base -->
@@ -14,22 +14,29 @@
   <link rel="icon" type="image/png" sizes="512x512"
         href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
   <meta name="theme-color" content="#ffffff">
-
- 
 </head>
 
+<body>
+  <!-- HEADER -->
   <header>
     <h1>📰 NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
       <div class="perfil-container">
         <button id="perfil-btn" type="button">
-          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil" style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
+          <img id="avatar"
+               src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
+               alt="Perfil"
+               style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
+
         <div class="perfil-menu" id="perfil-menu">
           <div class="perfil-info">
-            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
+            <img id="menu-avatar"
+                 src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
+                 alt="Foto de perfil"
+                 style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
             <strong id="menu-nome">Visitante</strong>
           </div>
           <hr>
@@ -39,81 +46,64 @@
       </div>
     </nav>
   </header>
-  </div>
-<body>
 
   <!-- CHAT FLOAT (inferior direito) -->
   <button id="chatfloat-toggle" class="chatfloat-button" aria-expanded="false" title="Abrir assistente">💬</button>
+
   <div id="chatfloat-panel" class="chatfloat-panel" hidden>
     <div class="chatfloat-header">
       <strong>Assistente NewsTech</strong>
       <button id="chatfloat-close" class="chatfloat-close" title="Fechar">×</button>
     </div>
+
     <div id="chatfloat-messages" class="chatfloat-messages">
       <div class="msg msg-assistant">Olá! Como posso ajudar você hoje? 😊</div>
     </div>
+
     <form id="chatfloat-form" class="chatfloat-form">
       <input id="chatfloat-input" type="text" placeholder="Digite sua mensagem..." autocomplete="off" />
       <button type="submit" title="Enviar">➤</button>
     </form>
   </div>
 
-  
+  <!-- CONTEÚDO PRINCIPAL -->
   <main class="content">
     <div style="text-align:center; margin: 1rem 0;">
       <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
     </div>
+
     <div class="grid">
       {% for a in articles %}
       <div class="card">
         {% if a.get('urlToImage') %}
-        <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
+        <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy" />
         {% endif %}
         <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
         <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
-        <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">Ler matéria completa →</a>
+        <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">
+          Ler matéria completa →
+        </a>
       </div>
       {% endfor %}
     </div>
+
     <h1 class="page-title">🔎 Buscar Notícias</h1>
     <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
-      <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
+      <input type="text" name="q"
+             placeholder='Ex.: "video games"|review|trailer'
+             value="{{ (q or '')|e }}"
+             maxlength="200" />
       <button type="submit">Buscar</button>
     </form>
-
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <p>© 2025 Portal de Notícias — Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
-  
-  <!-- JS existente -->
+
+  <!-- JS -->
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
-
-
 </body>
-
-
-  
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
