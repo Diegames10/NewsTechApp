@@ -85,7 +85,7 @@
     }
 
     header h1 {
-      color: var(--primary);
+      color: var(--text);
       font-size: 1.2rem;
       margin: 0;
     }
@@ -297,6 +297,23 @@
     </nav>
   </header>
 
+  <!-- CHAT FLOAT (inferior direito) -->
+  <button id="chatfloat-toggle" class="chatfloat-button" aria-expanded="false" title="Abrir assistente">💬</button>
+  <div id="chatfloat-panel" class="chatfloat-panel" hidden>
+    <div class="chatfloat-header">
+      <strong>Assistente NewsTech</strong>
+      <button id="chatfloat-close" class="chatfloat-close" title="Fechar">×</button>
+    </div>
+    <div id="chatfloat-messages" class="chatfloat-messages">
+      <div class="msg msg-assistant">Olá! Como posso ajudar você hoje? 😊</div>
+    </div>
+    <form id="chatfloat-form" class="chatfloat-form">
+      <input id="chatfloat-input" type="text" placeholder="Digite sua mensagem..." autocomplete="off" />
+      <button type="submit" title="Enviar">➤</button>
+    </form>
+  </div>
+
+  
   <main class="content">
     <div style="text-align:center; margin: 1rem 0;">
       <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
@@ -331,6 +348,7 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
 
 
