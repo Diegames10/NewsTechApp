@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Busca | NewsTechApp</title>
 
-  <!-- CSS base do projeto -->
+  <!-- CSS base -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style_assistente.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/Portal.noticias.css', v=version|default(0)) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/favicon.css', v=version|default(0)) }}">
@@ -13,278 +13,279 @@
   <!-- Ícones -->
   <link rel="icon" type="image/png" sizes="512x512"
         href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
-  <link rel="apple-touch-icon" sizes="512x512"
-        href="{{ url_for('static', filename='imagens/newstech-app-icon-1024.png') }}">
   <meta name="theme-color" content="#ffffff">
 
   <style>
-    /* ========= Fallbacks leves (tema vem do Portal.noticias.css) ========= */
-    :root{
+    /* ==================== VARIÁVEIS GERAIS ==================== */
+    :root {
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --primary: #38bdf8;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --muted: #475569;
+      --shadow: rgba(0, 0, 0, 0.08);
       --header-h: 64px;
+    }
+
+    body.dark {
       --bg: #0f172a;
       --text: #f1f5f9;
-      --primary: #38bdf8;
+      --primary: #60a5fa;
       --card: #1e293b;
       --border: #334155;
-      --muted: #cbd5e1;
-      --shadow: rgba(0,0,0,.25);
+      --muted: #94a3b8;
+      --shadow: rgba(255, 255, 255, 0.1);
     }
 
-    /* ========= Layout base ========= */
-    html, body { height: 100%; }
-    body{
-      margin:0;
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
+    /* ==================== ANIMAÇÃO DE TRANSIÇÃO ==================== */
+    body,
+    header,
+    footer,
+    main,
+    .card,
+    .btn,
+    .search,
+    .search input,
+    .search button,
+    .perfil-menu,
+    #perfil-btn {
+      transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+    }
+
+    /* ==================== LAYOUT BASE ==================== */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* ========= Header fixo ========= */
-    header{
+    header {
       position: fixed;
-      inset: 0 0 auto 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: var(--header-h);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      background: var(--primary);
-      color:#fff;
-      padding: 0 1.25rem;
-      box-shadow: 0 2px 8px var(--shadow);
-      z-index: 2000;
-      overflow: visible; /* dropdown do perfil pode transbordar */
-    }
-    header h1{
-      margin:0;
-      display:flex;
-      align-items:center;
-      gap:.5rem;
-      font-size: 1.1rem;
-    }
-    header nav{
-      display:flex;
-      align-items:center;
-      gap:1rem;
-    }
-    .nav-link{
-      color:#fff;
-      text-decoration:none;
-      font-weight:600;
-    }
-    .nav-link:hover{ opacity:.85; }
-
-    /* ========= Conteúdo ========= */
-    main.content{
-      flex:1;
-      width: min(1200px, 100% - clamp(24px, 6vw, 64px));
-      margin-inline: auto;
-      padding-top: calc(var(--header-h) + 16px);
-      padding-left: clamp(12px, 4vw, 24px);
-      padding-right: clamp(12px, 4vw, 24px);
-      padding-bottom: 0;
-    }
-
-    /* Título e voltar */
-    h1.page-title{
-      text-align:center;
-      color: var(--text);
-      margin: .25rem 0 1rem;
-      font-size: clamp(1.1rem, 1.5vw + .8rem, 1.8rem);
-    }
-    .btn{
-      display:inline-block;
-      text-decoration:none;
-      background: var(--primary);
-      color:#fff !important;
-      font-weight:700;
-      padding:10px 16px;
-      border-radius:8px;
-      transition: opacity .15s ease, transform .02s ease;
-      border: none;
-      cursor: pointer;
-    }
-    .btn:hover{ opacity:.92; }
-    .btn:active{ transform: translateY(1px); }
-
-    /* ========= Busca ========= */
-    .search{
-      display:flex;
-      gap:.5rem;
-      align-items:center;
-      justify-content:center;
       background: var(--card);
-      border-radius:10px;
-      padding:.75rem;
-      margin:0 auto 1rem;
-      width:min(1000px,100%);
+      border-bottom: 1px solid var(--border);
       box-shadow: 0 2px 6px var(--shadow);
-      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      z-index: 2000;
     }
-    .search input{
-      flex:1;
-      min-width:220px;
-      max-width:520px;
-      padding:.7rem .9rem;
-      border:1px solid var(--border);
-      border-radius:8px;
+
+    header h1 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    header nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-link {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    main.content {
+      flex: 1;
+      width: min(1200px, 100% - 2rem);
+      margin: 0 auto;
+      padding-top: calc(var(--header-h) + 16px);
+      padding-bottom: 2rem;
+    }
+
+    /* ==================== BUSCA ==================== */
+    .search {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px var(--shadow);
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .search input {
+      flex: 1;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       background: var(--bg);
       color: var(--text);
     }
-    .search button{
-      padding:.7rem 1.1rem;
-      border:none;
-      border-radius:8px;
+
+    .search button {
       background: var(--primary);
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      transition: transform .1s ease, opacity .2s;
-      flex-shrink: 0;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.7rem 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-    .search button:hover{ transform:scale(1.03); opacity:.92; }
 
-    /* ========= Grid ========= */
-    .grid{
-      width:100%;
-      display:grid;
-      gap:clamp(12px, 2vw, 18px);
+    .search button:hover {
+      opacity: 0.9;
+      transform: scale(1.03);
+    }
+
+    /* ==================== GRID DE CARDS ==================== */
+    .grid {
+      display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      align-items:start;
-      margin-inline:auto;
+      gap: 1rem;
     }
-    .card{
-      background: var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:1rem;
-      box-shadow:0 2px 6px var(--shadow);
-      display:flex;
-      flex-direction:column;
-      gap:.5rem;
-    }
-    .card .thumb{
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
-      background: var(--bg);
-    }
-    .card h3{
-      margin:.25rem 0;
-      font-size:1.02rem;
-      color: var(--text);
-    }
-    .card p{
-      margin:0;
-      color: var(--muted);
-      font-size:.94rem;
-      min-height:3.6em;
-    }
-    .card a{
-      margin-top:auto;
-      color: #93c5fd;
-      text-decoration:none;
-      font-weight:600;
-    }
-    .card a:hover{ text-decoration: underline; }
 
-    /* ========= Footer (sempre no fim e com tema) ========= */
-    footer{
+    .card {
       background: var(--card);
-      color: var(--text);
-      border-top: 1px solid var(--border);
-      text-align: center;
-      font-size: .9rem;
-      padding: 12px 16px;
-      margin-top: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 2px 6px var(--shadow);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .card img.thumb {
       width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
     }
 
-    /* ========= Perfil ========= */
-    .perfil-container{ position: relative; }
-    #perfil-btn{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:#fff;
-      color:var(--primary);
-      border:none;
-      border-radius:8px;
-      padding:8px 12px;
-      cursor:pointer;
-      font-weight:600;
+    .card h3 {
+      margin: 0.25rem 0;
+      color: var(--text);
     }
-    body.dark #perfil-btn{ background:var(--card); color:var(--text); }
 
-    .perfil-menu{
-      position:absolute;
-      right:0;
-      top: 45px;                 /* casa com seu script.js */
-      display:none;              /* fechado por padrão – script.js abre/fecha */
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .card a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .card a:hover {
+      text-decoration: underline;
+    }
+
+    /* ==================== BOTÕES E LINKS ==================== */
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn:hover { opacity: 0.9; }
+
+    /* ==================== PERFIL ==================== */
+    .perfil-container { position: relative; }
+
+    #perfil-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .perfil-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 45px;
       background: var(--card);
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius:10px;
-      box-shadow:0 8px 18px var(--shadow);
-      padding:12px;
+      border-radius: 10px;
+      box-shadow: 0 8px 18px var(--shadow);
+      padding: 12px;
       width: 240px;
       z-index: 2100;
     }
 
-    .perfil-info{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-bottom:8px;
+    .perfil-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
     }
 
-    /* ========= Responsividade ========= */
-    @media (max-width:1200px){
-      .grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    /* ==================== FOOTER ==================== */
+    footer {
+      background: var(--card);
+      color: var(--text);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 12px 16px;
     }
-    @media (max-width:900px){
-      .search{ flex-direction:column; align-items:stretch; }
-      .search button{ width:100%; }
-      .grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    /* ==================== RESPONSIVIDADE ==================== */
+    @media (max-width: 900px) {
+      .search { flex-direction: column; }
+      .search button { width: 100%; }
     }
-    @media (max-width:560px){
-      .grid{ grid-template-columns: 1fr; }
-      .search input{ min-width:0; max-width:none; }
+
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <!-- ============== Header ============== -->
   <header>
     <h1>📰 NewsTech</h1>
-
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
-
-      <!-- Bloco de perfil (IDs compatíveis com seu script.js) -->
       <div class="perfil-container">
-        <button id="perfil-btn" type="button" aria-expanded="false" aria-controls="perfil-menu">
-          <img id="avatar"
-               src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
-               alt="Perfil"
-               style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
+        <button id="perfil-btn" type="button">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil" style="width:28px;height:28px;border-radius:50%;border:2px solid #fff;">
           <span id="perfil-nome">Entrar</span> ▾
         </button>
-
         <div class="perfil-menu" id="perfil-menu">
           <div class="perfil-info">
-            <img id="menu-avatar"
-                 src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}"
-                 alt="Foto de perfil"
-                 style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);">
             <strong id="menu-nome">Visitante</strong>
           </div>
           <hr>
-          <!-- ⚠️ Botão com id que seu script.js espera -->
           <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
           <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
         </div>
@@ -292,25 +293,22 @@
     </nav>
   </header>
 
-  <!-- ============== Conteúdo ============== -->
-  <main class="content" role="main">
+  <main class="content">
     <div style="text-align:center; margin: 1rem 0;">
       <a href="{{ url_for('auth.home') }}" class="btn">⬅️ Voltar para Início</a>
     </div>
 
     <h1 class="page-title">🔎 Buscar Notícias</h1>
-
     <form class="search" action="/buscar-chat" method="get" autocomplete="off" novalidate>
       <input type="text" name="q" placeholder='Ex.: "video games"|review|trailer' value="{{ (q or '')|e }}" maxlength="200"/>
       <button type="submit">Buscar</button>
     </form>
 
-    <!-- GRID -->
     <div class="grid">
       {% for a in articles %}
       <div class="card">
         {% if a.get('urlToImage') %}
-          <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
+        <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
         {% endif %}
         <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
         <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
@@ -320,12 +318,11 @@
     </div>
   </main>
 
-  <!-- ============== Footer ============== -->
   <footer>
     <p>© 2025 Portal de Notícias — Criado por Bruna Oliveira e Diego Andrioli</p>
   </footer>
 
-  <!-- Seus scripts (mantidos) -->
+  <!-- JS existente -->
   <script src="{{ url_for('static', filename='js/script.js', v=version|default(0)) }}" defer></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
