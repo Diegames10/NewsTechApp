@@ -70,18 +70,6 @@
       <button type="submit">Buscar</button>
     </form>
 
-    <div class="grid">
-      {% for a in articles %}
-      <div class="card">
-        {% if a.get('urlToImage') %}
-        <img class="thumb" src="{{ a.get('urlToImage')|e }}" alt="Imagem da notícia" loading="lazy"/>
-        {% endif %}
-        <h3>{{ (a.get('title') or '')|e|truncate(120, True, '…') }}</h3>
-        <p>{{ (a.get('description') or 'Sem descrição disponível.')|e|truncate(180, True, '…') }}</p>
-        <a href="{{ a.get('url')|e }}" target="_blank" rel="noopener noreferrer">Ler matéria completa →</a>
-      </div>
-      {% endfor %}
-    </div>
   </main>
 
   <footer>
@@ -98,6 +86,7 @@
 
   
 </html>
+
 
 
 
