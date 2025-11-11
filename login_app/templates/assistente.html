@@ -20,7 +20,7 @@
 <body>
   <!-- HEADER -->
   <header>
-   <h1>📰 NewsTech</h1>
+   <h1>NewsTech</h1>
     <nav>
       <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
       <div class="perfil-container">
@@ -97,21 +97,27 @@
       bottom: 0;
       left: 0;
     }
-    /* ====== Botão de voltar ====== */
+    /* ===== Botão Voltar (centralizado e tamanho certo) ===== */
     .btn-voltar {
-      display:inline-block;
-      margin-top:2rem;
-      background:#38bdf8;
-      color:#0f172a;
-      font-weight:700;
-      padding:0.8rem 1.6rem;
-      border-radius:10px;
-      text-decoration:none;
-      font-size:1rem;
-      box-shadow:0 3px 8px rgba(0,0,0,0.4);
-      transition:all 0.3s ease;
+      display: block;                 /* vira bloco pra usar margin:auto */
+      width: fit-content;             /* tamanho “do texto” */
+      margin: 24px auto 8px;          /* CENTRALIZA */
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--primary, #38bdf8);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      line-height: 1.2;
+      box-shadow: 0 3px 8px rgba(0,0,0,.35);
+      transition: transform .05s ease, filter .15s ease, opacity .15s ease;
     }
-   
+    .btn-voltar:hover { filter: brightness(.96); }
+    .btn-voltar:active { transform: translateY(1px); }
+    .btn-voltar:focus {
+      outline: 2px solid color-mix(in srgb, var(--primary, #38bdf8) 60%, #fff 40%);
+      outline-offset: 2px;
+    }
     
 </style>
 <body>
@@ -137,6 +143,7 @@
       <p>© 2025 Portal de Notícias - Criado por Bruna Oliveira e Diego Andrioli</p>
     </footer>
 </html>
+
 
 
 
