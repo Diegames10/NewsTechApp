@@ -214,43 +214,7 @@
 
     .btn:hover { opacity: 0.9; }
 
-    /* ==================== PERFIL ==================== */
-    .perfil-container { position: relative; }
-
-    #perfil-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .perfil-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 45px;
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 8px 18px var(--shadow);
-      padding: 12px;
-      width: 240px;
-      z-index: 2100;
-    }
-
-    .perfil-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
+    
 
     /* ==================== FOOTER ==================== */
     footer {
@@ -348,6 +312,7 @@
   <script src="{{ url_for('static', filename='js/chatfloat.js', v=version|default(0)) }}" defer></script>
 </body>
 </html>
+
 
 
 
