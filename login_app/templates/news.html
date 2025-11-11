@@ -17,28 +17,29 @@
 
   <style>
     /* ==================== VARIÁVEIS GERAIS ==================== */
-    :root {
-  /* Tema claro */
-  --bg: #ffffff;          /* fundo principal branco */
-  --text: #0f172a;        /* texto escuro */
-  --primary: #2563eb;     /* azul mais equilibrado */
-  --card: #ffffff;        /* caixas e header brancas */
-  --border: #e2e8f0;      /* cinza leve */
-  --muted: #475569;       /* texto secundário */
-  --shadow: rgba(0, 0, 0, 0.05);
+  :root {
+  /* 🌞 Tema claro */
+  --bg: #ffffff;         /* fundo geral branco */
+  --text: #0f172a;       /* texto padrão preto-azulado */
+  --primary: #2563eb;    /* azul forte para botões e links */
+  --card: #ffffff;       /* caixas brancas */
+  --border: #e2e8f0;     /* borda cinza suave */
+  --muted: #334155;      /* texto secundário mais visível */
+  --shadow: rgba(0, 0, 0, 0.06);
   --header-h: 64px;
-}
+  }
 
-body.dark {
-  /* Tema escuro */
-  --bg: #0f172a;
-  --text: #f1f5f9;
-  --primary: #60a5fa;
-  --card: #1e293b;
-  --border: #334155;
-  --muted: #94a3b8;
-  --shadow: rgba(255, 255, 255, 0.1);
-}
+  body.dark {
+    /* 🌙 Tema escuro */
+    --bg: #0f172a;
+    --text: #f1f5f9;
+    --primary: #60a5fa;
+    --card: #1e293b;
+    --border: #334155;
+    --muted: #94a3b8;
+    --shadow: rgba(255, 255, 255, 0.08);
+  }
+
 
     /* ==================== ANIMAÇÃO DE TRANSIÇÃO ==================== */
     body,
@@ -329,4 +330,5 @@ body.dark {
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
