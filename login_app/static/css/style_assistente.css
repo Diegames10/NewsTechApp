@@ -138,14 +138,25 @@ h1 {
   margin:.25rem 0 .75rem;
 }
 #chat-box {
-  background:#0f172a; 
-  border-radius:10px; 
-  padding:1rem;
-  min-height:200px; 
-  max-height:40vh;
-  overflow-y:auto; 
-  color:#f1f5f9;
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 1.2rem;
+  min-height: 60vh;     /* ocupa 60% da altura da tela */
+  max-height: 80vh;     /* limite para telas grandes */
+  overflow-y: auto;
+  color: #f1f5f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
 }
+
+/* Responsivo — em telas pequenas, usa praticamente a altura total */
+@media (max-height: 700px) {
+  #chat-box {
+    min-height: 70vh;
+    max-height: 90vh;
+  }
+}
+
 #chat-form {
   position:sticky; 
   bottom:0;
@@ -680,5 +691,6 @@ header {
   background: var(--primary) !important;
   color: #fff !important;
 }
+
 
 
