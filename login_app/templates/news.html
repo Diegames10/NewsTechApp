@@ -265,39 +265,27 @@
 
 <body>
   <!-- ==================== Header ==================== -->
-   <script>
-  (function () {
-    const key  = 'tema';
-    const body = document.body;
-    const btn  = document.getElementById('toggle-tema');
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-
-    function setTheme(isDark) {
-      body.classList.toggle('dark', isDark);
-      localStorage.setItem(key, isDark ? 'escuro' : 'claro');
-      if (btn) btn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
-      // (Opcional) Ajusta a barra do navegador no mobile
-      if (metaTheme) metaTheme.setAttribute('content', isDark ? '#0b1220' : '#ffffff');
-    }
-
-    // Inicial
-    (function aplicarInicial() {
-      const salvo = localStorage.getItem(key); // 'escuro' | 'claro' | null
-      const prefereEscuro = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-      const usarEscuro = salvo ? (salvo === 'escuro') : prefereEscuro;
-      setTheme(usarEscuro);
-    })();
-
-    // Clique no botão do menu
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const usarEscuro = !body.classList.contains('dark');
-        setTheme(usarEscuro);
-      });
-    }
-  })();
-</script>
-
+  <header>
+    <h1>📰 NewsTech</h1>
+    <nav>
+      <a href="{{ url_for('auth.publicar') }}" class="nav-link">➕ Nova postagem</a>
+      <div class="perfil-container">
+        <button id="perfil-btn" type="button">
+          <img id="avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Perfil">
+          <span id="perfil-nome">Entrar</span> ▾
+        </button>
+        <div class="perfil-menu" id="perfil-menu">
+          <div class="perfil-info">
+            <img id="menu-avatar" src="{{ url_for('static', filename='imagens/avatar-default.jpg') }}" alt="Foto de perfil">
+            <strong id="menu-nome">Visitante</strong>
+          </div>
+          <hr>
+          <button id="toggle-tema" type="button">🌙 Modo Escuro</button>
+          <button id="btn-sair" style="display:none;" type="button">🚪 Sair</button>
+        </div>
+      </div>
+    </nav>
+  </header>
 
   <!-- ==================== Conteúdo ==================== -->
   <main class="content" role="main">
@@ -398,5 +386,6 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
+
 
 
